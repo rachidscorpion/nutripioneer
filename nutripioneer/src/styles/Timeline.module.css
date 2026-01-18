@@ -1,0 +1,670 @@
+/* The Vertical Line */
+.timelineContainer {
+    position: relative;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.timelineContainer::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #eff6ff, #3b82f6, #eff6ff);
+    /* Fade in/out */
+    z-index: 0;
+}
+
+/* Feed Item Container */
+.feedItem {
+    position: relative;
+    padding-left: 2.5rem;
+    /* More space for the dot */
+    padding-bottom: 2rem;
+    /* We don't need border-l-2 here if we have the main line wrapper */
+    margin-left: 0.5rem;
+    /* Align with line */
+}
+
+/* Vertical Line Dots */
+.timelineDot {
+    position: absolute;
+    left: -4px;
+    /* Center on the 2px line (approx) */
+    top: 0;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 2px solid;
+    z-index: 2;
+    background-color: white;
+    /* Default fallback */
+}
+
+/* Colors for Dots */
+.dotBlue {
+    background-color: #dbeafe;
+    /* Blue 100 */
+    border-color: #3b82f6;
+    /* Blue 500 */
+}
+
+.dotPurple {
+    background-color: #f3e8ff;
+    /* Purple 100 */
+    border-color: #a855f7;
+    /* Purple 500 */
+}
+
+.dotEmerald {
+    background-color: #dcfce7;
+    /* Emerald 100 */
+    border-color: #10b981;
+    /* Emerald 500 */
+}
+
+.dotAmber {
+    background-color: #fef3c7;
+    /* Amber 100 */
+    border-color: #f59e0b;
+    /* Amber 500 */
+}
+
+.timeLabel {
+    font-size: 0.75rem;
+    /* Smaller, cleaner */
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    /* Slate 400 */
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+/* Glassmorphism Card */
+.glassPanel {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    /* Smoother corners */
+    padding: 24px;
+    margin-bottom: 0;
+    /* Let container handle spacing */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    /* Slide In Animation */
+    animation: slideIn 0.5s ease-out;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glassPanel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+}
+
+.emptyMeal {
+    padding: 1rem;
+    opacity: 0.5;
+    font-style: italic;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cardTime {
+    display: none;
+    /* We show time in the timeline now */
+}
+
+.cardContent h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    /* Bolder head */
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.mealDescription {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+}
+
+/* Badges */
+.badgeGreen {
+    background-color: #ecfdf5;
+    color: #047857;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+}
+
+.calBadge {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+}
+
+.cardActions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.btnPrimary {
+    flex: 1;
+    background-color: #0f172a;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btnPrimary:hover {
+    background-color: #1e293b;
+}
+
+.btnGhost {
+    width: 44px;
+    /* Square button */
+    padding: 0;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btnGhost:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+.completedBtn {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #16a34a;
+}
+
+.completedIcon {
+    fill: #16a34a;
+    color: white;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.btnSecondary {
+    flex: 1;
+    width: 100%;
+    background-color: #083e77;
+    color: white;
+    padding: 0.65rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btnSecondary:hover {
+    background-color: #1e293b;
+}
+
+.header {
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.tip {
+    background-color: #eff6ff;
+    border: 1px solid #dbeafe;
+    color: #1e40af;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.fab {
+    position: fixed;
+    bottom: 6rem;
+    /* Above the dock */
+    right: 1.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    background-color: #0f172a;
+    color: white;
+    border-radius: 9999px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+    z-index: 50;
+}
+
+.fab:hover {
+    transform: scale(1.05);
+}
+
+/* Meal Card Image */
+.cardImage {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+}
+
+.modalWrapper {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    pointer-events: none;
+}
+
+.modalContent {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    max-height: 85vh;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+}
+
+.modalHeaderImage {
+    height: 200px;
+    width: 100%;
+    position: relative;
+}
+
+.modalHeaderImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modalHeaderOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    display: flex;
+    align-items: flex-end;
+    padding: 1.5rem;
+}
+
+.modalTitle {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+}
+
+.modalBody {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.modalStats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modalStatItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modalStatIcon {
+    padding: 0.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modalStatIcon.energy {
+    background: #fff7ed;
+    color: #f97316;
+}
+
+.modalStatIcon.protein {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.modalStatIcon.serving {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.modalTabs {
+    display: flex;
+    border-bottom: 1px solid #f1f5f9;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+}
+
+.tabBtn {
+    flex: 1;
+    padding: 1rem;
+    font-weight: 600;
+    color: #64748b;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tabBtn.active {
+    color: #4f46e5;
+    border-bottom-color: #4f46e5;
+}
+
+.tabContent {
+    padding: 1.5rem;
+}
+
+.instructionStep {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stepNumber {
+    width: 24px;
+    height: 24px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.stepText {
+    font-size: 0.95rem;
+    color: #334155;
+    line-height: 1.6;
+}
+
+.ingredientRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    border: 1px solid #f1f5f9;
+}
+
+.ingredientName {
+    font-weight: 600;
+    color: #334155;
+    text-transform: capitalize;
+}
+
+.ingredientMeasure {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.modalFooter {
+    padding: 1rem;
+    border-top: 1px solid #f1f5f9;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.closeBtn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    z-index: 20;
+}
+
+.closeBtn:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Nutrition Info Section */
+.infoSection {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.infoReason {
+    margin-bottom: 1.5rem;
+}
+
+.infoReason h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reasonText {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.6;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.limitsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.limitRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #f1f5f9;
+}
+
+.limitLabel {
+    font-weight: 600;
+    color: #334155;
+    text-transform: capitalize;
+}
+
+.limitValue {
+    color: #64748b;
+    font-family: monospace;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Empty State for Meal Card */
+.emptyPanel {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    border: 2px dashed rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.emptyContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #64748b;
+}
+
+.btnAdd {
+    background-color: #0f172a;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btnAdd:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    background-color: #1e293b;
+}

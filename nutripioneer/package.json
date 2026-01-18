@@ -1,0 +1,38 @@
+{
+  "name": "nutri-pioneer",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "axios": "^1.13.2",
+    "cheerio": "^1.1.2",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.26",
+    "html5-qrcode": "^2.3.8",
+    "lucide-react": "^0.561.0",
+    "motion": "^12.23.26",
+    "next": "16.0.10",
+    "prisma": "^5.10.2",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "sonner": "^2.0.7",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.10",
+    "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "npx -y tsx prisma/seed.ts"
+  }
+}

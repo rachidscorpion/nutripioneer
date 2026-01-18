@@ -1,0 +1,116 @@
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.modalWrapper {
+    width: 90%;
+    max-width: 500px;
+    z-index: 5001;
+}
+
+.modalContent {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0f172a;
+    font-family: var(--font-heading, sans-serif);
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.closeButton:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.body {
+    padding: 1.5rem;
+    color: #475569;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.footer {
+    padding: 1.5rem;
+    background: #f8fafc;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.button {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.cancelButton {
+    background: white;
+    border-color: #cbd5e1;
+    color: #475569;
+}
+
+.cancelButton:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.confirmButton {
+    background: #0f172a;
+    color: white;
+}
+
+.confirmButton:hover {
+    background: #1e293b;
+}
+
+.dangerButton {
+    background: #ef4444;
+    color: white;
+}
+
+.dangerButton:hover {
+    background: #dc2626;
+}

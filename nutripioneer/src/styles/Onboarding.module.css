@@ -1,0 +1,382 @@
+/* src/styles/Onboarding.module.css */
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  position: relative;
+  z-index: 10;
+  font-family: var(--font-body), sans-serif;
+}
+
+.brandName,
+.stepTitle {
+  font-family: var(--font-heading), sans-serif;
+}
+
+.welcomeHeading {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 2.5rem;
+  /* 40px */
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1rem;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.welcomeSub {
+  font-family: var(--font-body), sans-serif;
+  color: #64748b;
+  font-size: 1.125rem;
+  /* 18px */
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+.mainCard {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  background: transparent;
+  width: 100%;
+  max-width: 1200px;
+  min-height: 700px;
+  border-radius: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.contentArea {
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* background: white; Removed to let transparency show */
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  background: white;
+  /* Ensure image stays inside corners if radius is applied here, though overflow is on mainCard usually */
+}
+
+/* Background Image Wrapper */
+.cardBackgroundWrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cardBackgroundImage {
+  object-fit: cover;
+  opacity: 0.15;
+  /* Subtle texture? Or if it's a photo, maybe higher. Let's do 1 for full photo but 0.1 for texture? Assuming photo wants visibility but readability. If full photo, likely overlay needed. */
+  /* User said "use the image for left side", usually implying a visual. 
+     If text is on top, it needs high contrast. 
+     I'll default to full opacity with a strong white overlay or just low opacity texture if it's a pattern. 
+     Given "card-background.jpg" is 2.5MB, it's a photo. I'll make it fully visible but add a glass/white overlay. */
+  opacity: 1;
+}
+
+.cardBackgroundOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.2);
+  /* Reduced opacity for visibility check */
+  backdrop-filter: blur(5px);
+}
+
+.contentWrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brandName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar {
+  background: rgba(255, 255, 255, 0.9);
+  /* Translucent sidebar */
+  border-left: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Stepper Styles */
+.stepperContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+}
+
+.stepperItem {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Vertical Line */
+.stepperItem::before {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 15px;
+  bottom: -32px;
+  width: 2px;
+  background: #e2e8f0;
+  z-index: -1;
+}
+
+.stepperItem:last-child::before {
+  display: none;
+}
+
+.stepCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  background: white;
+  border: 2px solid #e2e8f0;
+  color: #64748b;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.stepCircle.active {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: #eff6ff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.stepCircle.completed {
+  background: #10b981;
+  /* Green */
+  border-color: #10b981;
+  color: white;
+}
+
+.stepContent {
+  padding-top: 4px;
+}
+
+.stepTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.2rem;
+}
+
+.stepDesc {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* Modern Input Styles */
+.input-lg {
+  font-size: 18px;
+  font-weight: 400;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.input-lg::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.input-lg:focus {
+  background: white;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.input-lg:hover {
+  background: white;
+  border-color: #cbd5e1;
+}
+
+/* Bright, Vibrant Button */
+/* Dark Multi-Glow Button */
+.btn-primary {
+  position: relative;
+  background: rgba(213, 213, 215, 0.6);
+  /* Semi-transparent dark slate */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  /* Max rounded */
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  z-index: 1;
+  /* Keep button content above glow */
+  overflow: visible;
+  /* Let the glow blobs spill out */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Glow Elements Pseudo-element hack because single gradient isn't enough for separate blobs */
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  /* top: -25%;
+  left: -25%; */
+  width: 120%;
+  height: 120%;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(253, 224, 71, 0.8) 0%, transparent 40%),
+    /* Yellow Top-Left */
+    radial-gradient(circle at 70% 30%, rgba(236, 72, 153, 0.8) 0%, transparent 45%),
+    /* Pink Top-Right */
+    radial-gradient(circle at 50% 80%, rgba(59, 130, 246, 0.8) 0%, transparent 50%);
+  /* Blue Bottom-Center */
+  filter: blur(10px);
+  z-index: -1;
+  opacity: 0.8;
+  transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  transform: translateY(10%) scale(0.9);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
+  filter: blur(20px);
+  /* More glow on hover */
+  transform: translateY(2%) scale(1.05);
+  /* Expand glow */
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-primary:disabled {
+  background: rgba(100, 116, 139, 0.2);
+  border-color: transparent;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary:disabled::before {
+  display: none;
+  /* No glow when disabled */
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    align-items: flex-start;
+    /* Align top on mobile to avoid centering issues with keyboard */
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .mainCard {
+    grid-template-columns: 1fr;
+    min-height: auto !important;
+    /* Override any inline styles if necessary */
+    width: 100%;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+    /* Flatter look on mobile */
+    border: none;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .contentArea {
+    padding: 1.5rem;
+    /* Reduced padding */
+    align-items: stretch;
+    /* Full width content */
+    text-align: left;
+    /* Keep left align for readability */
+  }
+
+  .header {
+    margin-bottom: 2rem;
+    justify-content: flex-start;
+  }
+
+  .brandName {
+    font-size: 1.25rem;
+  }
+
+  .welcomeHeading {
+    font-size: 2rem;
+  }
+}
+
+/* Utility to hide morph on mobile if needed, or we adapt it */
+.morphContainer {
+  display: block;
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .morphContainer {
+    display: none !important;
+    /* Hide morph on mobile to reduce jank */
+  }
+}

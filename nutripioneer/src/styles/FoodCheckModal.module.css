@@ -1,0 +1,378 @@
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 50;
+    cursor: pointer;
+}
+
+.modalWrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 51;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    pointer-events: none;
+}
+
+.modalContent {
+    background-color: var(--bg-white);
+    width: 100%;
+    max-width: 28rem;
+    /* max-w-md */
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    /* shadow-2xl */
+    overflow: hidden;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    border: 1px solid var(--border-subtle);
+}
+
+.header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    background-color: #f8fafc;
+    /* slate-50 */
+    position: relative;
+}
+
+.title {
+    text-align: center;
+    font-weight: 700;
+    color: var(--foreground);
+    margin-bottom: 1rem;
+    font-family: var(--font-heading, sans-serif);
+    font-size: 1.125rem;
+}
+
+.closeButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 9999px;
+    color: #94a3b8;
+    /* slate-400 */
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.closeButton:hover {
+    color: var(--foreground);
+    transform: scale(1.05);
+}
+
+.searchForm {
+    position: relative;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 1rem 8.5rem 1rem 3rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-subtle);
+    font-size: 1.125rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+}
+
+.searchInput:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.scanTrigger {
+    position: absolute;
+    right: 5.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.scanTrigger:hover {
+    background-color: #f1f5f9;
+    color: #334155;
+    transform: translateY(-50%) scale(1.05);
+}
+
+@media (max-width: 640px) {
+    .searchInput {
+        padding-right: 7.5rem;
+        /* Ensure enough space for buttons */
+    }
+
+    .checkButton {
+        padding: 0 0.75rem;
+    }
+}
+
+.checkButton {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    background-color: #0f172a;
+    /* slate-900 */
+    color: white;
+    padding: 0 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.checkButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.resultArea {
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: linear-gradient(to bottom, #f8fafc, white);
+    flex: 1;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 2rem 0;
+    color: #94a3b8;
+}
+
+.loadingState {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--primary-blue);
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.statusCard {
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 2px solid transparent;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.statusSafe {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+/* green-50/200 */
+.statusCaution {
+    background-color: #fffbeb;
+    border-color: #fde68a;
+}
+
+/* amber-50/200 */
+.statusAvoid {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+}
+
+/* red-50/200 */
+
+.statusIconWrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.textSafe {
+    color: #15803d;
+}
+
+/* green-700 */
+.textCaution {
+    color: #b45309;
+}
+
+/* amber-700 */
+.textAvoid {
+    color: #b91c1c;
+}
+
+/* red-700 */
+
+.statusTitle {
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+    font-family: var(--font-heading);
+}
+
+.statusReason {
+    font-weight: 500;
+    color: #334155;
+    line-height: 1.4;
+}
+
+.modifications {
+    background-color: white;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-subtle);
+    margin-bottom: 1.5rem;
+}
+
+.modTitle {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.modText {
+    color: #334155;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+.nutritionGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.nutritionItem {
+    background-color: white;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-subtle);
+}
+
+.nutritionLabel {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.nutritionValue {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.modalImageWrapper {
+    width: 100%;
+    height: 12rem;
+    overflow: hidden;
+    background-color: #f1f5f9;
+}
+
+.foodImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.viewRecipeBtn {
+    width: 100%;
+    margin-top: 1.5rem;
+    background-color: #2563eb;
+    /* blue-600 */
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.viewRecipeBtn:hover {
+    background-color: #1d4ed8;
+    /* blue-700 */
+}
+
+.instructionsArea {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.instructionStep {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.stepNumber {
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: #e2e8f0;
+    color: #475569;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.stepText {
+    font-size: 0.875rem;
+    color: #334155;
+    line-height: 1.5;
+}

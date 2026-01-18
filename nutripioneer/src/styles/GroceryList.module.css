@@ -1,0 +1,220 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: var(--font-inter, sans-serif);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.subtitle {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.iconBtn {
+    padding: 0.5rem;
+    color: #94a3b8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.iconBtn:hover {
+    color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.storeBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #0f172a;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.storeBtn:hover {
+    background-color: #1e293b;
+}
+
+/* Form */
+.form {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.inputWrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.plusIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.addBtn {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    padding: 0 1rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* List */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem 0;
+    color: #94a3b8;
+}
+
+.emptyIcon {
+    width: 4rem;
+    height: 4rem;
+    background-color: #f8fafc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    border: 1px solid #f1f5f9;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+}
+
+.item:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.itemCompleted {
+    background-color: #f8fafc;
+    border-color: transparent;
+    opacity: 0.7;
+}
+
+.checkbox {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    cursor: pointer;
+    background: none;
+    padding: 0;
+    transition: all 0.2s;
+}
+
+.checkbox:hover {
+    border-color: #60a5fa;
+}
+
+.checkboxChecked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.itemName {
+    flex: 1;
+    font-weight: 500;
+    color: #334155;
+}
+
+.itemNameCompleted {
+    text-decoration: line-through;
+    color: #94a3b8;
+}
+
+.deleteBtn {
+    padding: 0.5rem;
+    color: #cbd5e1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    opacity: 0;
+}
+
+.item:hover .deleteBtn {
+    opacity: 1;
+}
+
+.deleteBtn:hover {
+    color: #ef4444;
+}
