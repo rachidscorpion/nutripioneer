@@ -1,7 +1,7 @@
 'use client';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Utensils, ShoppingBag, Loader2, ExternalLink } from 'lucide-react';
+import { X, Flame, Utensils, ShoppingBag, Loader2, ExternalLink, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
@@ -182,6 +182,23 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
         ? scrapedInstructions
         : formatInstructions(recipe.instructions);
 
+    // Calculate source URL safely
+    let sourceUrl: string | null = null;
+    let sourceHostname: string | null = null;
+
+    // Try recipe.url first, then check if instructions looks like a URL
+    const potentialUrl = recipe.url || (typeof recipe.instructions === 'string' && recipe.instructions.startsWith('http') ? recipe.instructions : null);
+
+    if (potentialUrl) {
+        try {
+            const u = new URL(potentialUrl);
+            sourceUrl = potentialUrl;
+            sourceHostname = u.hostname.replace('www.', '');
+        } catch (e) {
+            // Invalid URL, ignore
+        }
+    }
+
     const modalContent = (
         <AnimatePresence>
             {isOpen && (
@@ -257,6 +274,19 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                         <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>{recipe.protein}g</div>
                                     </div>
                                 </div>
+                                {recipe.prepTime > 0 && (
+                                    <div className={styles.modalStatItem}>
+                                        <div className={`${styles.modalStatIcon}`}>
+                                            <Clock size={20} color="#3b82f6" />
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Time</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>
+                                                {recipe.prepTime > 999 ? recipe.prepTime / 60 : recipe.prepTime} <span style={{ fontSize: '0.8rem', fontWeight: 400, color: '#64748b' }}>min</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                                 {recipe.servingSize && (
                                     <div className={styles.modalStatItem}>
                                         <div className={`${styles.modalStatIcon} ${styles.serving}`}>
@@ -327,10 +357,11 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                                     )}
 
                                                     {/* Source Link if we have instructions but still want to link out */}
-                                                    {instructionsSteps.length > 0 && recipe.instructions && (
+                                                    {/* Source Link if we have instructions but still want to link out */}
+                                                    {instructionsSteps.length > 0 && sourceUrl && (
                                                         <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
-                                                            <a href={recipe.instructions} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: '#94a3b8', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                                Source: {new URL(recipe.instructions).hostname.replace('www.', '')} <ExternalLink size={12} />
+                                                            <a href={sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: '#94a3b8', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                                Source: {sourceHostname} <ExternalLink size={12} />
                                                             </a>
                                                         </div>
                                                     )}

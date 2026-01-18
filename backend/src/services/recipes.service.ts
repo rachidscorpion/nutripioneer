@@ -333,7 +333,7 @@ export class RecipesService {
                     serving = fullRecipe.serving_sizes.serving;
                 }
             }
-            const nut = serving.nutrition || {};
+            const nut = serving || {};
 
             // Helper
             const getN = (key: string) => Math.round(Number(nut[key] || 0));
@@ -342,7 +342,7 @@ export class RecipesService {
             let image = '';
             if (fullRecipe.recipe_images?.recipe_image) {
                 if (Array.isArray(fullRecipe.recipe_images.recipe_image)) {
-                    image = fullRecipe.recipe_images.recipe_image[0];
+                    image = fullRecipe.recipe_images.recipe_image[0] || '';
                 } else {
                     image = fullRecipe.recipe_images.recipe_image;
                 }

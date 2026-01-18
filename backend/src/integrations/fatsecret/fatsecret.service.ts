@@ -25,7 +25,7 @@ export interface FatSecretRecipe {
     recipe_description?: string;
     recipe_images?: { recipe_image: string | string[] };
     ingredients?: { ingredient: { food_name: string; measurement_description: string; description?: string }[] };
-    serving_sizes?: { serving: { nutrition: Record<string, number | string> } | { nutrition: Record<string, number | string> }[] };
+    serving_sizes?: { serving: Record<string, any> | Record<string, any>[] };
     directions?: { direction: { direction_description: string }[] };
     preparation_time_min?: string | number;
     [key: string]: unknown;
