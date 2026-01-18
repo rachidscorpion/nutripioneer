@@ -339,7 +339,7 @@ export class RecipesService {
             const getN = (key: string) => Math.round(Number(nut[key] || 0));
 
             // Handle Image (string or array)
-            let image = '';
+            let image: any = '';
             if (fullRecipe.recipe_images?.recipe_image) {
                 if (Array.isArray(fullRecipe.recipe_images.recipe_image)) {
                     image = fullRecipe.recipe_images.recipe_image[0];

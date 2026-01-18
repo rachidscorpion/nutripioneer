@@ -1,0 +1,233 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  emailVerified  Boolean  @default(false)
+  image          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Custom Synthesis Fields
+  age            Int?     // Made optional as it might not be present on initial sign-up
+  conditions     String?  // Made optional
+  primaryAnchor  String?
+  onboardingData String?  // Made optional
+  nutritionLimits String? // JSON: { min: 1800, max: 2200, label: "Calories", ... }
+  
+  metricLogs     MetricLog[]
+  sessions       Session[]
+  accounts       Account[]
+  
+  savedRecipes   Recipe[]
+  groceryItems   GroceryItem[]
+}
+
+model GroceryItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  isChecked Boolean  @default(false)
+  category  String?
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+model Account {
+  id           String    @id
+  accountId    String
+  providerId   String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  expiresAt    DateTime?
+  password     String?
+  scope        String?
+  accessTokenExpiresAt DateTime?
+  createdAt    DateTime
+  updatedAt    DateTime
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime
+  updatedAt  DateTime
+}
+
+model Condition {
+  id                  String   @id @default(cuid())
+  slug                String   @unique // e.g., 'diabetes'
+  label               String   // e.g., 'Glucose Control (Diabetes T2)'
+  description         String
+  icon                String   // Name of lucide icon
+  color               String   // Hex color
+  
+  // JSON Blobs for structured data (Legacy/Flexibility)
+  nutritionalFocus    String?   // JSON: { riskFactors: [], goals: [] }
+  allowedIngredients  String?   // JSON: string[]
+  excludedIngredients String?   // JSON: string[]
+  
+  // Relations to new medical logic tables
+  nutrientLimits      NutrientLimit[]
+  ingredientExclusions IngredientExclusion[]
+}
+
+model IngredientExclusion {
+  id                String    @id @default(cuid())
+  conditionId       String
+  condition         Condition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+  
+  additiveCategory  String    // e.g., "Phosphate Additives"
+  ingredientRegex   String    // e.g., "phosphoric acid|sodium phosphate..."
+  riskCategory      String    // e.g., "Rapid K+ absorption; arrhythmia risk"
+  severity          String    // e.g., "CRITICAL_AVOID", "LIMIT"
+  
+  source            String?   // Citation or Table Reference
+}
+
+model NutrientLimit {
+  id                String    @id @default(cuid())
+  conditionId       String
+  condition         Condition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+  
+  nutrient          String    // e.g., "Sodium", "Potassium"
+  limitType         String    // "MAX", "MIN", "RANGE", "TEXT"
+  limitValue        String    // e.g., "2300", "3500-5000", "Minimize"
+  unit              String?   // "mg", "g", "% Cal"
+  
+  notes             String?
+}
+
+
+model Recipe {
+  id             String       @id @default(cuid())
+  
+  // 1. Add this to track where it came from
+  externalId     String?      @unique // Store TheMealDB ID (e.g., "52772")
+  sourceAPI      String?      @default("TheMealDB")
+  
+  name           String
+  description    String?      // MealDB often doesn't have a description, just instructions
+  instructions   String       // Store as Markdown
+  prepTime       Int?         // MealDB doesn't give this, make optional
+  category       String?      // "Chicken", "Vegetarian"
+  image          String?      // MealDB gives thumbnails (strMealThumb)
+
+  // 2. Make Nutritional Data Optional (Populate later or use 0 defaults)
+  calories       Int?         
+  protein        Int?
+  carbs          Int?
+  fat            Int?
+  sodium         Int?         
+  sugar          Int?         
+  fiber          Int?
+  
+  servingSize    Float?       // e.g., 198
+  servingSizeUnit String?     // e.g., "g"         
+  
+  // 3. Tags are your MVP "Logic Driver"
+  tags           String       // JSON: ["Breakfast", "High-Protein", "Low-Sodium"]
+  
+  // 4. Ingredients as JSON is easier for MVP than a separate table
+  ingredients    String       // JSON: [{"item": "Rice", "measure": "1 cup"}, ...]
+  
+  // Relations
+  plansAsBreakfast Plan[] @relation("Breakfast")
+  plansAsLunch     Plan[] @relation("Lunch")
+  plansAsDinner    Plan[] @relation("Dinner")
+  
+  users            User[]
+}
+
+model RestaurantItem {
+  id             String   @id @default(cuid())
+  chainName      String   // e.g., "Chipotle"
+  itemName       String   // e.g., "Burrito Bowl (No Rice, Extra Beans)"
+  notes          String   // "Ask for dressing on the side"
+  tags           String   // JSON: ["Diabetes-Safe", "Low-Sodium"]
+  plans          Plan[]
+}
+
+model Plan {
+  id             String   @id @default(cuid())
+  userId         String
+  date           DateTime
+  
+  // Adherence Status
+  breakfastStatus String   @default("PENDING") // PENDING, COMPLETED, SKIPPED, SWAPPED
+  lunchStatus     String   @default("PENDING")
+  dinnerStatus    String   @default("PENDING")
+
+  // Timing (Added for Custom Schedule)
+  breakfastTime   String   @default("08:00")
+  lunchTime       String   @default("13:00")
+  dinnerTime      String   @default("18:00")
+  workoutTime     String   @default("10:00")
+  
+  // The Daily Menu
+  breakfastId    String?
+  breakfast      Recipe?   @relation("Breakfast", fields: [breakfastId], references: [id])
+  
+  lunchId        String?
+  lunch          Recipe?   @relation("Lunch", fields: [lunchId], references: [id])
+  
+  dinnerId       String?
+  dinner         Recipe?   @relation("Dinner", fields: [dinnerId], references: [id])
+  
+  // Fallback for eating out
+  restaurantId   String?
+  restaurant     RestaurantItem? @relation(fields: [restaurantId], references: [id])
+
+  // Status
+  isCompleted    Boolean   @default(false)
+  
+  @@unique([userId, date]) // One plan per user per day
+}
+
+model MetricLog {
+  id             String   @id @default(cuid())
+  userId         String
+  createdAt      DateTime @default(now())
+  
+  // The Data Points
+  type           String   // "GLUCOSE", "BP", "WEIGHT", "WATER"
+  
+  // Values
+  value1         Int?     // e.g., Systolic or Glucose
+  value2         Int?     // e.g., Diastolic
+  
+  // Context
+  tag            String?  // "Fasting", "Post-Meal", "Stress"
+  
+  // Relations
+  user           User     @relation(fields: [userId], references: [id])
+}
