@@ -1,0 +1,10 @@
+nutripioneer/node_modules
+backend/node_modules
+backend/.env
+backend/prisma/dev.db
+nutripioneer/.env
+nutripioneer/.next
+
+nutripioneer/.DS_Store
+backend/.DS_Store
+.DS_Store
