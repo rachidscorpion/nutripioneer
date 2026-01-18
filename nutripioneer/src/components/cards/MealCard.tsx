@@ -1,6 +1,6 @@
 'use client';
 import { api } from '@/lib/api-client';
-import { RefreshCw, ChefHat, CheckSquare, ShoppingBag, Trash2, PlusCircle } from 'lucide-react';
+import { RefreshCw, ChefHat, CheckSquare, ShoppingBag, Trash2, PlusCircle, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import styles from '@/styles/Timeline.module.css';
@@ -148,6 +148,12 @@ export default function MealCard({ meal, type, planId, userId, status = 'PENDING
                     <span className={styles.calBadge}>
                         {meal.calories} kcal
                     </span>
+                    {meal.prepTime > 0 && (
+                        <span className={styles.calBadge} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Clock size={12} />
+                            {meal.prepTime > 999 ? meal.prepTime / 60 : meal.prepTime} min
+                        </span>
+                    )}
                     <span className={styles.calBadge}>
                         {meal.protein}g Protein
                     </span>
