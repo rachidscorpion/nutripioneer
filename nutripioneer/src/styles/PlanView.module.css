@@ -381,67 +381,67 @@
 }
 
 /* Manual Dark Mode overrides if .dark class is present on body/parent (common in Next.js) */
-:global(.dark) .container {
+:global([data-theme='dark']) .container {
     color: #f1f5f9;
 }
 
-:global(.dark) .title {
+:global([data-theme='dark']) .title {
     background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-:global(.dark) .subtitle {
+:global([data-theme='dark']) .subtitle {
     color: #94a3b8;
 }
 
-:global(.dark) .dateNavigator {
+:global([data-theme='dark']) .dateNavigator {
     background: rgba(30, 41, 59, 0.8);
     border-color: rgba(51, 65, 85, 0.5);
 }
 
-:global(.dark) .dateValue {
+:global([data-theme='dark']) .dateValue {
     color: #f1f5f9;
 }
 
-:global(.dark) .navButton {
+:global([data-theme='dark']) .navButton {
     color: #94a3b8;
 }
 
-:global(.dark) .navButton:hover:not(:disabled) {
+:global([data-theme='dark']) .navButton:hover:not(:disabled) {
     background: #334155;
     color: #ffffff;
 }
 
-:global(.dark) .deleteBtn {
+:global([data-theme='dark']) .deleteBtn {
     background: rgba(127, 29, 29, 0.3);
     color: #f87171;
     border-color: rgba(127, 29, 29, 0.5);
 }
 
-:global(.dark) .deleteBtn:hover:not(:disabled) {
+:global([data-theme='dark']) .deleteBtn:hover:not(:disabled) {
     background: rgba(127, 29, 29, 0.5);
     color: #ef4444;
 }
 
-:global(.dark) .emptyState {
+:global([data-theme='dark']) .emptyState {
     background: linear-gradient(to bottom, #1e293b, #0f172a);
     border-color: #334155;
 }
 
-:global(.dark) .emptyIconWrapper {
+:global([data-theme='dark']) .emptyIconWrapper {
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
     box-shadow: none;
 }
 
-:global(.dark) .timelineDot {
+:global([data-theme='dark']) .timelineDot {
     background: #0f172a;
     /* Dark background for dot center */
     box-shadow: 0 0 0 4px #0f172a;
     /* Dark ring */
 }
 
-:global(.dark) .timelineLine {
+:global([data-theme='dark']) .timelineLine {
     background-image: linear-gradient(to bottom, #334155 50%, transparent 50%);
 }
