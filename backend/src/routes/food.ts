@@ -10,6 +10,9 @@ food.use('*', authMiddleware);
 // GET /api/food/analyze?q= - Analyze food by query
 food.get('/analyze', (c) => foodController.analyze(c));
 
+// GET /api/food/search?q=&type= - Search/Suggestions
+food.get('/search', (c) => foodController.search(c));
+
 // GET /api/food/barcode/:code - Analyze food by barcode
 food.get('/barcode/:code', (c) => foodController.analyzeBarcode(c));
 

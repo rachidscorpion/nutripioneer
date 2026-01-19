@@ -18,10 +18,10 @@ export class FoodService {
      * 1. USDA
      * 2. FatSecret
      */
-    async analyze(query: string, limits?: NutritionLimits | null) {
+    async analyze(query: string, limits?: NutritionLimits | null, type?: 'Brand' | 'Generic') {
         try {
             // 1. Try FatSecret Search
-            const fsResults = await fatSecretService.searchFoods(query, 0, 5);
+            const fsResults = await fatSecretService.searchFoods(query, 0, 5, type);
             if (fsResults.results && fsResults.results.length > 0) {
                 const fsFoodSummary = fsResults.results[0]!;
                 // We need detailed nutrition, search result only has summary
@@ -47,6 +47,14 @@ export class FoodService {
                         servingSizeUnit: serving.metric_serving_unit,
                         addedSugar: 0,
                     };
+
+                    let image = null;
+                    if (food.food_images?.food_image) {
+                        const imgs = food.food_images.food_image;
+                        if (Array.isArray(imgs)) image = imgs[0]?.image_url;
+                        else if (imgs) image = (imgs as any).image_url;
+                    }
+
                     const bioavailability = limits ? this.checkConflicts(nutrition, food.food_name, limits) : null;
 
                     return {
@@ -54,6 +62,7 @@ export class FoodService {
                         name: food.food_name,
                         brand: food.brand_name || null,
                         category: food.food_type || null,
+                        image,
                         nutrition,
                         bioavailability,
                         originalId: food.food_id,
@@ -99,6 +108,37 @@ export class FoodService {
         } catch (error) {
             console.error('Food analyze error:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Search for foods (lightweight suggestion)
+     */
+    async search(query: string, type?: 'Brand' | 'Generic') {
+        try {
+            // 1. FatSecret Search
+            const fsResults = await fatSecretService.searchFoods(query, 0, 10, type);
+
+            return fsResults.results.map(f => {
+                let image = null;
+                if (f.food_images?.food_image) {
+                    const imgs = f.food_images.food_image;
+                    if (Array.isArray(imgs)) image = imgs[0]?.image_url;
+                    else if (imgs) image = (imgs as any).image_url;
+                }
+
+                return {
+                    name: f.food_name,
+                    brand: f.brand_name || null,
+                    type: f.food_type,
+                    id: f.food_id,
+                    source: 'FatSecret',
+                    image
+                };
+            });
+        } catch (error) {
+            console.error('Food search error:', error);
+            return [];
         }
     }
 

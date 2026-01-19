@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, AlertTriangle, CheckCircle, AlertCircle, ChefHat, ChevronDown, Plus, ScanBarcode } from 'lucide-react';
+import { Search, X, AlertTriangle, CheckCircle, AlertCircle, ChefHat, ChevronDown, Plus, ScanBarcode, Utensils, ShoppingBasket } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import styles from '@/styles/FoodCheckModal.module.css';
 import { toast } from 'sonner';
@@ -13,6 +13,8 @@ interface FoodCheckModalProps {
     planId?: string;
 }
 
+type SearchMode = 'Generic' | 'Brand';
+
 export default function FoodCheckModal({ isOpen, onClose, conditions, planId }: FoodCheckModalProps) {
     const [query, setQuery] = useState('');
     const [result, setResult] = useState<any>(null);
@@ -20,6 +22,8 @@ export default function FoodCheckModal({ isOpen, onClose, conditions, planId }: 
     const [showRecipe, setShowRecipe] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
+    const [activeTab, setActiveTab] = useState<SearchMode>('Generic');
+    const [suggestions, setSuggestions] = useState<any[]>([]);
 
     const handleDisplayResult = (res: any) => {
         setResult(res);
@@ -34,10 +38,7 @@ export default function FoodCheckModal({ isOpen, onClose, conditions, planId }: 
         setIsLoading(true);
         setShowRecipe(false); // Reset recipe view on new search
         try {
-            const res = await api.food.analyze(query); // Note: conditions handled by backend? or pass as query param?
-            // api-client analyze(query) calls /food/analyze?q=...
-            // If backend needs conditions, we might need to update api-client or assume backend fetches user profile.
-            // Assuming backend fetches user profile            console.log(res);
+            const res = await api.food.analyze(query, activeTab);
             // Handle response structure { data: { ... }, success: true }
             const responseData = res.data || res;
             const finalResult = responseData.data || responseData;
@@ -121,42 +122,138 @@ export default function FoodCheckModal({ isOpen, onClose, conditions, planId }: 
 
                             {/* Search Header */}
                             <div className={styles.header}>
-                                <h3 className={styles.title}>On-Demand Check</h3>
-                                <button
-                                    onClick={onClose}
-                                    className={styles.closeButton}
-                                >
-                                    <X size={16} />
-                                </button>
-
-                                <form onSubmit={handleSearch} className={styles.searchForm}>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Pepperoni Pizza"
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        className={styles.searchInput}
-                                        autoFocus
-                                    />
-                                    <Search className={styles.searchIcon} size={20} />
-
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <h3 className={styles.title}>On-Demand Check</h3>
                                     <button
-                                        type="button"
-                                        onClick={() => setIsScanning(!isScanning)}
-                                        className={styles.scanTrigger}
-                                        title="Scan Barcode"
+                                        onClick={onClose}
+                                        className={styles.closeButton}
                                     >
-                                        <ScanBarcode size={20} />
+                                        <X size={16} />
                                     </button>
+                                </div>
 
+                                {/* Tabs */}
+                                <div className={styles.tabContainer} style={{ display: 'flex', background: '#f1f5f9', padding: '0.25rem', borderRadius: '0.75rem', marginBottom: '1rem' }}>
                                     <button
-                                        type="submit"
-                                        disabled={isLoading || !query}
-                                        className={styles.checkButton}
+                                        onClick={() => { setActiveTab('Generic'); setSuggestions([]); }}
+                                        style={{
+                                            flex: 1,
+                                            padding: '0.5rem',
+                                            borderRadius: '0.5rem',
+                                            border: 'none',
+                                            background: activeTab === 'Generic' ? 'white' : 'transparent',
+                                            color: activeTab === 'Generic' ? '#0f172a' : '#64748b',
+                                            fontWeight: activeTab === 'Generic' ? 600 : 500,
+                                            fontSize: '0.9rem',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.5rem',
+                                            boxShadow: activeTab === 'Generic' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                            transition: 'all 0.2s'
+                                        }}
                                     >
-                                        {isLoading ? '...' : 'Check'}
+                                        <ShoppingBasket size={16} />
+                                        General
                                     </button>
-                                </form>
+                                    <button
+                                        onClick={() => { setActiveTab('Brand'); setSuggestions([]); }}
+                                        style={{
+                                            flex: 1,
+                                            padding: '0.5rem',
+                                            borderRadius: '0.5rem',
+                                            border: 'none',
+                                            background: activeTab === 'Brand' ? 'white' : 'transparent',
+                                            color: activeTab === 'Brand' ? '#0f172a' : '#64748b',
+                                            fontWeight: activeTab === 'Brand' ? 600 : 500,
+                                            fontSize: '0.9rem',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.5rem',
+                                            boxShadow: activeTab === 'Brand' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <Utensils size={16} />
+                                        Restaurants
+                                    </button>
+                                </div>
+
+                                <div style={{ position: 'relative' }}>
+                                    <form onSubmit={handleSearch} className={styles.searchForm}>
+                                        <input
+                                            type="text"
+                                            placeholder={activeTab === 'Generic' ? "e.g. Apple, Chicken Breast" : "e.g. Chick-fil-A, Chipotle"}
+                                            value={query}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setQuery(val);
+                                                // Trigger suggestion fetch
+                                                if (val.length > 2) {
+                                                    // Simple debounce could happen here, but for now direct call
+                                                    // Consider using a proper useDebounce hook in production
+                                                    api.food.search(val, activeTab).then(res => {
+                                                        setSuggestions(res.data?.data || []);
+                                                    });
+                                                } else {
+                                                    setSuggestions([]);
+                                                }
+                                            }}
+                                            className={styles.searchInput}
+                                            autoFocus
+                                        />
+                                        <Search className={styles.searchIcon} size={20} />
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsScanning(!isScanning)}
+                                            className={styles.scanTrigger}
+                                            title="Scan Barcode"
+                                        >
+                                            <ScanBarcode size={20} />
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading || !query}
+                                            className={styles.checkButton}
+                                        >
+                                            {isLoading ? '...' : 'Check'}
+                                        </button>
+                                    </form>
+
+                                    {/* Suggestions Dropdown */}
+                                    {suggestions.length > 0 && !result && !isLoading && (
+                                        <div className={styles.suggestionsDropdown}>
+                                            {suggestions.map((item, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => {
+                                                        setQuery(item.name);
+                                                        setSuggestions([]);
+                                                        handleSearch(undefined); // Trigger analysis
+                                                    }}
+                                                    className={styles.suggestionItem}
+                                                >
+                                                    {item.image ? (
+                                                        <img src={item.image} alt="" className={styles.suggestionImage} />
+                                                    ) : (
+                                                        <div className={styles.suggestionPlaceholder}>
+                                                            {activeTab === 'Brand' ? <Utensils size={16} /> : <ShoppingBasket size={16} />}
+                                                        </div>
+                                                    )}
+                                                    <div className={styles.suggestionContent}>
+                                                        <div className={styles.suggestionName}>{item.name}</div>
+                                                        {item.brand && <div className={styles.suggestionBrand}>{item.brand}</div>}
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Scanner Area */}
@@ -209,8 +306,8 @@ export default function FoodCheckModal({ isOpen, onClose, conditions, planId }: 
 
 
                             {/* Result Area */}
-                            <div className={styles.resultArea} style={{ padding: result?.mealDbInfo?.image ? '0' : '1.5rem' }}>
-                                {(!result || !result.source) && !isLoading && !isScanning && (
+                            <div className={styles.resultArea} style={{ padding: result?.image ? '0' : '1.5rem' }}>
+                                {(!result || !result.nutrition) && !isLoading && !isScanning && (
                                     <div className={styles.emptyState} style={{ padding: '2rem' }}>
                                         <p>{result?.message || "Type a food or scan a barcode to check."}</p>
                                     </div>
@@ -227,19 +324,28 @@ export default function FoodCheckModal({ isOpen, onClose, conditions, planId }: 
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                     >
-                                        {/* Image Header if available */}
-                                        {result.mealDbInfo?.image && (
-                                            <div className={styles.modalImageWrapper}>
+                                        {/* Image Header */}
+                                        <div className={styles.modalImageWrapper}>
+                                            {result.image ? (
                                                 <img
-                                                    src={result.mealDbInfo.image}
-                                                    alt={result.mealDbInfo.name || query}
+                                                    src={result.image}
+                                                    alt={result.name || query}
                                                     className={styles.foodImage}
                                                 />
-                                            </div>
-                                        )}
+                                            ) : (
+                                                <div style={{
+                                                    width: '100%', height: '100%',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+                                                    color: '#94a3b8'
+                                                }}>
+                                                    {activeTab === 'Brand' ? <Utensils size={48} /> : <ShoppingBasket size={48} />}
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <div style={{ flex: 1, justifyContent: 'center', alignItems: "center" }}>
-                                            <h3 style={{ display: 'flex', justifyContent: 'center', alignItems: "center" }}>{result?.mealDbInfo?.name}</h3>
+                                            <h3 style={{ display: 'flex', justifyContent: 'center', alignItems: "center" }}>{result.name}</h3>
                                         </div>
 
                                         <div style={{ padding: '1.5rem' }} className="space-y-6">

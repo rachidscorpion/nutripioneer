@@ -16,6 +16,7 @@ export interface FatSecretFood {
     food_type: string;
     food_description?: string;
     brand_name?: string;
+    food_images?: { food_image: { image_url: string }[] | { image_url: string } };
     [key: string]: unknown;
 }
 
@@ -127,7 +128,7 @@ class FatSecretService {
     /**
      * Search for foods in the FatSecret database
      */
-    async searchFoods(query: string, page = 0, maxResults = 20): Promise<SearchResult<FatSecretFood>> {
+    async searchFoods(query: string, page = 0, maxResults = 20, foodType?: 'Brand' | 'Generic'): Promise<SearchResult<FatSecretFood>> {
         const emptyResult: SearchResult<FatSecretFood> = {
             page_number: 0,
             max_results: maxResults,
@@ -136,13 +137,19 @@ class FatSecretService {
         };
 
         try {
+            const params: Record<string, string | number> = {
+                search_expression: query,
+                page_number: page,
+                max_results: maxResults,
+            };
+
+            if (foodType) {
+                params.food_type = foodType;
+            }
+
             const data = await this.request<{ foods_search?: Record<string, unknown>; foods?: Record<string, unknown> }>(
                 '/foods/search/v4',
-                {
-                    search_expression: query,
-                    page_number: page,
-                    max_results: maxResults,
-                }
+                params
             );
 
             if (!data) return emptyResult;

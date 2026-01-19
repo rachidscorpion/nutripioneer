@@ -23,6 +23,7 @@ export class FoodController {
      */
     async analyze(c: Context) {
         const query = c.req.query('q');
+        const type = c.req.query('type') as 'Brand' | 'Generic' | undefined;
 
         if (!query) {
             return c.json({
@@ -32,11 +33,24 @@ export class FoodController {
         }
 
         const limits = await this.getLimits(c);
-        const result = await foodService.analyze(query, limits);
+        const result = await foodService.analyze(query, limits, type);
         return c.json({
             success: true,
             data: result,
         });
+    }
+
+    /**
+     * GET /food/search?q=&type= - Search/Suggestions
+     */
+    async search(c: Context) {
+        const query = c.req.query('q');
+        const type = c.req.query('type') as 'Brand' | 'Generic' | undefined;
+        console.log(query, type);
+        if (!query) return c.json({ success: true, data: [] });
+
+        const results = await foodService.search(query, type);
+        return c.json({ success: true, data: results });
     }
 
     /**

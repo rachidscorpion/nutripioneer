@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 
 
@@ -56,7 +56,8 @@ export const api = {
         // Placeholder if needed for specific item actions
     },
     food: {
-        analyze: (query: string) => apiClient.get(`/food/analyze?q=${query}`),
+        analyze: (query: string, type?: 'Brand' | 'Generic') => apiClient.get(`/food/analyze?q=${query}${type ? `&type=${type}` : ''}`),
+        search: (query: string, type?: 'Brand' | 'Generic') => apiClient.get(`/food/search?q=${query}${type ? `&type=${type}` : ''}`),
         analyzeBarcode: (code: string) => apiClient.get(`/food/barcode/${code}`),
     },
     grocery: {
