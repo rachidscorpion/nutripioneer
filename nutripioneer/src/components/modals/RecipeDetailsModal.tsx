@@ -378,9 +378,9 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                                         { label: 'Fiber', val: recipe.fiber + 'g' },
                                                         { label: 'Sodium', val: recipe.sodium + 'mg' },
                                                     ].map((stat, i) => (
-                                                        <div key={i} style={{ background: '#f8fafc', padding: '0.5rem', borderRadius: '8px' }}>
-                                                            <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.25rem' }}>{stat.label}</div>
-                                                            <div style={{ fontWeight: 700, color: '#334155', fontSize: '0.9rem' }}>{stat.val}</div>
+                                                        <div key={i} className={styles.nutritionBox}>
+                                                            <div className={styles.nutritionBoxLabel}>{stat.label}</div>
+                                                            <div className={styles.nutritionBoxValue}>{stat.val}</div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -405,22 +405,22 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                     ) : (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                                             {nutritionLimits?.reasoning && (
-                                                <div style={{ background: '#f0fdf4', padding: '1rem', borderRadius: '0.5rem', border: '1px solid #bbf7d0' }}>
-                                                    <h4 style={{ color: '#166534', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.9rem' }}>Why this meal?</h4>
-                                                    <p style={{ color: '#15803d', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                                                <div className={styles.reasoningBox}>
+                                                    <h4>Why this meal?</h4>
+                                                    <p>
                                                         {nutritionLimits.reasoning}
                                                     </p>
                                                 </div>
                                             )}
 
                                             <div>
-                                                <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#334155', marginBottom: '0.75rem' }}>Your Nutrition Profile limits</h4>
+                                                <h4 className={styles.sectionTitleSmall}>Your Nutrition Profile limits</h4>
 
                                                 {/* Daily Calories */}
                                                 {nutritionLimits?.daily_calories && (
-                                                    <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-                                                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.25rem' }}>{nutritionLimits.daily_calories.label} Target</div>
-                                                        <div style={{ fontWeight: 600, color: '#1e293b' }}>
+                                                    <div className={styles.limitCardMain}>
+                                                        <div className={styles.limitLabelSmall}>{nutritionLimits.daily_calories.label} Target</div>
+                                                        <div className={styles.limitValueLarge}>
                                                             {nutritionLimits.daily_calories.min} - {nutritionLimits.daily_calories.max} kcal
                                                         </div>
                                                     </div>
@@ -428,11 +428,11 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
 
                                                 {/* Nutrients */}
                                                 {nutritionLimits?.nutrients && (
-                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+                                                    <div className={styles.limitsGrid}>
                                                         {Object.entries(nutritionLimits.nutrients).map(([key, data]: [string, any]) => (
-                                                            <div key={key} style={{ padding: '0.75rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-                                                                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{data.label}</div>
-                                                                <div style={{ fontWeight: 600, color: '#1e293b' }}>
+                                                            <div key={key} className={styles.limitCard}>
+                                                                <div className={styles.limitLabelSmall}>{data.label}</div>
+                                                                <div className={styles.limitValue}>
                                                                     {data.min && data.max ? (
                                                                         <>{data.min} - {data.max}{data.unit}</>
                                                                     ) : data.max ? (
@@ -454,7 +454,7 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                                         <h5 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ef4444', marginBottom: '0.5rem' }}>Avoid Ingredients per Logic:</h5>
                                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                                             {nutritionLimits.avoid_ingredients.map((ing: string, i: number) => (
-                                                                <span key={i} style={{ fontSize: '0.8rem', padding: '0.25rem 0.6rem', background: '#fef2f2', color: '#b91c1c', borderRadius: '1rem', border: '1px solid #fecaca' }}>
+                                                                <span key={i} className={styles.avoidBadge}>
                                                                     {ing}
                                                                 </span>
                                                             ))}

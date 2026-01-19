@@ -218,3 +218,99 @@
 .deleteBtn:hover {
     color: #ef4444;
 }
+
+/* DARK MODE OVERRIDES */
+:global([data-theme='dark']) .title {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .subtitle {
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .iconBtn {
+    color: #cbd5e1;
+}
+
+:global([data-theme='dark']) .iconBtn:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+:global([data-theme='dark']) .storeBtn {
+    background-color: #3b82f6;
+    color: white;
+}
+
+:global([data-theme='dark']) .storeBtn:hover {
+    background-color: #2563eb;
+}
+
+:global([data-theme='dark']) .input {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: white;
+    box-shadow: none;
+}
+
+:global([data-theme='dark']) .input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+:global([data-theme='dark']) .plusIcon {
+    color: #64748b;
+}
+
+:global([data-theme='dark']) .addBtn {
+    background-color: #3b82f6;
+}
+
+:global([data-theme='dark']) .emptyIcon {
+    background-color: #1e293b;
+}
+
+:global([data-theme='dark']) .item {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+
+:global([data-theme='dark']) .item:hover {
+    border-color: #475569;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+:global([data-theme='dark']) .itemCompleted {
+    background-color: #0f172a;
+    border-color: transparent;
+    opacity: 0.6;
+}
+
+:global([data-theme='dark']) .checkbox {
+    border-color: #475569;
+}
+
+:global([data-theme='dark']) .checkbox:hover {
+    border-color: #60a5fa;
+}
+
+:global([data-theme='dark']) .checkboxChecked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+:global([data-theme='dark']) .itemName {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .itemNameCompleted {
+    color: #64748b;
+}
+
+:global([data-theme='dark']) .deleteBtn {
+    color: #64748b;
+}
+
+:global([data-theme='dark']) .deleteBtn:hover {
+    color: #ef4444;
+}
