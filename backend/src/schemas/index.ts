@@ -61,6 +61,7 @@ export const updateUserSchema = z.object({
     medical: medicalSchema.optional(),
     dietary: dietarySchema.optional(),
     nutritionLimits: z.union([z.string(), z.record(z.string(), z.any())]).optional(),
+    preferences: z.string().optional(),
 });
 
 // ============================================

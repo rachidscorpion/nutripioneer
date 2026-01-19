@@ -445,6 +445,33 @@
     color: #3b82f6;
 }
 
+/* Boxed Nutrition Stats for Bottom Grid */
+.nutritionBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 12px;
+    border: 1px solid transparent;
+}
+
+.nutritionBoxLabel {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.nutritionBoxValue {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
 .modalTabs {
     display: flex;
     border-bottom: 1px solid #f1f5f9;
@@ -667,4 +694,329 @@
     transform: translateY(-2px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     background-color: #1e293b;
+}
+
+/* DARK MODE OVERRIDES */
+:global([data-theme='dark']) .timelineContainer::before {
+    background: linear-gradient(to bottom, #1e293b, #3b82f6, #1e293b);
+}
+
+:global([data-theme='dark']) .timeLabel {
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .glassPanel {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+:global([data-theme='dark']) .glassPanel:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+:global([data-theme='dark']) .cardContent h3 {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .mealDescription {
+    color: #cbd5e1;
+}
+
+:global([data-theme='dark']) .calBadge {
+    background-color: #334155;
+    color: #e2e8f0;
+}
+
+:global([data-theme='dark']) .badgeGreen {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+:global([data-theme='dark']) .btnPrimary {
+    background-color: #3b82f6;
+    color: white;
+}
+
+:global([data-theme='dark']) .btnPrimary:hover {
+    background-color: #2563eb;
+}
+
+:global([data-theme='dark']) .btnGhost {
+    background-color: transparent;
+    border-color: #475569;
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .btnGhost:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #f1f5f9;
+    border-color: #64748b;
+}
+
+:global([data-theme='dark']) .completedBtn {
+    background-color: rgba(22, 163, 74, 0.2);
+    border-color: rgba(22, 163, 74, 0.4);
+    color: #4ade80;
+}
+
+:global([data-theme='dark']) .btnSecondary {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+}
+
+:global([data-theme='dark']) .btnSecondary:hover {
+    background-color: #334155;
+}
+
+:global([data-theme='dark']) .title {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .modalContent {
+    background: #0f172a;
+    border: 1px solid #334155;
+}
+
+:global([data-theme='dark']) .modalTitle {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .modalStats {
+    border-bottom-color: #1e293b;
+}
+
+:global([data-theme='dark']) .modalStatIcon.energy {
+    background: rgba(249, 115, 22, 0.2);
+    color: #fb923c;
+}
+
+:global([data-theme='dark']) .modalStatIcon.protein {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+:global([data-theme='dark']) .modalStatIcon.serving {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+:global([data-theme='dark']) .nutritionBox {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+:global([data-theme='dark']) .nutritionBoxLabel {
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .nutritionBoxValue {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .modalStatItem>div>div:first-child {
+    color: #94a3b8 !important;
+}
+
+:global([data-theme='dark']) .modalStatItem>div>div:last-child {
+    color: #f8fafc !important;
+}
+
+:global([data-theme='dark']) .modalTabs {
+    background: #0f172a;
+    border-bottom-color: #1e293b;
+}
+
+:global([data-theme='dark']) .tabBtn {
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .tabBtn.active {
+    color: #60a5fa;
+    border-bottom-color: #60a5fa;
+}
+
+:global([data-theme='dark']) .stepNumber {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+:global([data-theme='dark']) .stepText {
+    color: #cbd5e1;
+}
+
+:global([data-theme='dark']) .ingredientRow {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+:global([data-theme='dark']) .ingredientName {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .ingredientMeasure {
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .modalFooter {
+    background: #0f172a;
+    border-top-color: #1e293b;
+}
+
+:global([data-theme='dark']) .infoSection {
+    border-top-color: #334155;
+}
+
+:global([data-theme='dark']) .infoReason h4 {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .reasonText {
+    background: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+:global([data-theme='dark']) .limitRow {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+:global([data-theme='dark']) .limitLabel {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .limitValue {
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .emptyPanel {
+    background: rgba(30, 41, 59, 0.4);
+    border-color: rgba(148, 163, 184, 0.2);
+}
+
+:global([data-theme='dark']) .emptyContent {
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .btnAdd {
+    background: #334155;
+    color: #f8fafc;
+}
+
+
+/* Health Context Tab Styles */
+.reasoningBox {
+    background: #f0fdf4;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #bbf7d0;
+    margin-bottom: 1.5rem;
+}
+
+.reasoningBox h4 {
+    color: #166534;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.reasoningBox p {
+    color: #15803d;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.sectionTitleSmall {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.75rem;
+}
+
+.limitCardMain {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    /* Consistent border box */
+}
+
+.limitLabelSmall {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    text-transform: capitalize;
+}
+
+.limitValueLarge {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.limitsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.limitCard {
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+}
+
+.limitValue {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.avoidBadge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+    background: #fef2f2;
+    color: #b91c1c;
+    border-radius: 1rem;
+    border: 1px solid #fecaca;
+}
+
+/* Dark Mode Overrides for Health Context */
+:global([data-theme='dark']) .reasoningBox {
+    background: rgba(22, 163, 74, 0.1);
+    border-color: rgba(22, 163, 74, 0.3);
+}
+
+:global([data-theme='dark']) .reasoningBox h4 {
+    color: #4ade80;
+}
+
+:global([data-theme='dark']) .reasoningBox p {
+    color: #bbf7d0;
+}
+
+:global([data-theme='dark']) .sectionTitleSmall {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .limitCardMain,
+:global([data-theme='dark']) .limitCard {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+:global([data-theme='dark']) .limitLabelSmall {
+    color: #94a3b8;
+}
+
+:global([data-theme='dark']) .limitValueLarge,
+:global([data-theme='dark']) .limitValue {
+    color: #f8fafc;
+}
+
+:global([data-theme='dark']) .avoidBadge {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
 }

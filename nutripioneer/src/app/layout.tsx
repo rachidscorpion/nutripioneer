@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import DeleteTestUserBtn from "@/components/DeleteTestUserBtn";
 import ManagePlanControls from "@/components/plan/ManagePlanControls";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,9 +43,11 @@ export default function RootLayout({
         <meta name="darkreader-lock" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${inter.variable} antialiased`}>
-        {children}
-        <DeleteTestUserBtn />
-        <ManagePlanControls />
+        <ThemeProvider>
+          {children}
+          <DeleteTestUserBtn />
+          <ManagePlanControls />
+        </ThemeProvider>
       </body>
     </html>
   );

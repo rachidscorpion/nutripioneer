@@ -6,6 +6,7 @@ import { api } from '@/lib/api-client';
 import { RefreshCw, Trash2, UserX } from 'lucide-react';
 import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import { toast } from 'sonner';
+import styles from '@/styles/Profile.module.css';
 
 export default function ProfileActions() {
     const router = useRouter();
@@ -70,61 +71,24 @@ export default function ProfileActions() {
     const modalProps = getModalProps();
 
     return (
-        <div style={{
-            marginTop: '2rem',
-            borderTop: '1px solid #e2e8f0',
-            paddingTop: '2rem',
-            maxWidth: '800px',
-            marginLeft: 'auto',
-            marginRight: 'auto'
-        }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#0f172a', marginBottom: '1rem' }}>
+        <div className={styles.actionsContainer}>
+            <h3 className={styles.dangerZoneTitle}>
                 Danger Zone
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <button
                     onClick={() => setAction('regenerate')}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        padding: '0.75rem',
-                        borderRadius: '0.5rem',
-                        background: '#f8fafc',
-                        border: '1px solid #cbd5e1',
-                        color: '#475569',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                    onMouseOut={(e) => e.currentTarget.style.background = '#f8fafc'}
+                    className={styles.actionBtn}
                 >
                     <RefreshCw size={18} />
                     Regenerate All Recipes
                 </button>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className={styles.dangerGrid}>
                     <button
                         onClick={() => setAction('deleteRecipes')}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '0.5rem',
-                            padding: '0.75rem',
-                            borderRadius: '0.5rem',
-                            background: '#fee2e2',
-                            border: '1px solid #fecaca',
-                            color: '#dc2626',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.background = '#fecaca'}
-                        onMouseOut={(e) => e.currentTarget.style.background = '#fee2e2'}
+                        className={styles.dangerBtnSoft}
                     >
                         <Trash2 size={18} />
                         Delete Recipes
@@ -132,22 +96,7 @@ export default function ProfileActions() {
 
                     <button
                         onClick={() => setAction('deleteAccount')}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '0.5rem',
-                            padding: '0.75rem',
-                            borderRadius: '0.5rem',
-                            background: '#ef4444',
-                            border: '1px solid #dc2626',
-                            color: 'white',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.background = '#dc2626'}
-                        onMouseOut={(e) => e.currentTarget.style.background = '#ef4444'}
+                        className={styles.dangerBtnSolid}
                     >
                         <UserX size={18} />
                         Delete Account

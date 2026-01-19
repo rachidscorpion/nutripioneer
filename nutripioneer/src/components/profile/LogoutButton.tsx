@@ -19,7 +19,7 @@ export default function LogoutButton() {
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem', paddingBottom: '10rem' }}>
             <button
                 onClick={handleLogout}
                 className={styles.logoutBtn}

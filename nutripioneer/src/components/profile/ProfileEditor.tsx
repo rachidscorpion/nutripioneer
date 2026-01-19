@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { OnboardingData } from '@/types/user';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, User, Link, Heart, Utensils, Shield, Search, Trash2, Plus, CheckCircle, AlertCircle, Droplets, Activity } from 'lucide-react';
+import { Save, User, Settings, Heart, Utensils, Shield, Search, Trash2, CheckCircle, AlertCircle, Droplets, Activity, Moon, Sun } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
-import { useEffect } from 'react';
+import { useTheme } from '@/context/ThemeContext';
 
 // Use loose type or interface matching API response
 interface ExtendedUser {
@@ -28,6 +28,7 @@ interface ProfileEditorProps {
 }
 
 export default function ProfileEditor({ user, initialData }: ProfileEditorProps) {
+    const { theme, toggleTheme } = useTheme();
     const [data, setData] = useState<OnboardingData>({
         ...initialData,
         dietary: {
@@ -43,7 +44,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
         }
     });
     const [isSaving, setIsSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'biometrics' | 'conditions' | 'medical' | 'lifestyle' | 'dietary'>('biometrics');
+    const [activeTab, setActiveTab] = useState<'biometrics' | 'conditions' | 'medical' | 'dietary' | 'settings'>('biometrics');
 
     const [availableConditions, setAvailableConditions] = useState<any[]>([]);
     const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -97,11 +98,6 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const payload = {
-                ...data,
-                conditions: selectedConditions
-            };
-
             const finalPayload = {
                 ...data,
                 conditions: selectedConditions
@@ -131,25 +127,15 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
         { id: 'biometrics', label: 'Body', icon: User },
         { id: 'conditions', label: 'Conditions', icon: Droplets },
         { id: 'medical', label: 'Health', icon: Heart },
-        // { id: 'lifestyle', label: 'Life', icon: Activity },
         { id: 'dietary', label: 'Food', icon: Utensils },
+        { id: 'settings', label: 'Settings', icon: Settings },
     ] as const;
 
     // Helper to get initials
     const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '??';
 
-    // Helper to get provider name
-    const getProviderName = (providerId: string) => {
-        if (providerId === 'google') return 'Google';
-        if (providerId === 'github') return 'GitHub';
-        if (providerId === 'credentials') return 'Email/Password';
-        return providerId;
-    };
-
     return (
         <div className={styles.container}>
-
-
 
             {/* Page Title */}
             <h1 className={styles.pageTitle}>My Profile</h1>
@@ -189,24 +175,19 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                             className={styles.saveBtn}
                         >
                             <Save size={18} />
-                            {isSaving ? 'Updating Limits...' : 'Save Changes'}
+                            {isSaving ? 'Updating...' : 'Save Changes'}
                         </button>
-                        {isSaving && (
-                            <span style={{ fontSize: '0.7rem', color: '#64748b', whiteSpace: 'nowrap', marginRight: '18%' }}>
-                                This may take some time
-                            </span>
-                        )}
                     </div>
                 </div>
 
                 {/* Account Details Quick View */}
-                <div className={styles.grid2}>
+                <div className={styles.grid2} style={{ marginTop: '1.5rem' }}>
                     <div className={styles.infoCard}>
                         <div className={styles.infoRow}>
                             <span className={styles.infoLabel}>Account Type</span>
                             <span className={styles.infoValue}>
                                 <Shield size={14} className={styles.iconBlue} />
-                                {/* {user.accounts.length > 0 ? getProviderName(user.accounts[0].providerId) : 'Standard'} */}
+                                Standard
                             </span>
                         </div>
                         <div className={styles.infoRow}>
@@ -301,7 +282,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                             </h3>
                             <div className={styles.grid2}>
                                 {loadingConditions ? (
-                                    <p style={{ color: '#64748b' }}>Loading...</p>
+                                    <p style={{ color: 'var(--muted-foreground)' }}>Loading...</p>
                                 ) : (
                                     availableConditions.map((c) => {
                                         const isSelected = selectedConditions.includes(c.slug);
@@ -316,8 +297,9 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                     padding: '1.5rem',
-                                                    border: isSelected ? `2px solid ${c.color}` : '1px solid #e2e8f0',
-                                                    background: isSelected ? `${c.color}10` : '#f8fafc',
+                                                    border: isSelected ? `2px solid ${c.color}` : '1px solid var(--muted-foreground)',
+                                                    borderColor: isSelected ? c.color : 'rgba(0,0,0,0.1)',
+                                                    background: isSelected ? `${c.color}10` : 'transparent',
                                                     borderRadius: '16px',
                                                     cursor: 'pointer',
                                                     transition: 'all 0.2s ease',
@@ -325,7 +307,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                                 }}
                                             >
                                                 <IconComponent size={32} color={c.color} style={{ marginBottom: '10px' }} />
-                                                <span style={{ fontSize: '1rem', fontWeight: 600, color: '#334155' }}>{c.label}</span>
+                                                <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)' }}>{c.label}</span>
                                             </button>
                                         );
                                     })
@@ -343,8 +325,8 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                             <div className={styles.infoCard}>
                                 <div className={styles.insulinRow}>
                                     <div>
-                                        <span className={styles.infoLabel} style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b' }}>Insulin Dependent</span>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Do you take exogenous insulin?</div>
+                                        <span className={styles.infoLabel} style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)' }}>Insulin Dependent</span>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>Do you take exogenous insulin?</div>
                                     </div>
                                     <button
                                         onClick={() => updateNested('medical', 'insulin', !data.medical.insulin)}
@@ -356,7 +338,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                             </div>
 
                             <div style={{ marginTop: '1.5rem' }}>
-                                <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Current Medications</h4>
+                                <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--muted-foreground)', marginBottom: '0.5rem' }}>Current Medications</h4>
 
                                 <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                                     <input
@@ -376,6 +358,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                                 }
                                             }
                                         }}
+                                        style={{ flex: 1 }}
                                     />
                                     <button
                                         className={styles.saveBtn}
@@ -397,13 +380,14 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
 
                                 {drugResults.length > 0 && (
                                     <div style={{
-                                        background: 'white',
+                                        background: 'var(--background)',
                                         border: '1px solid #e2e8f0',
                                         borderRadius: '8px',
                                         marginTop: '4px',
                                         maxHeight: '200px',
                                         overflowY: 'auto',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        color: 'var(--foreground)'
                                     }}>
                                         {drugResults.map((drug, i) => (
                                             <button
@@ -415,8 +399,9 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                                     padding: '8px 12px',
                                                     border: 'none',
                                                     background: 'transparent',
-                                                    borderBottom: '1px solid #f1f5f9',
-                                                    cursor: 'pointer'
+                                                    borderBottom: '1px solid var(--muted-foreground)',
+                                                    cursor: 'pointer',
+                                                    color: 'inherit'
                                                 }}
                                                 onClick={async () => {
                                                     // Add drug
@@ -447,14 +432,14 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                             alignItems: 'center',
                                             justifyContent: 'space-between',
                                             padding: '12px',
-                                            background: '#f8fafc',
+                                            background: 'rgba(0,0,0,0.03)',
                                             borderRadius: '8px',
-                                            border: '1px solid #e2e8f0'
+                                            border: '1px solid rgba(0,0,0,0.05)'
                                         }}>
                                             <div>
-                                                <div style={{ fontWeight: 600, color: '#334155' }}>{med.name}</div>
+                                                <div style={{ fontWeight: 600, color: 'var(--foreground)' }}>{med.name}</div>
                                                 {med.ingredients && (
-                                                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                                    <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
                                                         {Array.isArray(med.ingredients) ? med.ingredients.join(', ') : med.ingredients}
                                                     </div>
                                                 )}
@@ -477,14 +462,12 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                         </div>
                                     ))}
                                     {(!data.medical.medications || data.medical.medications.length === 0) && (
-                                        <p style={{ color: '#94a3b8', fontSize: '0.875rem', fontStyle: 'italic' }}>No medications listed.</p>
+                                        <p style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', fontStyle: 'italic' }}>No medications listed.</p>
                                     )}
                                 </div>
                             </div>
                         </div>
                     )}
-
-
 
                     {activeTab === 'dietary' && (
                         <div>
@@ -513,6 +496,38 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                         placeholder="e.g. Peanuts, Shellfish"
                                     />
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'settings' && (
+                        <div className={styles.preferencesSection}>
+                            <h3 className={styles.sectionTitle}>
+                                <Settings className={styles.iconBlue} size={24} />
+                                App Preferences
+                            </h3>
+
+                            <div className={styles.switchRow}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    {theme === 'dark' ? <Moon size={20} className={styles.iconBlue} /> : <Sun size={20} className={styles.iconOrange} />}
+                                    <div>
+                                        <span className={styles.infoLabel} style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)' }}>
+                                            {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                                        </span>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                                            Adjust the appearance of the application
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    className={styles.switchGeneric}
+                                    onClick={toggleTheme}
+                                    data-state={theme === 'dark' ? 'on' : 'off'}
+                                    aria-label="Toggle theme"
+                                >
+                                    <span className={styles.switchHandle} />
+                                </button>
                             </div>
                         </div>
                     )}

@@ -26,6 +26,7 @@ model User {
   primaryAnchor  String?
   onboardingData String?  // Made optional
   nutritionLimits String? // JSON: { min: 1800, max: 2200, label: "Calories", ... }
+  preferences    String?  // JSON: { theme: 'dark' | 'light' }
   
   metricLogs     MetricLog[]
   sessions       Session[]

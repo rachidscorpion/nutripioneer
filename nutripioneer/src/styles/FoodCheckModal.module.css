@@ -360,6 +360,26 @@
     margin-bottom: 0.75rem;
 }
 
+.modalStatItem {
+    display: flex;
+    flex-direction: column;
+    background-color: #484848ff;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.modalStatLabel {
+    font-size: 0.7rem;
+    color: #f2f2f2ff;
+    margin-bottom: 0.25rem;
+}
+
+.modalStatValue {
+    font-weight: 700;
+    color: #d3d3d3ff;
+    font-size: 0.9rem;
+}
+
 .stepNumber {
     width: 1.5rem;
     height: 1.5rem;
