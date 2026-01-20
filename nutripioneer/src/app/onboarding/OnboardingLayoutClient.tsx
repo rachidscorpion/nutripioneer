@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import InteractiveBackground from '@/components/ui/InteractiveBackground';
 import OnboardingMorph from '@/components/ui/OnboardingMorph';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { getRandomFoodImage } from '@/actions/unsplash-actions';
 
 const STEPS = [
     { id: 1, title: 'Identity', desc: 'Create your profile.' },
@@ -19,6 +21,7 @@ const STEPS = [
 
 export default function OnboardingLayoutClient({ children }: { children: React.ReactNode }) {
     const { step } = useOnboardingStore();
+    const [img, setImg] = useState<any>();
 
     const morphPosition: any = {
         1: { top: '-1rem', left: '-2rem', opacity: 0.1, rotate: '-40deg' },
@@ -29,6 +32,26 @@ export default function OnboardingLayoutClient({ children }: { children: React.R
         6: { top: '1%', left: '70%', opacity: 1, rotate: '65deg' },
     };
 
+    useEffect(() => {
+        let mounted = true;
+        const getImage = async () => {
+            try {
+                const bgImage = await getRandomFoodImage();
+                if (mounted && bgImage) {
+                    setImg(bgImage);
+                } else if (mounted) {
+                    setImg('/assets/card-background.jpg');
+                }
+            } catch {
+                if (mounted) {
+                    setImg('/assets/card-background.jpg');
+                }
+            }
+        };
+        getImage();
+        return () => { mounted = false; };
+    }, []);
+
     return (
         <div className={styles.container} style={{ background: 'black' }} >
             <motion.div
@@ -37,8 +60,8 @@ export default function OnboardingLayoutClient({ children }: { children: React.R
                 transition={{ duration: 0.5, ease: 'easeOut' }}
                 style={{ position: 'absolute', inset: 0, zIndex: -1 }}
             >
-                <Image
-                    src="/assets/card-background.jpg"
+                {img && <Image
+                    src={img.startsWith('http') ? img : '/assets/card-background.jpg'}
                     alt="Background"
                     fill
                     priority
@@ -46,9 +69,9 @@ export default function OnboardingLayoutClient({ children }: { children: React.R
                     style={{
                         objectFit: 'cover',
                         filter: 'blur(4px)',
-                        transform: 'scale(1.05)', // Prevents edge artifacts from blur
+                        transform: 'scale(1.05)',
                     }}
-                />
+                />}
             </motion.div>
 
             <motion.div

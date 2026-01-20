@@ -1,10 +1,12 @@
 
 import { requireAuth, fetchWithAuth } from '@/lib/server-auth';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import ProfileEditor from '@/components/profile/ProfileEditor';
 import ProfileActions from '@/components/profile/ProfileActions';
 import LogoutButton from '@/components/profile/LogoutButton';
 import { OnboardingData } from '@/types/user';
+import { ArrowRight } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
 
 export default async function ProfilePage() {
@@ -63,6 +65,18 @@ export default async function ProfilePage() {
         <main className={styles.pageWrapper}>
             <ProfileEditor user={user} initialData={initialData} />
             <ProfileActions />
+
+            {/* Subscription Link */}
+            <Link href="/subscription" className={styles.upgradeBanner}>
+                <div className={styles.upgradeBannerContent}>
+                    <span className={styles.upgradeBannerTitle}>Upgrade to Pro</span>
+                    <span className={styles.upgradeBannerSubtitle}>Unlock premium features & AI insights</span>
+                </div>
+                <span className={styles.upgradeBannerArrow}>
+                    <ArrowRight size={20} />
+                </span>
+            </Link>
+
             <LogoutButton />
         </main>
     );

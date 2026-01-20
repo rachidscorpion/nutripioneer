@@ -1,11 +1,27 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { polar, checkout, webhooks } from "@polar-sh/better-auth";
+import { Polar } from "@polar-sh/sdk";
 import prisma from '@/db/client';
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: 'sqlite',
     }),
+    plugins: [
+        polar({
+            client: new Polar({
+                accessToken: process.env.POLAR_ACCESS_TOKEN!,
+                server: process.env.POLAR_ENV === 'production' ? 'production' : 'sandbox',
+            }),
+            use: [
+                checkout(),
+                webhooks({
+                    secret: process.env.POLAR_WEBHOOK_SECRET!,
+                })
+            ]
+        })
+    ],
 
     // Email & Password authentication
     emailAndPassword: {

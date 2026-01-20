@@ -27,6 +27,11 @@ model User {
   onboardingData String?  // Made optional
   nutritionLimits String? // JSON: { min: 1800, max: 2200, label: "Calories", ... }
   preferences    String?  // JSON: { theme: 'dark' | 'light' }
+
+  // Polar.sh Subscription
+  polarCustomerId     String? @unique
+  polarSubscriptionId String? @unique
+  subscriptionStatus  String? @default("inactive")
   
   metricLogs     MetricLog[]
   sessions       Session[]
