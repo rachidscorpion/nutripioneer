@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   images: {
     unoptimized: true,
     qualities: [100, 75, 50, 25],
@@ -17,11 +18,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/auth/:path*",
-        destination: "http://localhost:3001/api/auth/:path*",
+        destination: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/auth/:path*`,
       },
       {
         source: "/api/:path*",
-        destination: "http://localhost:3001/api/:path*",
+        destination: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/:path*`,
       },
     ];
   },
