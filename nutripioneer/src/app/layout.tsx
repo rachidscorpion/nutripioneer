@@ -45,8 +45,8 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${inter.variable} antialiased`}>
         <ThemeProvider>
           {children}
-          <DeleteTestUserBtn />
-          <ManagePlanControls />
+          {/* <DeleteTestUserBtn />
+          <ManagePlanControls /> */}
         </ThemeProvider>
       </body>
     </html>

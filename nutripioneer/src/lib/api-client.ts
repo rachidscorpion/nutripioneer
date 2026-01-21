@@ -81,6 +81,10 @@ export const api = {
         search: (query: string) => apiClient.get(`/drugs/search?q=${query}`),
         details: (name: string, rxcui: string) => apiClient.get(`/drugs/details?name=${name}&rxcui=${rxcui}`),
     },
+    products: {
+        list: () => apiClient.get('/products'),
+        get: (id: string) => apiClient.get(`/products/${id}`),
+    },
 };
 
 export default apiClient;

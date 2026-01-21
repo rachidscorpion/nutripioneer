@@ -469,6 +469,7 @@ export class PlansService {
             if (!newRecipe) newRecipe = await recipesService.findOrCreateFromEdamam(user, edamamType, excludeExternalId);
         } else {
             newRecipe = await recipesService.findOrCreateFromEdamam(user, edamamType, excludeExternalId);
+            console.log('Edamam', newRecipe);
             if (!newRecipe) newRecipe = await recipesService.findOrCreateFromFatSecret(user, edamamType, excludeExternalId);
         }
 

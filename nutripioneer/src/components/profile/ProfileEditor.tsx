@@ -32,15 +32,15 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
     const [data, setData] = useState<OnboardingData>({
         ...initialData,
         dietary: {
-            favorites: [],
-            dislikes: [],
-            allergies: [],
-            ...initialData.dietary
+            ...initialData.dietary,
+            favorites: initialData.dietary?.favorites ?? [],
+            dislikes: initialData.dietary?.dislikes ?? [],
+            allergies: initialData.dietary?.allergies ?? [],
         },
         medical: {
-            insulin: false,
-            medications: [],
-            ...initialData.medical
+            ...initialData.medical,
+            insulin: initialData.medical?.insulin ?? false,
+            medications: initialData.medical?.medications ?? [],
         }
     });
     const [isSaving, setIsSaving] = useState(false);

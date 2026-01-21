@@ -1,0 +1,273 @@
+/* Subscription Page Styles */
+.pageWrapper {
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--background);
+    transition: background 0.3s;
+}
+
+.container {
+    max-width: 64rem;
+    width: 100%;
+    text-align: center;
+}
+
+.header {
+    margin-bottom: 3rem;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted, #64748b);
+    max-width: 42rem;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Pricing Card */
+.cardGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 28rem;
+    margin: 0 auto;
+}
+
+.pricingCard {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 24px;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.pricingCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] .pricingCard {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='dark'] .pricingCard:hover {
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.6);
+}
+
+.popularBadge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-bottom-left-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.cardContent {
+    padding: 2.5rem;
+}
+
+.planName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: var(--font-heading);
+    margin-bottom: 1rem;
+}
+
+.priceRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.price {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+.period {
+    font-size: 1rem;
+    color: var(--text-muted, #64748b);
+    font-weight: 500;
+}
+
+.cancelNote {
+    font-size: 0.875rem;
+    color: var(--text-muted, #64748b);
+    margin-bottom: 2rem;
+}
+
+/* Features List */
+.featuresList {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+    text-align: left;
+}
+
+.featureItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.625rem 0;
+}
+
+.featureIcon {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #22c55e;
+    margin-top: 0.125rem;
+}
+
+.featureText {
+    font-size: 0.9375rem;
+    color: var(--foreground);
+    font-weight: 500;
+}
+
+[data-theme='dark'] .featureText {
+    color: #e2e8f0;
+}
+
+/* Subscribe Button */
+.subscribeBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px -4px rgba(37, 99, 235, 0.5);
+}
+
+.subscribeBtn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.6);
+}
+
+.subscribeBtn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.subscribeBtn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.securityNote {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-muted, #64748b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+}
+
+.securityIcon {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* Back Link */
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 0.75rem 1.5rem;
+    color: var(--text-muted, #64748b);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.backLink:hover {
+    color: var(--foreground);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'] .backLink:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .pageWrapper {
+        padding: 1.5rem;
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .cardContent {
+        padding: 1.5rem;
+    }
+
+    .price {
+        font-size: 2.5rem;
+    }
+}
