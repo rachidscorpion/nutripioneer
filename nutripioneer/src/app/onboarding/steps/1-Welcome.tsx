@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
 import { getServerSessionAction } from '@/lib/auth-actions';
 import LoginButton from '@/components/buttons/LoginButton';
+import NPLoader2 from '@/components/loader/Loader2';
 
 export default function WelcomeStep() {
     const router = useRouter();
@@ -144,7 +145,7 @@ export default function WelcomeStep() {
 
     return (
         <div style={{ padding: '0 0.5rem', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
-            {loading ? <Loader2 className='animate-spin' size={40} /> :
+            {loading ? <NPLoader2 size={40} /> :
                 <div style={{ padding: '0 0.5rem', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
                     <h1 className={styles.welcomeHeading}>
                         {isSignUp ? 'Create Account' : 'Welcome Back'}
@@ -158,7 +159,7 @@ export default function WelcomeStep() {
                     {/* Social Buttons */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
                         <LoginButton
-                            variant="primary"
+                            variant="outline"
                             onClick={() => handleSocialLogin('google')}
                             disabled={loading}
                             isLoading={loading}
@@ -190,16 +191,6 @@ export default function WelcomeStep() {
                     <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.8rem', lineHeight: '1.4', marginTop: '2rem' }}>
                         By continuing, you agree to our Terms of Service and Privacy Policy.
                     </div>
-
-                    <style jsx global>{`
-                .animate-spin {
-                    animation: spin 1s linear infinite;
-                }
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-            `}</style>
                 </div>
             }
         </div>

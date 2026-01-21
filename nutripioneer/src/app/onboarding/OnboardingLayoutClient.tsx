@@ -4,7 +4,6 @@ import { useOnboardingStore } from '@/store/useOnboardingStore';
 import styles from '@/styles/Onboarding.module.css';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
-import InteractiveBackground from '@/components/ui/InteractiveBackground';
 import OnboardingMorph from '@/components/ui/OnboardingMorph';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -21,7 +20,11 @@ const STEPS = [
 
 export default function OnboardingLayoutClient({ children }: { children: React.ReactNode }) {
     const { step } = useOnboardingStore();
+    const [thumbnail, setThumbnail] = useState<any>();
     const [img, setImg] = useState<any>();
+    const [hadThumbnailLoaded, setHadThumbnailLoaded] = useState<boolean>(false);
+
+    const [highResLoaded, setHighResLoaded] = useState(false);
 
     const morphPosition: any = {
         1: { top: '-1rem', left: '-2rem', opacity: 0.1, rotate: '-40deg' },
@@ -38,12 +41,15 @@ export default function OnboardingLayoutClient({ children }: { children: React.R
             try {
                 const bgImage = await getRandomFoodImage();
                 if (mounted && bgImage) {
-                    setImg(bgImage);
+                    setThumbnail(bgImage.thumbnail);
+                    setImg(bgImage.url);
                 } else if (mounted) {
+                    setThumbnail('/assets/card-background.jpg');
                     setImg('/assets/card-background.jpg');
                 }
             } catch {
                 if (mounted) {
+                    setThumbnail('/assets/card-background.jpg');
                     setImg('/assets/card-background.jpg');
                 }
             }
@@ -52,27 +58,9 @@ export default function OnboardingLayoutClient({ children }: { children: React.R
         return () => { mounted = false; };
     }, []);
 
+
     return (
-        <div className={styles.container} style={{ background: 'black' }} >
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                style={{ position: 'absolute', inset: 0, zIndex: -1 }}
-            >
-                {img && <Image
-                    src={img.startsWith('http') ? img : '/assets/card-background.jpg'}
-                    alt="Background"
-                    fill
-                    priority
-                    quality={100}
-                    style={{
-                        objectFit: 'cover',
-                        filter: 'blur(4px)',
-                        transform: 'scale(1.05)',
-                    }}
-                />}
-            </motion.div>
+        <div className={styles.container} style={{ background: 'black' }}>
 
             <motion.div
                 layout
@@ -120,6 +108,7 @@ export default function OnboardingLayoutClient({ children }: { children: React.R
                     </div>
                 </div>
 
+
                 {/* Right: Sidebar Stepper */}
                 <aside className={styles.sidebar}>
                     <div className={styles.stepperContainer}>
@@ -153,6 +142,47 @@ export default function OnboardingLayoutClient({ children }: { children: React.R
                     </div>
                 </aside>
             </motion.div >
+            {thumbnail &&
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    style={{ position: 'absolute', inset: 0, zIndex: -1 }}
+                >
+                    <Image
+                        src={thumbnail.startsWith('http') ? thumbnail : '/assets/card-background.jpg'}
+                        alt="Background"
+                        fill
+                        priority
+                        quality={100}
+                        sizes="100vw"
+                        onLoad={() => setHadThumbnailLoaded(true)}
+                        style={{
+                            objectFit: 'cover',
+                            transform: 'scale(1.05)',
+                        }}
+                    />
+                </motion.div>}
+            {hadThumbnailLoaded &&
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: highResLoaded ? 1 : 0 }}
+                    transition={{ duration: 0.5, ease: 'easeInOut' }}
+                    style={{ position: 'absolute', inset: 0, zIndex: -1 }}
+                >
+                    <Image
+                        src={img.startsWith('http') ? img : '/assets/card-background.jpg'}
+                        alt="Background"
+                        fill
+                        quality={100}
+                        sizes="100vw"
+                        onLoad={() => setHighResLoaded(true)}
+                        style={{
+                            objectFit: 'cover',
+                            transform: 'scale(1.05)',
+                        }}
+                    />
+                </motion.div>}
         </div >
     );
 }

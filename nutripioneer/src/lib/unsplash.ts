@@ -20,8 +20,8 @@ export const searchPhotos = async (query: string, perPage: number = 10) => {
 
         return result.response.results.map((photo) => ({
             id: photo.id,
-            url: photo.urls.regular,
-            thumbnail: photo.urls.small,
+            url: photo.urls.full,
+            thumbnail: photo.urls.regular,
             alt: photo.alt_description || 'Unsplash image',
             photographer: photo.user.name,
             photographerUrl: photo.user.links.html,
