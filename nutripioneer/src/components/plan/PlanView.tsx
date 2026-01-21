@@ -1,5 +1,5 @@
 'use client';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import styles from '@/styles/PlanView.module.css';
 import MealCard from '@/components/cards/MealCard';
@@ -27,20 +27,31 @@ interface PlanWithMeals {
     breakfast: any;
     lunch: any;
     dinner: any;
+    workout: any;
 }
 
 interface PlanViewProps {
     plan?: PlanWithMeals | null;
-    date: Date;
+    dateString: string;
     isOwner?: boolean;
 }
 
-export default function PlanView({ plan, date, isOwner = false }: PlanViewProps) {
+export default function PlanView({ plan, dateString, isOwner = false }: PlanViewProps) {
+    const [y, m, d] = dateString.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [isGenerating, setIsGenerating] = useState(false);
     const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [today, setToday] = useState<Date | null>(null);
+
+    useEffect(() => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        setToday(d);
+    }, []);
 
     // Local state for times to allow optimistic updates
     const [times, setTimes] = useState({
@@ -109,9 +120,7 @@ export default function PlanView({ plan, date, isOwner = false }: PlanViewProps)
         }
     };
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const isFutureOrToday = date >= today;
+    const isFutureOrToday = today ? date >= today : true;
 
     return (
         <div className={styles.container}>
@@ -148,7 +157,7 @@ export default function PlanView({ plan, date, isOwner = false }: PlanViewProps)
 
                         <div className={styles.dateDisplay}>
                             <span className={styles.dayLabel}>
-                                {isSameDay(date, today) ? 'Today' : format(date, 'EEEE')}
+                                {today && isSameDay(date, today) ? 'Today' : format(date, 'EEEE')}
                             </span>
                             <span className={styles.dateValue}>
                                 {format(date, 'MMMM d, yyyy')}

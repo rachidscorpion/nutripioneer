@@ -1,4 +1,4 @@
-
+import { format } from 'date-fns';
 import { requireAuth, fetchWithAuth } from '@/lib/server-auth';
 // import { api } from '@/lib/api-client'; // Not needed for server-side fetch here anymore if we replace all uses
 import PlanView from '@/components/plan/PlanView';
@@ -13,31 +13,15 @@ export default async function PlanPage({
     const resolvedParams = await searchParams;
     const dateParam = resolvedParams?.date;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const targetDateStr = dateParam || todayStr;
 
-    let targetDate = today;
-    if (dateParam) {
-        // Simple validation
-        const parsed = new Date(dateParam);
-        if (!isNaN(parsed.getTime())) {
-            targetDate = parsed;
-            // Normalize to midnight local time conceptually, but be careful with timezones.
-            // Using ISO string YYYY-MM-DD from client is safest.
-            // But here we rely on the Date constructor. 
-            // Better to align timezone handling. 
-            // For now, simple split if YYYY-MM-DD format:
-            if (dateParam.includes('-')) {
-                const parts = dateParam.split('-');
-                targetDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-            }
-        }
-    }
-    targetDate.setHours(0, 0, 0, 0);
+    // Use UTC date for API consistency server-side
+    const apiDate = new Date(targetDateStr);
+    const dateStr = apiDate.toISOString();
 
     // Fetch plan
     let plan = null;
-    const dateStr = targetDate.toISOString();
 
     try {
         // Use fetchWithAuth to ensure cookies are passed to the backend
@@ -54,7 +38,7 @@ export default async function PlanPage({
     // Pass necessary data to client
     return <PlanView
         plan={plan}
-        date={targetDate}
+        dateString={targetDateStr}
         isOwner={true} // In dashboard we are always owner
     />;
 }
