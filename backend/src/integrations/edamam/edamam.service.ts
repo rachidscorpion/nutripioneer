@@ -188,6 +188,7 @@ export interface EdamamMealPlanResponse {
 export interface RecipeSearchOptions {
     mealType?: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
     random?: boolean;
+    ignoreCuisines?: boolean;
 }
 
 class EdamamService {
@@ -352,7 +353,7 @@ class EdamamService {
                 ? JSON.parse(userProfile.onboardingData)
                 : userProfile.onboardingData;
 
-            if (onboarding?.dietary?.favCuisines?.length > 0) {
+            if (!options.ignoreCuisines && onboarding?.dietary?.favCuisines?.length > 0) {
                 // Strategy: Search for all favorite cuisines
                 onboarding.dietary.favCuisines.forEach((c: string) => {
                     params.append('cuisineType', c);

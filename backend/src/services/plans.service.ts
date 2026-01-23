@@ -465,12 +465,11 @@ export class PlansService {
         // Randomly choose source
         let newRecipe = null;
         if (Math.random() > 0.5) {
+            newRecipe = await recipesService.findOrCreateFromEdamam(user, edamamType, excludeExternalId);
+            if (!newRecipe) newRecipe = await recipesService.findOrCreateFromFatSecret(user, edamamType, excludeExternalId);
+        } else {
             newRecipe = await recipesService.findOrCreateFromFatSecret(user, edamamType, excludeExternalId);
             if (!newRecipe) newRecipe = await recipesService.findOrCreateFromEdamam(user, edamamType, excludeExternalId);
-        } else {
-            newRecipe = await recipesService.findOrCreateFromEdamam(user, edamamType, excludeExternalId);
-            console.log('Edamam', newRecipe);
-            if (!newRecipe) newRecipe = await recipesService.findOrCreateFromFatSecret(user, edamamType, excludeExternalId);
         }
 
         if (!newRecipe) {

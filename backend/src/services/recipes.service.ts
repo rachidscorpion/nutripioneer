@@ -240,7 +240,7 @@ export class RecipesService {
     async findOrCreateFromFatSecret(user: any, mealType: 'Breakfast' | 'Lunch' | 'Dinner', excludeExternalId?: string) {
         try {
             // 1. Calculate limits
-            const mealsPerDay = 5;
+            const mealsPerDay = 4;
             let limits: any = {};
             try {
                 if (user.nutritionLimits) {
@@ -280,8 +280,12 @@ export class RecipesService {
             // Simple Percentage Estimations if limits exist
             if (limits.nutrients) {
                 if (limits.nutrients.PROCNT?.min) {
-                    const kcal = limits.nutrients.PROCNT.min * 4;
-                    const pct = Math.round((kcal / mealCalories) * 100);
+                    const dailyProteinMin = limits.nutrients.PROCNT.min;
+                    // Fix: Compare daily minimum (divided by meals) to MEAL calories
+                    // Math: ((DailyProteinMin / MealsPerDay) * 4 cal/g) / MealCalories
+                    const proteinCalories = (dailyProteinMin / mealsPerDay) * 3;
+                    const pct = Math.round((proteinCalories / mealCalories) * 100);
+
                     if (pct > 5 && pct < 100) opts.proteinPercentage = { min: pct };
                 }
             }
@@ -403,12 +407,22 @@ export class RecipesService {
     async findOrCreateFromEdamam(user: any, mealType: 'Breakfast' | 'Lunch' | 'Dinner', excludeExternalId?: string) {
         try {
             // Call Edamam
-            const searchResult = await edamamService.searchRecipes(user, {
+            let searchResult = await edamamService.searchRecipes(user, {
                 mealType,
                 random: true,
             });
 
             console.log(`Edamam returned ${searchResult?.hits?.length || 0} hits for ${mealType}`);
+
+            if ((!searchResult?.hits || searchResult.hits.length === 0)) {
+                console.log(`Edamam returned 0 hits for ${mealType}. Retrying without cuisine preferences...`);
+                searchResult = await edamamService.searchRecipes(user, {
+                    mealType,
+                    random: true,
+                    ignoreCuisines: true
+                });
+                console.log(`Edamam retry returned ${searchResult?.hits?.length || 0} hits for ${mealType}`);
+            }
 
             let hits = searchResult?.hits || [];
 
