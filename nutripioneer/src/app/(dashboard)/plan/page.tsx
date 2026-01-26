@@ -17,7 +17,10 @@ export default async function PlanPage({
     const targetDateStr = dateParam || todayStr;
 
     // Use UTC date for API consistency server-side
+    // Fix: Set to Noon UTC to ensure that when backend converts to local time, it remains the same day
+    // (e.g. 00:00 UTC is 19:00 EST previous day, but 12:00 UTC is 07:00 EST same day)
     const apiDate = new Date(targetDateStr);
+    apiDate.setUTCHours(12, 0, 0, 0);
     const dateStr = apiDate.toISOString();
 
     // Fetch plan

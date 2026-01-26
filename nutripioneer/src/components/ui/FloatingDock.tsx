@@ -11,7 +11,7 @@ const NAV_ITEMS = [
     { id: 'home', icon: Home, label: 'Home', path: '/home' },
     { id: 'grocery', icon: ShoppingBag, label: 'Grocery', path: '/grocery' },
     { id: 'plan', icon: ClipboardList, label: 'Plan', path: '/plan' },
-    { id: 'health', icon: Heart, label: 'Health', path: '/health' },
+    // { id: 'health', icon: Heart, label: 'Health', path: '/health' },
     { id: 'profile', icon: User, label: 'Profile', path: '/profile' }
 ];
 

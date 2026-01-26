@@ -275,7 +275,7 @@ export class PlansService {
         });
 
         if (!existing) {
-            throw new ApiError(404, 'Plan not found for this date');
+            return { deleted: false };
         }
 
         await prisma.plan.delete({
