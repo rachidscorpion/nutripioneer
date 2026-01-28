@@ -18,7 +18,7 @@
 }
 
 .modalContent {
-    background: white;
+    background: var(--bg-white);
     width: 100%;
     max-width: 450px;
     max-height: 80vh;
@@ -33,11 +33,11 @@
 
 .header {
     padding: 1.5rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: var(--bg-white);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -46,7 +46,7 @@
 .title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--foreground);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -55,7 +55,7 @@
 
 .subtitle {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--text-muted);
     margin-top: 0.25rem;
     margin-bottom: 0;
 }
@@ -65,7 +65,7 @@
     border-radius: 50%;
     border: none;
     background: transparent;
-    color: #94a3b8;
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -74,14 +74,14 @@
 }
 
 .closeBtn:hover {
-    background-color: #f1f5f9;
-    color: #334155;
+    background-color: var(--background);
+    color: var(--foreground);
 }
 
 .body {
     padding: 1rem;
     overflow-y: auto;
-    background-color: #f8fafc;
+    background-color: var(--background);
     min-height: 300px;
 }
 
@@ -91,15 +91,15 @@
     align-items: center;
     justify-content: center;
     height: 12rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     gap: 0.75rem;
 }
 
 .spinner {
     width: 2rem;
     height: 2rem;
-    border: 2px solid #e2e8f0;
-    border-bottom-color: #3b82f6;
+    border: 2px solid var(--border-subtle);
+    border-bottom-color: var(--accent-1);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -116,7 +116,7 @@
     align-items: center;
     justify-content: center;
     height: 12rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     text-align: center;
 }
 
@@ -127,10 +127,10 @@
 }
 
 .storeCard {
-    background: white;
+    background: var(--bg-white);
     padding: 1rem;
     border-radius: 12px;
-    border: 1px solid #f1f5f9;
+    border: 1px solid var(--border-subtle);
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     transition: all 0.2s;
     display: flex;
@@ -145,7 +145,7 @@
 
 .storeName {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--foreground);
     font-size: 1rem;
     margin-bottom: 0.25rem;
 }
@@ -156,7 +156,7 @@
     gap: 0.5rem;
     font-size: 0.75rem;
     font-weight: 600;
-    color: #64748b;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.025em;
 }
@@ -170,7 +170,7 @@
 
 .storeHours {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-top: 0.5rem;
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -181,8 +181,8 @@
 
 .mapLink {
     padding: 0.5rem;
-    background-color: #f8fafc;
-    color: #94a3b8;
+    background-color: var(--background);
+    color: var(--text-muted);
     border-radius: 8px;
     transition: all 0.2s;
     display: flex;
@@ -192,15 +192,15 @@
 }
 
 .mapLink:hover {
-    background-color: #eff6ff;
-    color: #2563eb;
+    background-color: var(--accent-1);
+    color: var(--background);
 }
 
 .footer {
     padding: 1rem;
-    border-top: 1px solid #f1f5f9;
-    background: white;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-white);
     text-align: center;
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--text-muted);
 }

@@ -1,0 +1,345 @@
+/* Menu Scanner Styles */
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem 6rem;
+}
+
+.card {
+    background: var(--bg-white);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.iconWrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 24px;
+    background: var(--accent-1);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-md);
+    color: white;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--foreground);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.025em;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    max-width: 32rem;
+    margin: 0 auto;
+}
+
+.dropZone {
+    border: 2px dashed var(--border-subtle);
+    border-radius: 20px;
+    padding: 4rem 2rem;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background: var(--background);
+    position: relative;
+    overflow: hidden;
+}
+
+.dropZone:hover {
+    border-color: var(--accent-1);
+    background: var(--bg-white);
+    transform: translateY(-2px);
+}
+
+.dropZoneActive {
+    border-color: var(--accent-1);
+    background: var(--bg-white);
+    transform: scale(0.99);
+}
+
+.preview {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+.resetButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.resetButton:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.05);
+}
+
+.buttonGroup {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.button {
+    padding: 1rem 1.5rem;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+.buttonPrimary {
+    background: var(--btn-primary-bg);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.buttonPrimary:hover:not(:disabled) {
+    background: var(--btn-primary-bg);
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.buttonPrimary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.buttonPrimary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: #94a3b8;
+}
+
+.buttonSecondary {
+    background: var(--bg-white);
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-sm);
+}
+
+.buttonSecondary:hover:not(:disabled) {
+    background: var(--background);
+    border-color: var(--text-muted);
+    color: var(--foreground);
+    transform: translateY(-2px);
+}
+
+.buttonSecondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.fileInput {
+    display: none;
+}
+
+.uploadIcon {
+    width: 64px;
+    height: 64px;
+    color: var(--text-muted);
+    margin: 0 auto 1.5rem;
+    transition: color 0.3s;
+}
+
+.dropZone:hover .uploadIcon {
+    color: var(--accent-1);
+}
+
+.dropText {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 0.5rem;
+}
+
+.dropSubtext {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.tipBox {
+    margin-top: 1.5rem;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.tipText {
+    font-size: 0.9rem;
+    color: #1e40af;
+    line-height: 1.5;
+}
+
+.infoSection {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.infoTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 640px) {
+    .infoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .buttonGroup {
+        grid-template-columns: 1fr;
+    }
+}
+
+.infoCard {
+    border-radius: 16px;
+    padding: 1.25rem;
+    transition: transform 0.2s;
+}
+
+.infoCard:hover {
+    transform: translateY(-2px);
+}
+
+.infoCardSafe {
+    background: #f0fdf4;
+    border: 1px solid #dcfce7;
+}
+
+.infoCardCaution {
+    background: #fefce8;
+    border: 1px solid #fef9c3;
+}
+
+.infoCardAvoid {
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+}
+
+.infoHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.infoHeaderSafe {
+    color: #166534;
+}
+
+.infoHeaderCaution {
+    color: #b45309;
+}
+
+.infoHeaderAvoid {
+    color: #b91c1c;
+}
+
+.statusDot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.statusDotSafe {
+    background: #22c55e;
+}
+
+.statusDotCaution {
+    background: #f59e0b;
+}
+
+.statusDotAvoid {
+    background: #ef4444;
+}
+
+.infoText {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.infoTextSafe {
+    color: #15803d;
+}
+
+.infoTextCaution {
+    color: #a16207;
+}
+
+.infoTextAvoid {
+    color: #b91c1c;
+}

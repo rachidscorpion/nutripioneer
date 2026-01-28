@@ -282,7 +282,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                             </h3>
                             <div className={styles.grid2}>
                                 {loadingConditions ? (
-                                    <p style={{ color: 'var(--muted-foreground)' }}>Loading...</p>
+                                    <p className={styles.emptyStateText}>Loading...</p>
                                 ) : (
                                     availableConditions.map((c) => {
                                         const isSelected = selectedConditions.includes(c.slug);
@@ -291,23 +291,14 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                             <button
                                                 key={c.id}
                                                 onClick={() => toggleCondition(c.slug)}
+                                                className={`${styles.conditionBtn} ${isSelected ? styles.conditionBtnSelected : ''}`}
                                                 style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    padding: '1.5rem',
-                                                    border: isSelected ? `2px solid ${c.color}` : '1px solid var(--muted-foreground)',
-                                                    borderColor: isSelected ? c.color : 'rgba(0,0,0,0.1)',
-                                                    background: isSelected ? `${c.color}10` : 'transparent',
-                                                    borderRadius: '16px',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s ease',
-                                                    width: '100%',
+                                                    borderColor: isSelected ? c.color : undefined,
+                                                    background: isSelected ? `${c.color}10` : undefined,
                                                 }}
                                             >
                                                 <IconComponent size={32} color={c.color} style={{ marginBottom: '10px' }} />
-                                                <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)' }}>{c.label}</span>
+                                                <span className={styles.conditionLabel}>{c.label}</span>
                                             </button>
                                         );
                                     })
@@ -340,7 +331,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                             <div style={{ marginTop: '1.5rem' }}>
                                 <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--muted-foreground)', marginBottom: '0.5rem' }}>Current Medications</h4>
 
-                                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                                <div className={styles.searchContainer}>
                                     <input
                                         type="text"
                                         placeholder="Search medication..."
@@ -379,30 +370,11 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                 </div>
 
                                 {drugResults.length > 0 && (
-                                    <div style={{
-                                        background: 'var(--background)',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '8px',
-                                        marginTop: '4px',
-                                        maxHeight: '200px',
-                                        overflowY: 'auto',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                                        color: 'var(--foreground)'
-                                    }}>
+                                    <div className={styles.searchResultsDropdown}>
                                         {drugResults.map((drug, i) => (
                                             <button
                                                 key={i}
-                                                style={{
-                                                    display: 'block',
-                                                    width: '100%',
-                                                    textAlign: 'left',
-                                                    padding: '8px 12px',
-                                                    border: 'none',
-                                                    background: 'transparent',
-                                                    borderBottom: '1px solid var(--muted-foreground)',
-                                                    cursor: 'pointer',
-                                                    color: 'inherit'
-                                                }}
+                                                className={styles.searchResultBtn}
                                                 onClick={async () => {
                                                     // Add drug
                                                     try {
@@ -425,21 +397,13 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                     </div>
                                 )}
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '1rem' }}>
+                                <div className={styles.medicationList}>
                                     {data.medical.medications?.map((med: any, idx: number) => (
-                                        <div key={idx} style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            padding: '12px',
-                                            background: 'rgba(0,0,0,0.03)',
-                                            borderRadius: '8px',
-                                            border: '1px solid rgba(0,0,0,0.05)'
-                                        }}>
+                                        <div key={idx} className={styles.medicationItem}>
                                             <div>
-                                                <div style={{ fontWeight: 600, color: 'var(--foreground)' }}>{med.name}</div>
+                                                <div className={styles.medicationName}>{med.name}</div>
                                                 {med.ingredients && (
-                                                    <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                                                    <div className={styles.medicationIngredients}>
                                                         {Array.isArray(med.ingredients) ? med.ingredients.join(', ') : med.ingredients}
                                                     </div>
                                                 )}
@@ -449,20 +413,14 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                                     const newMeds = data.medical.medications.filter((_: any, i: number) => i !== idx);
                                                     updateNested('medical', 'medications', newMeds);
                                                 }}
-                                                style={{
-                                                    color: '#ef4444',
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    padding: '4px'
-                                                }}
+                                                className={styles.deleteBtn}
                                             >
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
                                     ))}
                                     {(!data.medical.medications || data.medical.medications.length === 0) && (
-                                        <p style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', fontStyle: 'italic' }}>No medications listed.</p>
+                                        <p className={styles.emptyStateText}>No medications listed.</p>
                                     )}
                                 </div>
                             </div>

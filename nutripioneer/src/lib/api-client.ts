@@ -90,6 +90,17 @@ export const api = {
         list: () => apiClient.get('/products'),
         get: (id: string) => apiClient.get(`/products/${id}`),
     },
+    menu: {
+        scan: (image: File) => {
+            const formData = new FormData();
+            formData.append('image', image);
+            return apiClient.post('/menu/scan', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+        },
+    },
 };
 
 export default apiClient;

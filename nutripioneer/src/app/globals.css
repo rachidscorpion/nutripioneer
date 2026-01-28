@@ -9,16 +9,37 @@
   --text-muted: #64748b;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+  /* New Theme Variables (Light Mode Defaults) */
+  --accent-1: #0e7490;
+  /* Cyan-700 fallback */
+  --accent-2: #be185d;
+  /* Pink-700 fallback */
+  --btn-primary-bg: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
+  /* Original Gradient */
 }
 
 [data-theme='dark'] {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --bg-white: #1e293b;
-  --border-subtle: #334155;
-  --text-muted: #94a3b8;
+  --background: #1A1A1A;
+  /* Rich Black */
+  --foreground: #F0F0F0;
+  /* Off-White */
+  --bg-white: #262626;
+  /* Slightly lighter than bg for cards */
+  --border-subtle: #404040;
+  --text-muted: #a3a3a3;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+
+  /* New Theme Variables (Dark Mode Overrides) */
+  --accent-1: #004D61;
+  /* Dark Teal */
+  --accent-2: #822659;
+  /* Deep Ruby */
+  --btn-primary-bg: #3E5641;
+  /* Forest Green */
+  --primary-blue: #F0F0F0;
+  /* Override blue text in dark mode to be readable off-white, or keep as accent? context dependent but usually text needs to be light */
 }
 
 html,
@@ -139,13 +160,19 @@ a {
   height: 2rem;
   width: 2rem;
   border-radius: 9999px;
-  background-color: #eff6ff;
-  /* blue-50 */
+  background-color: var(--bg-white);
+  /* fallback/default */
   color: var(--primary-blue);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+[data-theme='light'] .insight-icon-wrapper {
+  background-color: #eff6ff;
+  border: none;
 }
 
 .insight-content {

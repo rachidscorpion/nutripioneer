@@ -15,12 +15,12 @@
 .title {
     font-size: 1.875rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--foreground);
     margin: 0;
 }
 
 .subtitle {
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
@@ -32,7 +32,7 @@
 
 .iconBtn {
     padding: 0.5rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     background: none;
     border: none;
     cursor: pointer;
@@ -50,8 +50,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background-color: #0f172a;
-    color: white;
+    background-color: var(--foreground);
+    color: var(--background);
     border: none;
     border-radius: 0.5rem;
     font-size: 0.875rem;
@@ -61,7 +61,7 @@
 }
 
 .storeBtn:hover {
-    background-color: #1e293b;
+    background-color: var(--text-muted);
 }
 
 /* Form */
@@ -79,7 +79,7 @@
     width: 100%;
     padding: 1rem 1rem 1rem 3rem;
     border-radius: 0.75rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-subtle);
     font-size: 1rem;
     font-weight: 500;
     outline: none;
@@ -88,8 +88,8 @@
 }
 
 .input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--accent-1);
+    box-shadow: 0 0 0 3px rgba(62, 86, 65, 0.1);
 }
 
 .plusIcon {
@@ -97,7 +97,7 @@
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .addBtn {
@@ -106,7 +106,7 @@
     top: 0.5rem;
     bottom: 0.5rem;
     padding: 0 1rem;
-    background-color: #3b82f6;
+    background-color: var(--accent-1);
     color: white;
     border: none;
     border-radius: 0.5rem;
@@ -131,13 +131,13 @@
 .emptyState {
     text-align: center;
     padding: 3rem 0;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .emptyIcon {
     width: 4rem;
     height: 4rem;
-    background-color: #f8fafc;
+    background-color: var(--background);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -149,19 +149,19 @@
     display: flex;
     align-items: center;
     padding: 0.75rem 1rem;
-    background-color: white;
-    border: 1px solid #f1f5f9;
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-subtle);
     border-radius: 0.75rem;
     transition: all 0.2s;
 }
 
 .item:hover {
-    border-color: #cbd5e1;
+    border-color: var(--border-subtle);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .itemCompleted {
-    background-color: #f8fafc;
+    background-color: var(--background);
     border-color: transparent;
     opacity: 0.7;
 }
@@ -170,7 +170,7 @@
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
-    border: 2px solid #cbd5e1;
+    border: 2px solid var(--border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -182,7 +182,7 @@
 }
 
 .checkbox:hover {
-    border-color: #60a5fa;
+    border-color: var(--accent-1);
 }
 
 .checkboxChecked {
@@ -193,17 +193,17 @@
 .itemName {
     flex: 1;
     font-weight: 500;
-    color: #334155;
+    color: var(--foreground);
 }
 
 .itemNameCompleted {
     text-decoration: line-through;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .deleteBtn {
     padding: 0.5rem;
-    color: #cbd5e1;
+    color: var(--border-subtle);
     background: none;
     border: none;
     cursor: pointer;
@@ -221,15 +221,15 @@
 
 /* DARK MODE OVERRIDES */
 :global([data-theme='dark']) .title {
-    color: #f8fafc;
+    color: var(--foreground);
 }
 
 :global([data-theme='dark']) .subtitle {
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 :global([data-theme='dark']) .iconBtn {
-    color: #cbd5e1;
+    color: var(--text-muted);
 }
 
 :global([data-theme='dark']) .iconBtn:hover {
@@ -243,72 +243,72 @@
 }
 
 :global([data-theme='dark']) .storeBtn:hover {
-    background-color: #2563eb;
+    background-color: var(--accent-1);
 }
 
 :global([data-theme='dark']) .input {
-    background-color: #1e293b;
-    border-color: #334155;
-    color: white;
+    background-color: var(--background);
+    border-color: var(--border-subtle);
+    color: var(--foreground);
     box-shadow: none;
 }
 
 :global([data-theme='dark']) .input:focus {
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    border-color: var(--accent-1);
+    box-shadow: 0 0 0 3px rgba(62, 86, 65, 0.2);
 }
 
 :global([data-theme='dark']) .plusIcon {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 :global([data-theme='dark']) .addBtn {
-    background-color: #3b82f6;
+    background-color: var(--accent-1);
 }
 
 :global([data-theme='dark']) .emptyIcon {
-    background-color: #1e293b;
+    background-color: var(--background);
 }
 
 :global([data-theme='dark']) .item {
-    background-color: #1e293b;
-    border-color: #334155;
+    background-color: var(--bg-white);
+    border-color: var(--border-subtle);
 }
 
 :global([data-theme='dark']) .item:hover {
-    border-color: #475569;
+    border-color: var(--text-muted);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 :global([data-theme='dark']) .itemCompleted {
-    background-color: #0f172a;
+    background-color: var(--background);
     border-color: transparent;
     opacity: 0.6;
 }
 
 :global([data-theme='dark']) .checkbox {
-    border-color: #475569;
+    border-color: var(--text-muted);
 }
 
 :global([data-theme='dark']) .checkbox:hover {
-    border-color: #60a5fa;
+    border-color: var(--accent-1);
 }
 
 :global([data-theme='dark']) .checkboxChecked {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
+    background-color: var(--accent-1);
+    border-color: var(--accent-1);
 }
 
 :global([data-theme='dark']) .itemName {
-    color: #f8fafc;
+    color: var(--foreground);
 }
 
 :global([data-theme='dark']) .itemNameCompleted {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 :global([data-theme='dark']) .deleteBtn {
-    color: #64748b;
+    color: var(--text-muted);
 }
 
 :global([data-theme='dark']) .deleteBtn:hover {

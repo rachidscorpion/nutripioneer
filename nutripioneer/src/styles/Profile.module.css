@@ -75,7 +75,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: var(--btn-primary-bg);
     color: white;
     font-size: 1.5rem;
     font-weight: 700;
@@ -131,20 +131,20 @@
     align-items: center;
     gap: 8px;
     padding: 0.75rem 1.5rem;
-    background: #2563eb;
+    background: var(--btn-primary-bg);
     color: white;
     border: none;
     border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 6px -1px rgba(62, 86, 65, 0.2);
 }
 
 .saveBtn:hover {
-    background: #1d4ed8;
+    background: var(--btn-primary-bg);
     transform: translateY(-1px);
-    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 6px 8px -1px rgba(62, 86, 65, 0.3);
 }
 
 .saveBtn:disabled {
@@ -162,8 +162,8 @@
 }
 
 [data-theme='dark'] .infoCard {
-    background: rgba(30, 41, 59, 0.5);
-    border-color: rgba(255, 255, 255, 0.05);
+    background: var(--bg-white);
+    border-color: var(--border-subtle);
 }
 
 .infoRow {
@@ -208,7 +208,7 @@
 }
 
 [data-theme='dark'] .tabContainer {
-    background: rgba(30, 41, 59, 0.5);
+    background: var(--bg-white);
 }
 
 .tabBtn {
@@ -232,13 +232,13 @@
 
 .tabBtnActive {
     background: white;
-    color: #2563eb;
+    color: var(--accent-1);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme='dark'] .tabBtnActive {
-    background: #1e293b;
-    color: #60a5fa;
+    background: var(--background);
+    color: var(--accent-1);
 }
 
 /* Forms */
@@ -273,15 +273,15 @@
 }
 
 [data-theme='dark'] .input {
-    background: #1e293b;
-    border-color: #334155;
-    color: white;
+    background: var(--background);
+    border-color: var(--border-subtle);
+    color: var(--foreground);
 }
 
 .input:focus {
     outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: var(--accent-1);
+    box-shadow: 0 0 0 3px rgba(62, 86, 65, 0.1);
 }
 
 /* Section Titles */
@@ -299,7 +299,7 @@
 
 /* Icons */
 .iconBlue {
-    color: #2563eb;
+    color: var(--accent-1);
 }
 
 .iconRed {
@@ -346,7 +346,7 @@
 }
 
 .switchGeneric[data-state='on'] {
-    background: #2563eb;
+    background: var(--accent-1);
 }
 
 .switchHandle {
@@ -367,9 +367,9 @@
 
 /* Dark mode overrides for background variables (if not in global) */
 :global([data-theme='dark']) {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --muted-foreground: #94a3b8;
+    --background: #1A1A1A;
+    --foreground: #F0F0F0;
+    --muted-foreground: #a3a3a3;
 }
 
 :global([data-theme='light']) {
@@ -390,7 +390,7 @@
 }
 
 .toggleActive {
-    background: #2563eb;
+    background: var(--accent-1);
 }
 
 .toggleInactive {
@@ -477,14 +477,14 @@
 }
 
 [data-theme='dark'] .actionBtn {
-    background: #1e293b;
-    border-color: #334155;
-    color: #94a3b8;
+    background: var(--background);
+    border-color: var(--border-subtle);
+    color: var(--text-muted);
 }
 
 [data-theme='dark'] .actionBtn:hover {
-    background: #334155;
-    color: white;
+    background: var(--border-subtle);
+    color: var(--foreground);
 }
 
 .dangerGrid {
@@ -551,17 +551,17 @@
     max-width: 800px;
     margin: 2rem auto 0;
     padding: 1.25rem 1.5rem;
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
     border-radius: 16px;
     color: white;
-    box-shadow: 0 8px 24px -8px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 8px 24px -8px rgba(62, 86, 65, 0.4);
     transition: all 0.3s ease;
     text-decoration: none;
 }
 
 .upgradeBanner:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px -8px rgba(37, 99, 235, 0.5);
+    box-shadow: 0 12px 32px -8px rgba(62, 86, 65, 0.5);
 }
 
 .upgradeBannerContent {
@@ -603,11 +603,133 @@
     align-items: center;
     gap: 0.375rem;
     padding: 0.25rem 0.75rem;
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
     color: white;
     font-size: 0.7rem;
     font-weight: 700;
     border-radius: 9999px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+/* Medical Profile - Drug Search */
+.searchContainer {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.searchResultsDropdown {
+    background: var(--bg-white);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: var(--shadow-md);
+    color: var(--foreground);
+}
+
+.searchResultBtn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    border-bottom: 1px solid var(--border-subtle);
+    cursor: pointer;
+    color: inherit;
+    transition: background 0.2s;
+}
+
+.searchResultBtn:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme='dark'] .searchResultBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.searchResultBtn:last-child {
+    border-bottom: none;
+}
+
+.medicationList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 1rem;
+}
+
+.medicationItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'] .medicationItem {
+    background: var(--bg-white);
+    border-color: var(--border-subtle);
+}
+
+.medicationName {
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.medicationIngredients {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.deleteBtn {
+    color: #ef4444;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.deleteBtn:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.emptyStateText {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
+/* Condition Button Dynamic Styles Helper Classes */
+.conditionBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--muted-foreground);
+}
+
+.conditionBtnSelected {
+    background: rgba(37, 99, 235, 0.1);
+    /* fallback */
+    border-width: 2px;
+}
+
+.conditionLabel {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground);
 }

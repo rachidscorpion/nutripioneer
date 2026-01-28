@@ -2,9 +2,9 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #0c0a09;
+  background-color: var(--background);
   /* stone-950 */
-  color: #ffffff;
+  color: var(--foreground);
   font-family: sans-serif;
   overflow-x: hidden;
 }
@@ -29,7 +29,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.05em;
-  background: linear-gradient(to right, #4ade80, #14b8a6);
+  background: linear-gradient(to right, var(--accent-1), var(--accent-2));
   /* green-400 to teal-500 */
   -webkit-background-clip: text;
   background-clip: text;
@@ -46,29 +46,29 @@
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--foreground);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .navLink:hover {
-  color: #4ade80;
+  color: var(--accent-1);
 }
 
 .navButton {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: #ffffff;
-  color: #000000;
+  background-color: var(--foreground);
+  color: var(--background);
   border-radius: 9999px;
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .navButton:hover {
-  background-color: #4ade80;
-  color: #ffffff;
+  background-color: var(--accent-1);
+  color: var(--background);
 }
 
 .hero {
@@ -98,7 +98,7 @@
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, #0c0a09, transparent, rgba(12, 10, 9, 0.8));
+  background: linear-gradient(to top, var(--background), transparent, rgba(26, 26, 26, 0.8));
 }
 
 .heroContent {
@@ -118,7 +118,7 @@
   font-weight: 800;
   letter-spacing: -0.025em;
   line-height: 1.1;
-  color: white;
+  color: var(--foreground);
 }
 
 @media (min-width: 768px) {
@@ -128,7 +128,7 @@
 }
 
 .gradientText {
-  background: linear-gradient(to right, #4ade80, #2dd4bf, #3b82f6);
+  background: linear-gradient(to right, var(--accent-1), var(--accent-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -137,7 +137,7 @@
 
 .subtext {
   font-size: 1.125rem;
-  color: #d6d3d1;
+  color: var(--text-muted);
   /* stone-300 */
   max-width: 42rem;
   margin: 0 auto;
@@ -168,7 +168,7 @@
 .primaryBtn {
   position: relative;
   padding: 1rem 2rem;
-  background-color: #22c55e;
+  background-color: var(--btn-primary-bg);
   /* green-500 */
   color: #ffffff;
   border-radius: 9999px;
@@ -185,36 +185,36 @@
 }
 
 .primaryBtn:hover {
-  background-color: #16a34a;
+  background-color: var(--btn-primary-bg);
   /* green-600 */
-  box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 30px rgba(62, 86, 65, 0.5);
   transform: translateY(-2px);
 }
 
 .secondaryBtn {
   padding: 1rem 2rem;
-  background-color: rgba(41, 37, 36, 0.5);
+  background-color: var(--bg-white);
   /* stone-800/50 */
-  color: #ffffff;
+  color: var(--foreground);
   border-radius: 9999px;
   font-weight: 500;
   font-size: 1.125rem;
   text-decoration: none;
-  border: 1px solid #44403c;
+  border: 1px solid var(--border-subtle);
   /* stone-700 */
   backdrop-filter: blur(4px);
   transition: all 0.3s;
 }
 
 .secondaryBtn:hover {
-  background-color: #292524;
+  background-color: var(--background);
   /* stone-800 */
-  border-color: #57534e;
+  border-color: var(--border-subtle);
 }
 
 .featuresSection {
   padding: 6rem 1.5rem;
-  background-color: #0c0a09;
+  background-color: var(--background);
   position: relative;
   z-index: 10;
 }
@@ -236,7 +236,7 @@
 }
 
 .sectionSubtitle {
-  color: #a8a29e;
+  color: var(--text-muted);
   /* stone-400 */
   font-size: 1.125rem;
 }
@@ -256,17 +256,17 @@
 .featureCard {
   padding: 2rem;
   border-radius: 1rem;
-  background-color: rgba(28, 25, 23, 0.5);
+  background-color: var(--bg-white);
   /* stone-900/50 */
-  border: 1px solid #292524;
+  border: 1px solid var(--border-subtle);
   /* stone-800 */
   transition: all 0.3s;
 }
 
 .featureCard:hover {
-  background-color: #1c1917;
+  background-color: var(--background);
   /* stone-900 */
-  border-color: #44403c;
+  border-color: var(--border-subtle);
   /* stone-700 */
   transform: translateY(-5px);
 }
@@ -274,7 +274,7 @@
 .iconWrapper {
   margin-bottom: 1.5rem;
   padding: 0.75rem;
-  background-color: rgba(41, 37, 36, 0.5);
+  background-color: var(--background);
   /* stone-800/50 */
   border-radius: 0.75rem;
   display: inline-block;
@@ -282,7 +282,7 @@
 }
 
 .featureCard:hover .iconWrapper {
-  background-color: #292524;
+  background-color: var(--bg-white);
 }
 
 .featureTitle {
@@ -292,30 +292,30 @@
 }
 
 .featureDescription {
-  color: #a8a29e;
+  color: var(--text-muted);
   /* stone-400 */
   line-height: 1.625;
 }
 
 .footer {
   padding: 3rem 0;
-  border-top: 1px solid #1c1917;
+  border-top: 1px solid var(--border-subtle);
   /* stone-900 */
   text-align: center;
-  color: #78716c;
+  color: var(--text-muted);
   /* stone-500 */
   font-size: 0.875rem;
 }
 
 /* Icon specific colors since SVGs might need currentColor */
 .iconGreen {
-  color: #4ade80;
+  color: var(--accent-1);
 }
 
 .iconBlue {
-  color: #60a5fa;
+  color: var(--accent-1);
 }
 
 .iconYellow {
-  color: #facc15;
+  color: var(--accent-2);
 }

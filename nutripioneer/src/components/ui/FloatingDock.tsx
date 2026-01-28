@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, ClipboardList, Heart, User, ShoppingBag } from 'lucide-react';
+import { Home, ClipboardList, Heart, User, ShoppingBag, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
     { id: 'home', icon: Home, label: 'Home', path: '/home' },
     { id: 'grocery', icon: ShoppingBag, label: 'Grocery', path: '/grocery' },
     { id: 'plan', icon: ClipboardList, label: 'Plan', path: '/plan' },
+    { id: 'restaurant', icon: Camera, label: 'Scan Menu', path: '/restaurant-rescue' },
     // { id: 'health', icon: Heart, label: 'Health', path: '/health' },
     { id: 'profile', icon: User, label: 'Profile', path: '/profile' }
 ];
