@@ -21,7 +21,7 @@
   font-size: 2.5rem;
   /* 40px */
   font-weight: 700;
-  color: #1e293b;
+  color: var(--foreground);
   margin-bottom: 1rem;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -29,7 +29,7 @@
 
 .welcomeSub {
   font-family: var(--font-body), sans-serif;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 1.125rem;
   /* 18px */
   line-height: 1.6;
@@ -46,7 +46,7 @@
   border-radius: 32px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--border-subtle);
 }
 
 .contentArea {
@@ -58,7 +58,7 @@
   overflow: hidden;
   height: 100%;
   width: 100%;
-  background: white;
+  background: var(--bg-white);
   /* Ensure image stays inside corners if radius is applied here, though overflow is on mainCard usually */
 }
 
@@ -85,7 +85,7 @@
 .cardBackgroundOverlay {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-white);
   /* Reduced opacity for visibility check */
   backdrop-filter: blur(5px);
 }
@@ -109,16 +109,16 @@
 .brandName {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--foreground);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .sidebar {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--bg-white);
   /* Translucent sidebar */
-  border-left: 1px solid rgba(226, 232, 240, 0.6);
+  border-left: 1px solid var(--border-subtle);
   padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
@@ -147,7 +147,7 @@
   left: 15px;
   bottom: -32px;
   width: 2px;
-  background: #e2e8f0;
+  background: var(--border-subtle);
   z-index: -1;
 }
 
@@ -165,18 +165,18 @@
   font-weight: 600;
   font-size: 0.9rem;
   flex-shrink: 0;
-  background: white;
-  border: 2px solid #e2e8f0;
-  color: #64748b;
+  background: var(--bg-white);
+  border: 2px solid var(--border-subtle);
+  color: var(--text-muted);
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .stepCircle.active {
-  border-color: #3b82f6;
-  color: #3b82f6;
-  background: #eff6ff;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+  background: var(--bg-white);
+  box-shadow: 0 0 0 4px rgba(62, 86, 65, 0.1);
 }
 
 .stepCircle.completed {
@@ -193,13 +193,13 @@
 .stepTitle {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--foreground);
   margin-bottom: 0.2rem;
 }
 
 .stepDesc {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
@@ -210,35 +210,35 @@
   width: 100%;
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #0f172a;
+  border: 1px solid var(--border-subtle);
+  background: var(--background);
+  color: var(--foreground);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
 }
 
 .input-lg::placeholder {
-  color: #94a3b8;
+  color: var(--text-muted);
   font-weight: 400;
 }
 
 .input-lg:focus {
-  background: white;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background: var(--bg-white);
+  border-color: var(--accent-1);
+  box-shadow: 0 0 0 4px rgba(62, 86, 65, 0.1);
   transform: translateY(-1px);
 }
 
 .input-lg:hover {
-  background: white;
-  border-color: #cbd5e1;
+  background: var(--bg-white);
+  border-color: var(--border-subtle);
 }
 
 /* Bright, Vibrant Button */
 /* Dark Multi-Glow Button */
 .btn-primary {
   position: relative;
-  background: rgba(213, 213, 215, 0.6);
+  background: var(--btn-primary-bg);
   /* Semi-transparent dark slate */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

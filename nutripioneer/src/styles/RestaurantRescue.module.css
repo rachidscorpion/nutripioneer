@@ -1,0 +1,10 @@
+.container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-white), rgba(59, 130, 246, 0.05));
+    padding: 2rem 0;
+    transition: background 0.3s ease;
+}
+
+[data-theme='dark'] .container {
+    background: linear-gradient(135deg, var(--background), rgba(59, 130, 246, 0.05));
+}

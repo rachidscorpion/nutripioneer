@@ -4,6 +4,7 @@ import { logger } from 'hono/logger';
 import { errorHandler } from '@/middleware/errorHandler';
 import api from '@/routes';
 import authRoutes from '@/routes/auth';
+import menuRoutes from '@/routes/menu';
 
 const app = new Hono();
 
@@ -32,6 +33,9 @@ app.route('/api/auth', authRoutes);
 
 // Mount API routes
 app.route('/api', api);
+
+// Mount menu routes
+app.route('/api/menu', menuRoutes);
 
 // 404 fallback
 app.notFound((c) => {

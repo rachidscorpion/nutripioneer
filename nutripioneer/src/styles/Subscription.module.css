@@ -47,9 +47,9 @@
 }
 
 .pricingCard {
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--bg-white);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--border-subtle);
     border-radius: 24px;
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
@@ -63,8 +63,8 @@
 }
 
 [data-theme='dark'] .pricingCard {
-    background: rgba(30, 41, 59, 0.7);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--bg-white);
+    border-color: var(--border-subtle);
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
@@ -76,7 +76,7 @@
     position: absolute;
     top: 0;
     right: 0;
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
     color: white;
     font-size: 0.625rem;
     font-weight: 700;
@@ -109,7 +109,7 @@
 .price {
     font-size: 3.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -147,7 +147,7 @@
     flex-shrink: 0;
     width: 1.25rem;
     height: 1.25rem;
-    color: #22c55e;
+    color: var(--accent-1);
     margin-top: 0.125rem;
 }
 
@@ -158,7 +158,7 @@
 }
 
 [data-theme='dark'] .featureText {
-    color: #e2e8f0;
+    color: var(--text-muted);
 }
 
 /* Subscribe Button */
@@ -169,7 +169,7 @@
     gap: 0.5rem;
     width: 100%;
     padding: 1rem 2rem;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    background: var(--btn-primary-bg);
     color: white;
     border: none;
     border-radius: 14px;
@@ -177,13 +177,13 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 14px -4px rgba(37, 99, 235, 0.5);
+    box-shadow: 0 4px 14px -4px rgba(62, 86, 65, 0.5);
 }
 
 .subscribeBtn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    background: var(--btn-primary-bg);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.6);
+    box-shadow: 0 8px 20px -4px rgba(62, 86, 65, 0.6);
 }
 
 .subscribeBtn:active:not(:disabled) {

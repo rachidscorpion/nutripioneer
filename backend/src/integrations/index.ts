@@ -6,6 +6,7 @@
  * - MealDB: Recipe database with cooking instructions and categorization
  * - Open Food Facts (OFF): Open source food product database, great for barcodes
  * - USDA: Official US government food composition database
+ * - ICD-11: WHO medical classification database for disease onboarding
  */
 
 // FatSecret API
@@ -53,3 +54,11 @@ export {
     type EdamamNutrientsResponse,
     type EdamamParseResponse,
 } from './edamam/edamam.service';
+
+// WHO ICD-11 API
+export {
+    icdService,
+    type ICDTokenResponse,
+    type ICDDiseaseResult,
+    type ICDSearchResponse,
+} from './icd/icd.service';

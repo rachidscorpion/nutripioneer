@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Save, User, Settings, Heart, Utensils, Shield, Search, Trash2, CheckCircle, AlertCircle, Droplets, Activity, Moon, Sun } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, THEMES } from '@/context/ThemeContext';
+import ConditionSearch from '@/components/conditions/ConditionSearch';
 
 // Use loose type or interface matching API response
 interface ExtendedUser {
@@ -28,7 +29,7 @@ interface ProfileEditorProps {
 }
 
 export default function ProfileEditor({ user, initialData }: ProfileEditorProps) {
-    const { theme, toggleTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
     const [data, setData] = useState<OnboardingData>({
         ...initialData,
         dietary: {
@@ -280,37 +281,81 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                 <Droplets className={styles.iconBlue} size={24} />
                                 Known Conditions
                             </h3>
-                            <div className={styles.grid2}>
+
+                            <div className={styles.infoCard} style={{ marginBottom: '1.5rem' }}>
+                                <label className={styles.label} style={{ marginBottom: '0.5rem', display: 'block' }}>Add a new condition</label>
+                                <ConditionSearch
+                                    placeholder="Search specific conditions (e.g. Type 2 Diabetes, Celiac)..."
+                                    onSelect={(c) => {
+                                        if (!selectedConditions.includes(c.slug)) {
+                                            setSelectedConditions(prev => [...prev, c.slug]);
+                                            // Add to available so it renders immediately without refetch
+                                            if (!availableConditions.find(ac => ac.id === c.id)) {
+                                                setAvailableConditions(prev => [...prev, c]);
+                                            }
+                                        } else {
+                                            toast.info(`${c.label} is already selected.`);
+                                        }
+                                    }}
+                                    excludeIds={selectedConditions}
+                                />
+                                <p style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', marginTop: '0.5rem' }}>
+                                    Search for your specific medical conditions from the official ICD-11 registry.
+                                </p>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                                 {loadingConditions ? (
-                                    <p style={{ color: 'var(--muted-foreground)' }}>Loading...</p>
+                                    <p className={styles.emptyStateText}>Loading conditions...</p>
                                 ) : (
-                                    availableConditions.map((c) => {
-                                        const isSelected = selectedConditions.includes(c.slug);
-                                        const IconComponent = ICON_MAP[c.icon] || AlertCircle;
-                                        return (
-                                            <button
-                                                key={c.id}
-                                                onClick={() => toggleCondition(c.slug)}
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    padding: '1.5rem',
-                                                    border: isSelected ? `2px solid ${c.color}` : '1px solid var(--muted-foreground)',
-                                                    borderColor: isSelected ? c.color : 'rgba(0,0,0,0.1)',
-                                                    background: isSelected ? `${c.color}10` : 'transparent',
-                                                    borderRadius: '16px',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s ease',
-                                                    width: '100%',
-                                                }}
-                                            >
-                                                <IconComponent size={32} color={c.color} style={{ marginBottom: '10px' }} />
-                                                <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)' }}>{c.label}</span>
-                                            </button>
-                                        );
-                                    })
+                                    availableConditions
+                                        .filter(c => selectedConditions.includes(c.slug))
+                                        .map((c) => {
+                                            const IconComponent = ICON_MAP[c.icon] || AlertCircle;
+                                            return (
+                                                <div
+                                                    key={c.id}
+                                                    className={styles.infoCard}
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        textAlign: 'center',
+                                                        position: 'relative',
+                                                        border: `1px solid ${c.color}40`,
+                                                        background: `${c.color}05`
+                                                    }}
+                                                >
+                                                    <button
+                                                        onClick={() => toggleCondition(c.slug)}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: '8px',
+                                                            right: '8px',
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: 'var(--muted-foreground)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+
+                                                    <IconComponent size={32} color={c.color} style={{ marginBottom: '10px' }} />
+                                                    <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{c.label}</span>
+                                                    {c.icdCode && (
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', marginTop: '4px' }}>
+                                                            ICD: {c.icdCode}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                )}
+                                {availableConditions.filter(c => selectedConditions.includes(c.slug)).length === 0 && !loadingConditions && (
+                                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', border: '1px dashed var(--border)', borderRadius: '12px' }}>
+                                        <p className={styles.emptyStateText}>No conditions selected yet.</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -340,7 +385,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                             <div style={{ marginTop: '1.5rem' }}>
                                 <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--muted-foreground)', marginBottom: '0.5rem' }}>Current Medications</h4>
 
-                                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                                <div className={styles.searchContainer}>
                                     <input
                                         type="text"
                                         placeholder="Search medication..."
@@ -379,30 +424,11 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                 </div>
 
                                 {drugResults.length > 0 && (
-                                    <div style={{
-                                        background: 'var(--background)',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '8px',
-                                        marginTop: '4px',
-                                        maxHeight: '200px',
-                                        overflowY: 'auto',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                                        color: 'var(--foreground)'
-                                    }}>
+                                    <div className={styles.searchResultsDropdown}>
                                         {drugResults.map((drug, i) => (
                                             <button
                                                 key={i}
-                                                style={{
-                                                    display: 'block',
-                                                    width: '100%',
-                                                    textAlign: 'left',
-                                                    padding: '8px 12px',
-                                                    border: 'none',
-                                                    background: 'transparent',
-                                                    borderBottom: '1px solid var(--muted-foreground)',
-                                                    cursor: 'pointer',
-                                                    color: 'inherit'
-                                                }}
+                                                className={styles.searchResultBtn}
                                                 onClick={async () => {
                                                     // Add drug
                                                     try {
@@ -425,21 +451,13 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                     </div>
                                 )}
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '1rem' }}>
+                                <div className={styles.medicationList}>
                                     {data.medical.medications?.map((med: any, idx: number) => (
-                                        <div key={idx} style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            padding: '12px',
-                                            background: 'rgba(0,0,0,0.03)',
-                                            borderRadius: '8px',
-                                            border: '1px solid rgba(0,0,0,0.05)'
-                                        }}>
+                                        <div key={idx} className={styles.medicationItem}>
                                             <div>
-                                                <div style={{ fontWeight: 600, color: 'var(--foreground)' }}>{med.name}</div>
+                                                <div className={styles.medicationName}>{med.name}</div>
                                                 {med.ingredients && (
-                                                    <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                                                    <div className={styles.medicationIngredients}>
                                                         {Array.isArray(med.ingredients) ? med.ingredients.join(', ') : med.ingredients}
                                                     </div>
                                                 )}
@@ -449,20 +467,14 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                                     const newMeds = data.medical.medications.filter((_: any, i: number) => i !== idx);
                                                     updateNested('medical', 'medications', newMeds);
                                                 }}
-                                                style={{
-                                                    color: '#ef4444',
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    padding: '4px'
-                                                }}
+                                                className={styles.deleteBtn}
                                             >
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
                                     ))}
                                     {(!data.medical.medications || data.medical.medications.length === 0) && (
-                                        <p style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem', fontStyle: 'italic' }}>No medications listed.</p>
+                                        <p className={styles.emptyStateText}>No medications listed.</p>
                                     )}
                                 </div>
                             </div>
@@ -507,27 +519,74 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                 App Preferences
                             </h3>
 
-                            <div className={styles.switchRow}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    {theme === 'dark' ? <Moon size={20} className={styles.iconBlue} /> : <Sun size={20} className={styles.iconOrange} />}
+                            <div style={{ marginBottom: '2rem' }}>
+                                <div className={styles.infoLabel} style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)', marginBottom: '1rem' }}>
+                                    Color Theme
+                                </div>
+
+                                <div className={styles.grid2} style={{ gap: '1.5rem', alignItems: 'start' }}>
+                                    {/* Light Themes */}
                                     <div>
-                                        <span className={styles.infoLabel} style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)' }}>
-                                            {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                                        </span>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
-                                            Adjust the appearance of the application
+                                        <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Light Themes</h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.75rem' }}>
+                                            {THEMES.filter(t => t.type === 'light').map(t => (
+                                                <button
+                                                    key={t.id}
+                                                    onClick={() => setTheme(t.id)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 12px',
+                                                        borderRadius: '8px',
+                                                        border: theme === t.id ? '2px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
+                                                        background: 'var(--bg-white)',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        textAlign: 'left'
+                                                    }}
+                                                >
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: t.color, border: '1px solid var(--border-subtle)' }} />
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: theme === t.id ? 600 : 400, color: 'var(--foreground)' }}>
+                                                        {t.label}
+                                                    </span>
+                                                    {theme === t.id && <CheckCircle size={14} className={styles.iconBlue} style={{ marginLeft: 'auto' }} />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Dark Themes */}
+                                    <div>
+                                        <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Dark Themes</h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.75rem' }}>
+                                            {THEMES.filter(t => t.type === 'dark').map(t => (
+                                                <button
+                                                    key={t.id}
+                                                    onClick={() => setTheme(t.id)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 12px',
+                                                        borderRadius: '8px',
+                                                        border: theme === t.id ? '2px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
+                                                        background: 'var(--bg-white)',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        textAlign: 'left'
+                                                    }}
+                                                >
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: t.color, border: '1px solid var(--border-subtle)' }} />
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: theme === t.id ? 600 : 400, color: 'var(--foreground)' }}>
+                                                        {t.label}
+                                                    </span>
+                                                    {theme === t.id && <CheckCircle size={14} className={styles.iconBlue} style={{ marginLeft: 'auto' }} />}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
-
-                                <button
-                                    className={styles.switchGeneric}
-                                    onClick={toggleTheme}
-                                    data-state={theme === 'dark' ? 'on' : 'off'}
-                                    aria-label="Toggle theme"
-                                >
-                                    <span className={styles.switchHandle} />
-                                </button>
                             </div>
                         </div>
                     )}

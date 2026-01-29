@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+const isServer = typeof window === 'undefined';
+const API_URL = isServer
+    ? (process.env.BACKEND_URL || 'http://localhost:3001')
+    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+
 
 
 
@@ -72,6 +77,9 @@ export const api = {
     },
     conditions: {
         list: () => apiClient.get('/conditions'),
+        search: (query: string) => apiClient.get(`/conditions/search?q=${encodeURIComponent(query)}`),
+        onboard: (data: any) => apiClient.post('/conditions/onboard', data),
+        getById: (id: string) => apiClient.get(`/conditions/${id}`),
     },
     metrics: {
         log: (data: any) => apiClient.post('/metrics', data),
@@ -84,6 +92,17 @@ export const api = {
     products: {
         list: () => apiClient.get('/products'),
         get: (id: string) => apiClient.get(`/products/${id}`),
+    },
+    menu: {
+        scan: (image: File) => {
+            const formData = new FormData();
+            formData.append('image', image);
+            return apiClient.post('/menu/scan', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+        },
     },
 };
 

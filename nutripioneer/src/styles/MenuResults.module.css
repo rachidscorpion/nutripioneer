@@ -1,0 +1,340 @@
+/* Menu Results Styles */
+
+.container {
+    width: 100%;
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 2rem 1rem 6rem;
+    min-height: 100vh;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--foreground);
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
+}
+
+.summary {
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    line-height: 1.6;
+    max-width: 48rem;
+    margin: 0 auto;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+}
+
+.statCard {
+    border-radius: 20px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.statCard:hover {
+    transform: translateY(-4px);
+}
+
+.statCardSafe {
+    background: rgba(34, 197, 94, 0.05);
+    border-color: rgba(34, 197, 94, 0.2);
+    box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.2);
+}
+
+.statCardCaution {
+    background: rgba(234, 179, 8, 0.05);
+    border-color: rgba(234, 179, 8, 0.2);
+    box-shadow: 0 10px 30px -10px rgba(234, 179, 8, 0.2);
+}
+
+.statCardAvoid {
+    background: rgba(239, 68, 68, 0.05);
+    border-color: rgba(239, 68, 68, 0.2);
+    box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.2);
+}
+
+.statValue {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.statValueSafe {
+    color: #15803d;
+}
+
+.statValueCaution {
+    color: #a16207;
+}
+
+.statValueAvoid {
+    color: #b91c1c;
+}
+
+.statLabel {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.statLabelSafe {
+    color: #166534;
+}
+
+.statLabelCaution {
+    color: #b45309;
+}
+
+.statLabelAvoid {
+    color: #991b1b;
+}
+
+.section {
+    margin-bottom: 3rem;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--foreground);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.itemList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.itemCard {
+    background: var(--bg-white);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.itemCardSafe:hover {
+    border-color: #22c55e;
+    box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.1);
+}
+
+.itemCardCaution:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.1);
+}
+
+.itemCardAvoid:hover {
+    border-color: #ef4444;
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.1);
+}
+
+.itemHeader {
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    text-align: left;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    transition: background-color 0.2s;
+}
+
+.itemHeader:hover {
+    background: var(--background);
+}
+
+.itemContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.itemNameRow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.itemName {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.itemDescription {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    line-height: 1.5;
+}
+
+.itemDetails {
+    background: var(--background);
+    border-top: 1px solid var(--border-subtle);
+    overflow: hidden;
+}
+
+.detailsContent {
+    padding: 1.5rem;
+}
+
+.detailsSection {
+    margin-bottom: 1.25rem;
+}
+
+.detailsSection:last-child {
+    margin-bottom: 0;
+}
+
+.detailsLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.detailsText {
+    font-size: 0.95rem;
+    color: var(--foreground);
+    line-height: 1.6;
+}
+
+.modificationBox {
+    background: var(--bg-white);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--border-subtle);
+    border-left: 4px solid var(--accent-1);
+}
+
+.modificationText {
+    font-size: 0.95rem;
+    color: var(--foreground);
+    line-height: 1.6;
+}
+
+.footer {
+    text-align: center;
+    padding: 3rem 0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.resetButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    background: var(--btn-primary-bg);
+    color: white;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+}
+
+.resetButton:hover {
+    background: var(--btn-primary-bg);
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.disclaimer {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 16px;
+    text-align: center;
+    max-width: 48rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.disclaimerText {
+    font-size: 0.875rem;
+    color: #1e40af;
+    line-height: 1.6;
+}
+
+/* Icon Colors */
+.iconSafe {
+    color: #22c55e;
+}
+
+.iconCaution {
+    color: #f59e0b;
+}
+
+.iconAvoid {
+    color: #ef4444;
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badgeSafe {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badgeCaution {
+    background: #fef9c3;
+    color: #a16207;
+    border: 1px solid #fde047;
+}
+
+.badgeAvoid {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}

@@ -1,13 +1,15 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+
 export async function getSession() {
     try {
         const headersList = await headers();
         const cookie = headersList.get('cookie') || '';
 
         // Use the internal backend URL for server-side fetching
-        const res = await fetch('http://localhost:3001/api/auth/get-session', {
+        const res = await fetch(`${BACKEND_URL}/api/auth/get-session`, {
             headers: {
                 cookie: cookie,
             },
@@ -41,7 +43,7 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}) {
     // Ensure path starts with /
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
-    const res = await fetch(`http://localhost:3001/api${normalizedPath}`, {
+    const res = await fetch(`${BACKEND_URL}/api${normalizedPath}`, {
         ...options,
         headers: {
             'Content-Type': 'application/json',
