@@ -44,10 +44,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setThemeState] = useState<Theme>('light');
     const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
-
-    // Force light theme on landing page and onboarding
-    const isIsolatedRoute = pathname === '/' || pathname?.startsWith('/onboarding');
-    const effectiveTheme = isIsolatedRoute ? 'light' : theme;
+    // Theme Isolation Logic
+    let effectiveTheme = theme;
+    if (pathname === '/') {
+        effectiveTheme = 'dark';
+    } else if (pathname?.startsWith('/onboarding')) {
+        effectiveTheme = 'light';
+    }
 
     useEffect(() => {
         setMounted(true);
@@ -63,10 +66,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setThemeState(initialTheme);
 
         // Initial application of theme (will be overridden by effect below if needed, but good for initial paint)
-        if (!isIsolatedRoute) {
-            document.documentElement.setAttribute('data-theme', initialTheme);
-        } else {
+        if (pathname === '/') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else if (pathname?.startsWith('/onboarding')) {
             document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', initialTheme);
         }
 
         // 3. Try to fetch user preference if logged in
