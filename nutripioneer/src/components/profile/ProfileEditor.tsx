@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Save, User, Settings, Heart, Utensils, Shield, Search, Trash2, CheckCircle, AlertCircle, Droplets, Activity, Moon, Sun } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, THEMES } from '@/context/ThemeContext';
 import ConditionSearch from '@/components/conditions/ConditionSearch';
 
 // Use loose type or interface matching API response
@@ -29,7 +29,7 @@ interface ProfileEditorProps {
 }
 
 export default function ProfileEditor({ user, initialData }: ProfileEditorProps) {
-    const { theme, toggleTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
     const [data, setData] = useState<OnboardingData>({
         ...initialData,
         dietary: {
@@ -519,27 +519,74 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                 App Preferences
                             </h3>
 
-                            <div className={styles.switchRow}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    {theme === 'dark' ? <Moon size={20} className={styles.iconBlue} /> : <Sun size={20} className={styles.iconOrange} />}
+                            <div style={{ marginBottom: '2rem' }}>
+                                <div className={styles.infoLabel} style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)', marginBottom: '1rem' }}>
+                                    Color Theme
+                                </div>
+
+                                <div className={styles.grid2} style={{ gap: '1.5rem', alignItems: 'start' }}>
+                                    {/* Light Themes */}
                                     <div>
-                                        <span className={styles.infoLabel} style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)' }}>
-                                            {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                                        </span>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
-                                            Adjust the appearance of the application
+                                        <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Light Themes</h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.75rem' }}>
+                                            {THEMES.filter(t => t.type === 'light').map(t => (
+                                                <button
+                                                    key={t.id}
+                                                    onClick={() => setTheme(t.id)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 12px',
+                                                        borderRadius: '8px',
+                                                        border: theme === t.id ? '2px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
+                                                        background: 'var(--bg-white)',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        textAlign: 'left'
+                                                    }}
+                                                >
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: t.color, border: '1px solid var(--border-subtle)' }} />
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: theme === t.id ? 600 : 400, color: 'var(--foreground)' }}>
+                                                        {t.label}
+                                                    </span>
+                                                    {theme === t.id && <CheckCircle size={14} className={styles.iconBlue} style={{ marginLeft: 'auto' }} />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Dark Themes */}
+                                    <div>
+                                        <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Dark Themes</h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.75rem' }}>
+                                            {THEMES.filter(t => t.type === 'dark').map(t => (
+                                                <button
+                                                    key={t.id}
+                                                    onClick={() => setTheme(t.id)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding: '8px 12px',
+                                                        borderRadius: '8px',
+                                                        border: theme === t.id ? '2px solid var(--primary-blue)' : '1px solid var(--border-subtle)',
+                                                        background: 'var(--bg-white)',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        textAlign: 'left'
+                                                    }}
+                                                >
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: t.color, border: '1px solid var(--border-subtle)' }} />
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: theme === t.id ? 600 : 400, color: 'var(--foreground)' }}>
+                                                        {t.label}
+                                                    </span>
+                                                    {theme === t.id && <CheckCircle size={14} className={styles.iconBlue} style={{ marginLeft: 'auto' }} />}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
-
-                                <button
-                                    className={styles.switchGeneric}
-                                    onClick={toggleTheme}
-                                    data-state={theme === 'dark' ? 'on' : 'off'}
-                                    aria-label="Toggle theme"
-                                >
-                                    <span className={styles.switchHandle} />
-                                </button>
                             </div>
                         </div>
                     )}

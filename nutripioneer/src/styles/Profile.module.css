@@ -41,7 +41,7 @@
     transition: all 0.3s ease;
 }
 
-[data-theme='dark'] .glassPanel {
+[data-theme^='dark'] .glassPanel {
     background: var(--background);
     border-color: rgba(255, 255, 255, 0.1);
 }
@@ -161,7 +161,7 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-[data-theme='dark'] .infoCard {
+[data-theme^='dark'] .infoCard {
     background: var(--bg-white);
     border-color: var(--border-subtle);
 }
@@ -207,7 +207,7 @@
     backdrop-filter: blur(4px);
 }
 
-[data-theme='dark'] .tabContainer {
+[data-theme^='dark'] .tabContainer {
     background: var(--bg-white);
 }
 
@@ -236,7 +236,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-[data-theme='dark'] .tabBtnActive {
+[data-theme^='dark'] .tabBtnActive {
     background: var(--background);
     color: var(--accent-1);
 }
@@ -272,7 +272,7 @@
     transition: all 0.2s;
 }
 
-[data-theme='dark'] .input {
+[data-theme^='dark'] .input {
     background: var(--background);
     border-color: var(--border-subtle);
     color: var(--foreground);
@@ -366,13 +366,13 @@
 }
 
 /* Dark mode overrides for background variables (if not in global) */
-:global([data-theme='dark']) {
+:global([data-theme^='dark']) {
     --background: #1A1A1A;
     --foreground: #F0F0F0;
     --muted-foreground: #a3a3a3;
 }
 
-:global([data-theme='light']) {
+:global([data-theme^='light']) {
     --background: #f8fafc;
     --foreground: #0f172a;
     --muted-foreground: #64748b;
@@ -431,12 +431,12 @@
     box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.1);
 }
 
-[data-theme='dark'] .logoutBtn {
+[data-theme^='dark'] .logoutBtn {
     background: transparent;
     border-color: #ef4444;
 }
 
-[data-theme='dark'] .logoutBtn:hover {
+[data-theme^='dark'] .logoutBtn:hover {
     background: rgba(239, 68, 68, 0.1);
 }
 
@@ -476,13 +476,13 @@
     background: #f1f5f9;
 }
 
-[data-theme='dark'] .actionBtn {
+[data-theme^='dark'] .actionBtn {
     background: var(--background);
     border-color: var(--border-subtle);
     color: var(--text-muted);
 }
 
-[data-theme='dark'] .actionBtn:hover {
+[data-theme^='dark'] .actionBtn:hover {
     background: var(--border-subtle);
     color: var(--foreground);
 }
@@ -513,12 +513,12 @@
     background: #fecaca;
 }
 
-[data-theme='dark'] .dangerBtnSoft {
+[data-theme^='dark'] .dangerBtnSoft {
     background: rgba(220, 38, 38, 0.1);
     border-color: rgba(220, 38, 38, 0.2);
 }
 
-[data-theme='dark'] .dangerBtnSoft:hover {
+[data-theme^='dark'] .dangerBtnSoft:hover {
     background: rgba(220, 38, 38, 0.2);
 }
 
@@ -647,7 +647,7 @@
     background: rgba(0, 0, 0, 0.03);
 }
 
-[data-theme='dark'] .searchResultBtn:hover {
+[data-theme^='dark'] .searchResultBtn:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
@@ -672,7 +672,7 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-[data-theme='dark'] .medicationItem {
+[data-theme^='dark'] .medicationItem {
     background: var(--bg-white);
     border-color: var(--border-subtle);
 }

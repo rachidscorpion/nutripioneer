@@ -200,7 +200,7 @@ nutripioneer/
   primaryAnchor: string?
   onboardingData: string?             // JSON blob
   nutritionLimits: string?            // JSON: { min: 1800, max: 2200, label: "Calories" }
-  preferences: string?                // JSON: { theme: 'dark' | 'light' }
+  preferences: string?                // JSON: { theme: 'light' | 'light-sea' | 'dark' | 'dark-dracula' ... }
 
   // Subscription (Polar.sh)
   polarCustomerId: string? (unique)
@@ -1408,6 +1408,25 @@ api.products.get(id)
 - Geist Mono (variable)
 - Outfit (headings)
 - Inter (body)
+- Outfit (headings)
+
+### Theming System
+
+**Implementation:**
+- **Context:** `ThemeContext.tsx` handles state and persistence (localStorage + User Profile).
+- **CSS Variables:** Defined in `globals.css` with wildcard selectors `[data-theme^='dark']` for broad compatibility.
+- **Themes:** 10 curated palettes available.
+
+**Available Themes:**
+| Category | Themes |
+| :--- | :--- |
+| **Light** | `light` (Default), `light-sea`, `light-rose`, `light-lavender`, `light-mint` |
+| **Dark** | `dark` (Default), `dark-dracula`, `dark-nord`, `dark-forest`, `dark-sunset` |
+
+**Persistence Strategy:**
+1. **Local:** Instant load via `localStorage.getItem('theme')`.
+2. **Cloud:** Synced to `User.preferences` JSON field for cross-device consistency.
+3. **System:** Fallback to system preference (`prefers-color-scheme`) if no setting exists.
 
 ---
 
@@ -2066,3 +2085,4 @@ Run: `bun run db:seed`
 - Updated Condition schema with ICD-11 mapping (icdCode, icdUri)
 - Added new endpoints: GET /api/conditions/search, POST /api/conditions/onboard
 - Expanded condition support from 5 to 55,000+ medical conditions
+- **UI/UX:** Added Multi-Theme System with 10 custom color palettes (5 Light, 5 Dark) and cloud persistence.
