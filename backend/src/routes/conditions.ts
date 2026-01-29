@@ -6,7 +6,11 @@ const conditions = new Hono();
 // GET /api/conditions - Get all conditions
 conditions.get('/', (c) => conditionsController.getAll(c));
 
+// GET /api/conditions/search?q=... - Search ICD-11 for medical conditions
+conditions.get('/search', (c) => conditionsController.searchICDConditions(c));
 
+// POST /api/conditions/onboard - Onboard a new condition from ICD-11
+conditions.post('/onboard', (c) => conditionsController.onboardCondition(c));
 
 // POST /api/conditions/restrictions - Get aggregated restrictions for multiple conditions
 conditions.post('/restrictions', (c) => conditionsController.getAggregatedRestrictions(c));

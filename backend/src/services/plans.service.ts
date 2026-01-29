@@ -215,19 +215,14 @@ export class PlansService {
         }
 
         const getMeal = async (type: 'Breakfast' | 'Lunch' | 'Dinner') => {
-            const useFatSecret = Math.random() > 0.5;
-            let recipe = null;
+            // Prioritize Edamam (90% chance or always, depending on preference. Using 90/10 for now to keep some variety)
+            // Actually, user requested strict prioritization, so we try Edamam FIRST.
+            // If Edamam fails, THEN we try FatSecret.
 
-            if (useFatSecret) {
+            let recipe = await recipesService.findOrCreateFromEdamam(user, type);
+            if (!recipe) {
+                console.log(`Edamam failed for ${type}, falling back to FatSecret`);
                 recipe = await recipesService.findOrCreateFromFatSecret(user, type);
-                if (!recipe) {
-                    recipe = await recipesService.findOrCreateFromEdamam(user, type);
-                }
-            } else {
-                recipe = await recipesService.findOrCreateFromEdamam(user, type);
-                if (!recipe) {
-                    recipe = await recipesService.findOrCreateFromFatSecret(user, type);
-                }
             }
             return recipe;
         };
@@ -462,14 +457,13 @@ export class PlansService {
             excludeExternalId = currentRecipe.externalId || undefined;
         }
 
-        // Randomly choose source
-        let newRecipe = null;
-        if (Math.random() > 0.5) {
-            newRecipe = await recipesService.findOrCreateFromEdamam(user, edamamType, excludeExternalId);
-            if (!newRecipe) newRecipe = await recipesService.findOrCreateFromFatSecret(user, edamamType, excludeExternalId);
-        } else {
+        // Primary Source: Edamam
+        let newRecipe = await recipesService.findOrCreateFromEdamam(user, edamamType, excludeExternalId);
+
+        // Secondary Source: FatSecret
+        if (!newRecipe) {
+            console.log('Edamam swap failed, trying FatSecret');
             newRecipe = await recipesService.findOrCreateFromFatSecret(user, edamamType, excludeExternalId);
-            if (!newRecipe) newRecipe = await recipesService.findOrCreateFromEdamam(user, edamamType, excludeExternalId);
         }
 
         if (!newRecipe) {

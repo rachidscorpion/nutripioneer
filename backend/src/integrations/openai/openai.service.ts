@@ -3,6 +3,27 @@ import OpenAI from 'openai';
 // Initialize OpenAI (Make sure to set OPENAI_API_KEY in your env)
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+export interface ConditionProfile {
+    label: string;
+    description: string;
+    icon: string;
+    color: string;
+    nutritionalFocus?: Record<string, unknown>;
+    nutrientLimits: Array<{
+        nutrient: string;
+        limitType: string;
+        limitValue: string;
+        unit?: string;
+        notes?: string;
+    }>;
+    ingredientExclusions: Array<{
+        additiveCategory: string;
+        ingredientRegex: string;
+        riskCategory: string;
+        severity: string;
+    }>;
+}
+
 export interface HealthProfile {
     conditions: string[]; // e.g., ["ckd-3b-5", "htn"]
     medications: any[];   // Your existing med objects
@@ -38,6 +59,77 @@ export interface MenuItem {
 export interface MenuAnalysisResult {
     items: MenuItem[];
     summary: string;
+}
+
+export async function generateConditionProfile(conditionName: string, icdDescription: string): Promise<ConditionProfile> {
+    const prompt = `You are an expert clinical dietitian. Generate a strict JSON nutrition profile for the medical condition: ${conditionName}.
+
+Context: ${icdDescription}
+
+OUTPUT FORMAT (JSON ONLY):
+{
+  "label": "Human-readable label (max 100 chars)",
+  "description": "Clear description of the condition and dietary implications (max 500 chars)",
+  "icon": "Lucide icon name (single word from: heart, alert-triangle, activity, stethoscope, shield, zap, skull, leaf, apple, sun, moon)",
+  "color": "Hex color code (e.g., #ef4444 for red, #f59e0b for yellow, #10b981 for green)",
+  "nutritionalFocus": {
+    "goals": ["Goal 1", "Goal 2"],
+    "riskFactors": ["Risk 1", "Risk 2"]
+  },
+  "nutrientLimits": [
+    {
+      "nutrient": "Sodium",
+      "limitType": "MAX|RANGE|MIN|TEXT",
+      "limitValue": "2300|1500-2000|Minimize",
+      "unit": "mg|g|% Cal",
+      "notes": "Clinical reason for this limit"
+    }
+  ],
+  "ingredientExclusions": [
+    {
+      "additiveCategory": "Phosphate Additives",
+      "ingredientRegex": "phosphoric acid|sodium phosphate|calcium phosphate|hexametaphosphate",
+      "riskCategory": "Rapid absorption; clinical risk explanation",
+      "severity": "CRITICAL_AVOID|LIMIT"
+    }
+  ]
+}
+
+IMPORTANT RULES:
+- ingredientRegex must be pipe-separated patterns for regex matching
+- severity must be exactly "CRITICAL_AVOID" or "LIMIT"
+- limitType must be exactly "MAX", "MIN", "RANGE", or "TEXT"
+- Identify specific dangerous additives/ingredients relevant to this condition
+- Define nutrient limits with clinical reasoning
+- Choose an appropriate icon from the Lucide icon set
+- Color should reflect severity (red for critical, yellow for moderate, green for safe)`;
+
+    const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "system", content: prompt }],
+        response_format: { type: "json_object" },
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+        throw new Error("OpenAI returned empty content for condition profile");
+    }
+
+    const parsed = JSON.parse(content) as ConditionProfile;
+
+    if (!parsed.label || !parsed.description || !parsed.icon || !parsed.color) {
+        throw new Error("Invalid condition profile: missing required fields");
+    }
+
+    if (!parsed.nutrientLimits || !Array.isArray(parsed.nutrientLimits)) {
+        parsed.nutrientLimits = [];
+    }
+
+    if (!parsed.ingredientExclusions || !Array.isArray(parsed.ingredientExclusions)) {
+        parsed.ingredientExclusions = [];
+    }
+
+    return parsed;
 }
 
 export async function calculateMedicalLimits(profile: HealthProfile): Promise<ComputedLimits> {

@@ -110,8 +110,12 @@ export default function SynthesizingStep() {
         };
 
         const executeSubmission = async () => {
-            const simulationPromise = runSimulation();
+            // Run simulation and submission in parallel
+            // We want the simulation to take AT LEAST some time (e.g. 6s) to feel "substantial"
+            // but we don't want to wait for it before STARTING the API call.
+
             const minTimePromise = new Promise(resolve => setTimeout(resolve, 6000));
+            const simulationPromise = runSimulation();
 
             const submissionAction = async () => {
                 try {
@@ -155,7 +159,19 @@ export default function SynthesizingStep() {
                 }
             };
 
-            const [result] = await Promise.all([submissionAction(), minTimePromise]);
+            // Start submission immediately
+            const submissionPromise = submissionAction();
+
+            // Wait for everything to finish
+            // - Simulation must finish (so user sees all logs)
+            // - Min time must pass (so it doesn't flash too fast)
+            // - Submission must finish (so data is ready)
+            const [_, __, result] = await Promise.all([
+                simulationPromise,
+                minTimePromise,
+                submissionPromise
+            ]);
+
             submissionCompleteRef.current = true;
 
             if (result.success) {
@@ -280,15 +296,6 @@ export default function SynthesizingStep() {
                     </motion.div>
                 )}
             </div>
-            <style jsx global>{`
-                .animate-spin {
-                    animation: spin 1s linear infinite;
-                }
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-            `}</style>
         </div>
     );
 }

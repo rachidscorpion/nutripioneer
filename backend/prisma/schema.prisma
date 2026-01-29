@@ -97,6 +97,10 @@ model Condition {
   icon                String   // Name of lucide icon
   color               String   // Hex color
   
+  // ICD-11 Mapping for JIT Onboarding
+  icdCode             String?  @unique // e.g., "5A11"
+  icdUri              String?  // Foundation URI from WHO
+  
   // JSON Blobs for structured data (Legacy/Flexibility)
   nutritionalFocus    String?   // JSON: { riskFactors: [], goals: [] }
   allowedIngredients  String?   // JSON: string[]

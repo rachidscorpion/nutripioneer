@@ -18,7 +18,7 @@ NutriPioneer is a personalized nutrition and meal planning platform designed for
 - **Database:** SQLite with Prisma ORM
 - **Authentication:** Better Auth (email/password + OAuth) + Polar.sh for subscriptions
 - **AI:** OpenAI (GPT-4o, GPT-5-nano)
-- **External APIs:** FatSecret, Edamam, USDA, Open Food Facts, TheMealDB
+- **External APIs:** FatSecret, Edamam, USDA, Open Food Facts, TheMealDB, ICD-11 (WHO)
 
 #### Frontend (`/nutripioneer`)
 - **Framework:** Next.js 16 (App Router)
@@ -325,11 +325,15 @@ nutripioneer/
   description: string
   icon: string                         // lucide icon name
   color: string                        // hex color
-
+  
+  // ICD-11 Mapping (JIT Onboarding)
+  icdCode: string? (unique)         // e.g., "5A11" from WHO ICD-11
+  icdUri: string?                     // Foundation URI from WHO
+  
   nutritionalFocus: string?            // JSON blob
   allowedIngredients: string?           // JSON: string[]
   excludedIngredients: string?          // JSON: string[]
-
+  
   // Relations
   nutrientLimits: NutrientLimit[]
   ingredientExclusions: IngredientExclusion[]
@@ -436,6 +440,8 @@ POST   /api/grocery/generate          # Generate shopping list
 ### Conditions
 ```
 GET    /api/conditions                 # List available conditions
+GET    /api/conditions/search?q=       # Search ICD-11 for medical conditions (JIT onboarding)
+POST   /api/conditions/onboard          # Onboard new condition from ICD-11 with AI-generated nutrition rules
 ```
 
 ### Metrics
@@ -473,9 +479,10 @@ GET    /api/products/:id              # Get product details
    - Initial account creation
 
 2. **Conditions (2-Conditions.tsx)**
-   - Select medical conditions: CKD, Diabetes, Hypertension, PCOS, High Cholesterol
-   - Each condition has icon, color, description
-   - Multi-select allowed
+    - Select from pre-defined conditions OR search ICD-11 database for any medical condition
+    - Just-in-Time (JIT) onboarding: Search → AI generates nutrition rules → Save to database
+    - Each condition has icon, color, description (auto-generated for JIT conditions)
+    - Multi-select allowed
 
 3. **Biometrics (3-Biometrics.tsx)**
    - Height, weight, age, gender, waist measurement
@@ -505,6 +512,7 @@ GET    /api/products/:id              # Get product details
      - Dietary filter configuration
      - Recipe matching
      - AI nutrition limit generation
+   - **Optimization:** Simulation runs in parallel with the backend API submission to reduce perceived wait time.
    - Saves profile to database
    - Generates AI nutrition limits via OpenAI
    - Creates initial meal plan
@@ -518,6 +526,118 @@ Onboarding Form → Zustand Store → API Client → Backend → Database
                                             ↓
                                       Meal Plan Generation
 ```
+
+---
+
+### 9. Just-in-Time (JIT) Disease Onboarding
+
+**Service:** `backend/src/integrations/icd/icd.service.ts`
+
+**Controller:** `backend/src/controllers/conditions.controller.ts`
+
+**AI Service:** `backend/src/integrations/openai/openai.service.ts`
+
+**Overview:**
+Expands condition support from 5 hardcoded conditions to the entire WHO ICD-11 database (55,000+ conditions). When users select a condition not yet onboarded, OpenAI automatically generates clinical nutrition rules.
+
+**Workflow:**
+```
+1. User searches for condition (e.g., "Type 2 Diabetes")
+   ↓
+2. Frontend calls GET /api/conditions/search?q=Type 2 Diabetes
+   ↓
+3. Backend proxies to WHO ICD-11 API
+   ↓
+4. Displays results: code (5A11), title, description
+   ↓
+5. User clicks "Add Condition"
+   ↓
+6. Frontend calls POST /api/conditions/onboard
+   {
+     icdCode: "5A11",
+     title: "Type 2 diabetes mellitus",
+     uri: "http://id.who.int/icd/entity/5A11",
+     description: "..."
+   }
+   ↓
+7. Backend checks if condition exists (by icdCode)
+   ↓
+8a. If exists: Returns existing Condition ID (isNew: false)
+   ↓
+8b. If new:
+   - Calls OpenAI generateConditionProfile(title, description)
+   - Generates: label, description, icon, color, nutrientLimits, ingredientExclusions
+   - Creates Condition record + nested NutrientLimit records + IngredientExclusion records
+   - All in single Prisma transaction
+   - Returns new Condition ID (isNew: true)
+   ↓
+9. Frontend associates condition ID with user profile
+   ↓
+10. Condition now works with existing conflict engine and meal planning system
+```
+
+**ICD-11 API Integration:**
+```typescript
+// OAuth2 Client Credentials Flow
+- Token endpoint: https://icdaccessmanagement.who.int/connect/token
+- Token cached in memory (valid ~1 hour)
+- Auto-refresh on expiry
+
+// Search endpoint
+GET https://id.who.int/icd/release/11/2024-01/mms/search
+Headers: {
+  "API-Version": "v2",
+  "Accept-Language": "en",
+  "Authorization": "Bearer {token}"
+}
+Params: {
+  q: "{search query}",
+  useFlexisearch: "true",
+  includeKeywordResult: "true"
+}
+```
+
+**AI Generation Quality Controls:**
+- Strict JSON output enforced
+- Clinical dietitian system prompt
+- Lucide icon validation (limited to icon set)
+- Color coding based on severity (red=crucial, yellow=moderate, green=safe)
+- Regex pattern validation for ingredient exclusions
+- Limit type validation (MAX/MIN/RANGE/TEXT)
+- Severity level validation (CRITICAL_AVOID/LIMIT)
+
+**Example Generated Profile:**
+```json
+{
+  "label": "Type 2 Diabetes Mellitus Nutrition Profile",
+  "description": "Type 2 diabetes mellitus is a metabolic disorder...",
+  "icon": "leaf",
+  "color": "#10b981",
+  "nutrientLimits": [
+    {
+      "nutrient": "Sodium",
+      "limitType": "MAX",
+      "limitValue": "2300",
+      "unit": "mg",
+      "notes": "Excess sodium intake can lead to hypertension..."
+    }
+  ],
+  "ingredientExclusions": [
+    {
+      "additiveCategory": "Phosphate Additives",
+      "ingredientRegex": "phosphoric acid|sodium phosphate|calcium phosphate",
+      "riskCategory": "Rapid absorption; can cause spikes in blood sugar...",
+      "severity": "CRITICAL_AVOID"
+    }
+  ]
+}
+```
+
+**Technical Details:**
+- Idempotent: Same ICD code always returns existing condition on subsequent requests
+- Transaction-based: All data saved atomically (no partial records)
+- Error handling: Returns meaningful errors for WHO API failures, OpenAI timeouts, DB errors
+- Rate limiting: Consider adding for production (recommended: 10 requests/minute)
 
 ---
 
@@ -535,17 +655,19 @@ Onboarding Form → Zustand Store → API Client → Backend → Database
 ```typescript
 // For each meal type (Breakfast, Lunch, Dinner):
 1. Get user profile (conditions, preferences, nutrition limits)
-2. Randomly select source (FatSecret or Edamam)
-3. Search recipes with filters:
+2. **Prioritize Source:** Try Edamam first (better nutritional data).
+   - *Retry Strategy:* If Edamam search fails (e.g. invalid cuisine), retry without strict filters.
+3. Fallback: If Edamam yields no results, use FatSecret.
+4. Search recipes with filters:
    - Condition-specific constraints (e.g., CKD: low potassium, low phosphorus)
    - Calorie limits
    - Nutrient limits (sodium, sugar, etc.)
-4. Check if recipe already exists (by externalId)
-5. If not, create new recipe in database
-6. Assign to plan day
+5. Check if recipe already exists (by externalId)
+6. If not, create new recipe in database
+7. Assign to plan day
 
-// Fallback:
-If first source fails, try secondary source
+// Fallback Chain:
+Edamam (Primary) → FatSecret (Secondary) → Local Random (Final Fallback)
 ```
 
 **Meal Status States:**
@@ -986,17 +1108,18 @@ getNormalizedNutrition(food) - Standardizes nutrient names
 
 ### 6. OpenAI API
 **Service:** `backend/src/integrations/openai/openai.service.ts`
-
+ 
 **Models Used:**
 - **GPT-4o:** Menu image analysis (vision)
-- **GPT-5-nano:** Nutrition limit generation (text)
-
+- **GPT-4o-mini:** Condition profile generation for JIT onboarding (text)
+ 
 **Key Methods:**
 ```typescript
 calculateMedicalLimits(profile) → ComputedLimits
 analyzeMenuImage(imageBase64, profile) → MenuAnalysisResult
+generateConditionProfile(conditionName: icdDescription) → ConditionProfile  // JIT onboarding
 ```
-
+ 
 **Response Format:**
 - JSON mode enforced
 - Structured output with types
@@ -1004,7 +1127,31 @@ analyzeMenuImage(imageBase64, profile) → MenuAnalysisResult
 
 ---
 
-### 7. FDA RxNorm API
+### 7. WHO ICD-11 API
+**Service:** `backend/src/integrations/icd/icd.service.ts`
+
+**Authentication:** OAuth2 Client Credentials
+
+**Capabilities:**
+- Search entire ICD-11 medical classification database (55,000+ conditions)
+- Get detailed condition information by URI
+- Multilingual support (English, Spanish, French, etc.)
+
+**Key Methods:**
+```typescript
+getToken() → string  // Cached OAuth2 token (1hr validity)
+searchConditions(query: string) → ICDDiseaseResult[]
+getConditionByUri(uri: string) → Record<string, unknown>
+```
+
+**Use Case:**
+- Just-in-Time disease onboarding for any medical condition
+- Supports conditions beyond the 5 pre-defined ones
+- AI-generated nutrition rules for clinical accuracy
+
+---
+
+### 8. FDA RxNorm API
 **Service:** `backend/src/services/drugApi.ts`
 
 **Capabilities:**
@@ -1020,7 +1167,7 @@ analyzeMenuImage(imageBase64, profile) → MenuAnalysisResult
 
 ---
 
-### 8. Polar.sh (Payments)
+### 9. Polar.sh (Payments)
 **Integration:** Better Auth plugin
 
 **Capabilities:**
@@ -1191,6 +1338,9 @@ api.grocery.addIngredients(ingredients)
 api.grocery.generateShoppingList(entries)
 
 api.conditions.list()
+
+api.conditions.search(query)
+api.conditions.onboard(icdData)
 
 api.metrics.log(data)
 api.metrics.history()
@@ -1471,6 +1621,10 @@ FATSECRET_CLIENT_SECRET="client-secret"
 
 # OpenAI
 OPENAI_API_KEY="sk-..."
+
+# WHO ICD-11 API (JIT Disease Onboarding)
+ICD_CLIENT_ID="your-icd-client-id"
+ICD_CLIENT_SECRET="your-icd-client-secret"
 
 # Optional: Other APIs
 USDA_API_KEY="..."
@@ -1822,6 +1976,8 @@ npm run lint           # ESLint
 - **Plan Service:** `backend/src/services/plans.service.ts`
 - **Recipe Service:** `backend/src/services/recipes.service.ts`
 - **OpenAI Integration:** `backend/src/integrations/openai/openai.service.ts`
+- **ICD-11 Integration:** `backend/src/integrations/icd/icd.service.ts`
+- **Conditions Controller:** `backend/src/controllers/conditions.controller.ts`
 
 ### Frontend
 - **Entry Point:** `nutripioneer/src/app/layout.tsx`
@@ -1853,13 +2009,15 @@ Run: `bun run db:seed`
 ## Known Limitations & Considerations
 
 1. **Recipe Nutrition Gaps:** TheMealDB recipes often lack nutrition data; needs fallback to other APIs or manual input
-2. **API Rate Limits:** External APIs may have rate limits; implement caching strategy
-3. **AI Timeout:** OpenAI calls can take up to 60s; UI shows loading state
+2. **API Rate Limits:** External APIs may have rate limits; implement caching strategy (ICD-11 token already cached)
+3. **AI Timeout:** OpenAI calls can take up to 60s; UI shows loading state (especially for JIT onboarding)
 4. **Session Expiry:** 7-day session expiry; user may need to re-login
 5. **Barcode Scanning:** Open Food Facts has incomplete coverage; fallback to USDA needed
 6. **Medication Interactions:** FDA API provides basic interactions; comprehensive drug-food interaction engine needed
 7. **Nutrition Calculation:** Serving sizes vary across APIs; normalization required
 8. **Multi-Condition Logic:** Complex when user has multiple conditions; priority system needed
+9. **ICD-11 Availability:** WHO API may have downtime; implement retry logic and fallback UI messaging
+10. **AI Hallucinations:** OpenAI-generated nutrition rules should be reviewed by clinical professionals; consider "verified" flag
 
 ---
 
@@ -1875,6 +2033,9 @@ Run: `bun run db:seed`
 8. **Restaurant Database:** Expand restaurant menu database beyond scanning
 9. **Reminders:** Push notifications for meal times, medication reminders
 10. **Export Features:** PDF meal plans, share with dietitian/doctor
+11. **Condition Verification:** Add workflow for dietitian/doctor verification of AI-generated nutrition rules
+12. **Batch Onboarding:** Allow users to select multiple conditions and onboard them in parallel
+13. **Condition History:** Track user's condition additions/removals over time
 
 ---
 
@@ -1894,6 +2055,14 @@ Run: `bun run db:seed`
 
 ---
 
-**Document Version:** 1.0
+**Document Version:** 2.0
 **Last Updated:** January 2026
 **Project:** NutriPioneer
+
+**Version 2.0 Changes (January 2026):**
+- Added Just-in-Time Disease Onboarding system
+- Integrated WHO ICD-11 API for condition search
+- Added AI-generated nutrition profiles for new conditions
+- Updated Condition schema with ICD-11 mapping (icdCode, icdUri)
+- Added new endpoints: GET /api/conditions/search, POST /api/conditions/onboard
+- Expanded condition support from 5 to 55,000+ medical conditions

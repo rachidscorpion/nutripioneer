@@ -407,10 +407,21 @@ export class RecipesService {
     async findOrCreateFromEdamam(user: any, mealType: 'Breakfast' | 'Lunch' | 'Dinner', excludeExternalId?: string) {
         try {
             // Call Edamam
-            let searchResult = await edamamService.searchRecipes(user, {
-                mealType,
-                random: true,
-            });
+            let searchResult;
+            try {
+                searchResult = await edamamService.searchRecipes(user, {
+                    mealType,
+                    random: true,
+                });
+            } catch (err) {
+                console.warn(`Initial Edamam search failed for ${mealType}: ${err instanceof Error ? err.message : String(err)}`);
+                console.log('Retrying without cuisine preferences...');
+                searchResult = await edamamService.searchRecipes(user, {
+                    mealType,
+                    random: true,
+                    ignoreCuisines: true
+                });
+            }
 
             console.log(`Edamam returned ${searchResult?.hits?.length || 0} hits for ${mealType}`);
 

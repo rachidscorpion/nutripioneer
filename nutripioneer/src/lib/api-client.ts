@@ -77,6 +77,9 @@ export const api = {
     },
     conditions: {
         list: () => apiClient.get('/conditions'),
+        search: (query: string) => apiClient.get(`/conditions/search?q=${encodeURIComponent(query)}`),
+        onboard: (data: any) => apiClient.post('/conditions/onboard', data),
+        getById: (id: string) => apiClient.get(`/conditions/${id}`),
     },
     metrics: {
         log: (data: any) => apiClient.post('/metrics', data),

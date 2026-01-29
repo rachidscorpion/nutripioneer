@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Save, User, Settings, Heart, Utensils, Shield, Search, Trash2, CheckCircle, AlertCircle, Droplets, Activity, Moon, Sun } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
 import { useTheme } from '@/context/ThemeContext';
+import ConditionSearch from '@/components/conditions/ConditionSearch';
 
 // Use loose type or interface matching API response
 interface ExtendedUser {
@@ -280,28 +281,81 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                 <Droplets className={styles.iconBlue} size={24} />
                                 Known Conditions
                             </h3>
-                            <div className={styles.grid2}>
+
+                            <div className={styles.infoCard} style={{ marginBottom: '1.5rem' }}>
+                                <label className={styles.label} style={{ marginBottom: '0.5rem', display: 'block' }}>Add a new condition</label>
+                                <ConditionSearch
+                                    placeholder="Search specific conditions (e.g. Type 2 Diabetes, Celiac)..."
+                                    onSelect={(c) => {
+                                        if (!selectedConditions.includes(c.slug)) {
+                                            setSelectedConditions(prev => [...prev, c.slug]);
+                                            // Add to available so it renders immediately without refetch
+                                            if (!availableConditions.find(ac => ac.id === c.id)) {
+                                                setAvailableConditions(prev => [...prev, c]);
+                                            }
+                                        } else {
+                                            toast.info(`${c.label} is already selected.`);
+                                        }
+                                    }}
+                                    excludeIds={selectedConditions}
+                                />
+                                <p style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)', marginTop: '0.5rem' }}>
+                                    Search for your specific medical conditions from the official ICD-11 registry.
+                                </p>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                                 {loadingConditions ? (
-                                    <p className={styles.emptyStateText}>Loading...</p>
+                                    <p className={styles.emptyStateText}>Loading conditions...</p>
                                 ) : (
-                                    availableConditions.map((c) => {
-                                        const isSelected = selectedConditions.includes(c.slug);
-                                        const IconComponent = ICON_MAP[c.icon] || AlertCircle;
-                                        return (
-                                            <button
-                                                key={c.id}
-                                                onClick={() => toggleCondition(c.slug)}
-                                                className={`${styles.conditionBtn} ${isSelected ? styles.conditionBtnSelected : ''}`}
-                                                style={{
-                                                    borderColor: isSelected ? c.color : undefined,
-                                                    background: isSelected ? `${c.color}10` : undefined,
-                                                }}
-                                            >
-                                                <IconComponent size={32} color={c.color} style={{ marginBottom: '10px' }} />
-                                                <span className={styles.conditionLabel}>{c.label}</span>
-                                            </button>
-                                        );
-                                    })
+                                    availableConditions
+                                        .filter(c => selectedConditions.includes(c.slug))
+                                        .map((c) => {
+                                            const IconComponent = ICON_MAP[c.icon] || AlertCircle;
+                                            return (
+                                                <div
+                                                    key={c.id}
+                                                    className={styles.infoCard}
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        textAlign: 'center',
+                                                        position: 'relative',
+                                                        border: `1px solid ${c.color}40`,
+                                                        background: `${c.color}05`
+                                                    }}
+                                                >
+                                                    <button
+                                                        onClick={() => toggleCondition(c.slug)}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: '8px',
+                                                            right: '8px',
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: 'var(--muted-foreground)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+
+                                                    <IconComponent size={32} color={c.color} style={{ marginBottom: '10px' }} />
+                                                    <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{c.label}</span>
+                                                    {c.icdCode && (
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', marginTop: '4px' }}>
+                                                            ICD: {c.icdCode}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                )}
+                                {availableConditions.filter(c => selectedConditions.includes(c.slug)).length === 0 && !loadingConditions && (
+                                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', border: '1px dashed var(--border)', borderRadius: '12px' }}>
+                                        <p className={styles.emptyStateText}>No conditions selected yet.</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
