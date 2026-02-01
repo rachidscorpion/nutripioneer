@@ -19,6 +19,7 @@ interface ExtendedUser {
     image?: string | null;
     conditions?: string | any;
     createdAt: string | Date;
+    subscriptionStatus?: string | null;
     accounts: any[];
     sessions: any[];
 }
@@ -207,8 +208,17 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                         <div className={styles.infoRow}>
                             <span className={styles.infoLabel}>Account Type</span>
                             <span className={styles.infoValue}>
-                                <Shield size={14} className={styles.iconBlue} />
-                                Standard
+                                {user.subscriptionStatus === 'active' ? (
+                                    <>
+                                        <Shield size={14} className={styles.iconGreen} style={{ color: '#10b981' }} />
+                                        <span style={{ color: '#10b981', fontWeight: 600 }}>Pro Member</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Shield size={14} className={styles.iconBlue} />
+                                        Standard
+                                    </>
+                                )}
                             </span>
                         </div>
                         <div className={styles.infoRow}>

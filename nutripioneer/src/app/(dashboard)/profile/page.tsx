@@ -9,8 +9,18 @@ import { OnboardingData } from '@/types/user';
 import { ArrowRight } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
 
-export default async function ProfilePage() {
+export default async function ProfilePage(props: { searchParams: Promise<{ success?: string }> }) {
     const session = await requireAuth();
+    const searchParams = await props.searchParams;
+
+    // Trigger sync if returning from checkout
+    if (searchParams.success === 'true') {
+        try {
+            await fetchWithAuth('/users/profile/subscription/sync', { method: 'POST' });
+        } catch (e) {
+            console.error("Subscription sync failed", e);
+        }
+    }
 
     let user;
     try {
@@ -67,15 +77,24 @@ export default async function ProfilePage() {
             <ProfileActions />
 
             {/* Subscription Link */}
-            <Link href="/subscription" className={styles.upgradeBanner}>
-                <div className={styles.upgradeBannerContent}>
-                    <span className={styles.upgradeBannerTitle}>Upgrade to Pro</span>
-                    <span className={styles.upgradeBannerSubtitle}>Unlock premium features & AI insights</span>
+            {user?.subscriptionStatus === 'active' ? (
+                <div className={styles.upgradeBanner} style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+                    <div className={styles.upgradeBannerContent}>
+                        <span className={styles.upgradeBannerTitle}>Pro Member Active</span>
+                        <span className={styles.upgradeBannerSubtitle}>Thanks for supporting NutriPioneer!</span>
+                    </div>
                 </div>
-                <span className={styles.upgradeBannerArrow}>
-                    <ArrowRight size={20} />
-                </span>
-            </Link>
+            ) : (
+                <Link href="/subscription" className={styles.upgradeBanner}>
+                    <div className={styles.upgradeBannerContent}>
+                        <span className={styles.upgradeBannerTitle}>Upgrade to Pro</span>
+                        <span className={styles.upgradeBannerSubtitle}>Unlock premium features & AI insights</span>
+                    </div>
+                    <span className={styles.upgradeBannerArrow}>
+                        <ArrowRight size={20} />
+                    </span>
+                </Link>
+            )}
 
             <LogoutButton />
         </main>

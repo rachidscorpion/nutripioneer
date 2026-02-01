@@ -1,6 +1,7 @@
 import prisma from '@/db/client';
 import type { CreateUser, UpdateUser } from '@/schemas';
 import { ApiError } from '@/types';
+import { Polar } from "@polar-sh/sdk";
 
 export class UsersService {
     /**
@@ -265,6 +266,99 @@ export class UsersService {
                 },
             },
         });
+    }
+
+    /**
+     * Sync subscription status with Polar
+     */
+    async syncSubscription(userId: string) {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) throw new ApiError(404, 'User not found');
+
+        try {
+            const polar = new Polar({
+                accessToken: process.env.POLAR_ACCESS_TOKEN!,
+                server: process.env.POLAR_ENV === 'production' ? 'production' : 'sandbox',
+            });
+
+            let customerId = user.polarCustomerId;
+
+            // 1. If we don't have a customer ID, try to find one by email
+            if (!customerId) {
+                try {
+                    const customersResponse: any = await polar.customers.list({ email: user.email });
+                    if (customersResponse) {
+                        // Robustly handle if it's an async iterator or array/object with items
+                        const iter = customersResponse.items || customersResponse;
+                        for await (const customer of iter) {
+                            if ((customer as any).email === user.email) {
+                                customerId = (customer as any).id;
+                                await prisma.user.update({
+                                    where: { id: userId },
+                                    data: { polarCustomerId: customerId }
+                                });
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log("Polar customer lookup fallback error", e);
+                }
+            }
+
+            if (!customerId) {
+                // Downgrade if needed
+                if (user.subscriptionStatus === 'active') {
+                    await prisma.user.update({
+                        where: { id: userId },
+                        data: { subscriptionStatus: 'inactive' }
+                    });
+                }
+                return { status: 'inactive', message: 'No customer record found' };
+            }
+
+            // 2. Check for active subscriptions for this customer
+            let activeSub = null;
+            try {
+                const subsResponse: any = await polar.subscriptions.list({ customerId });
+                if (subsResponse) {
+                    const iter = subsResponse.items || subsResponse;
+                    for await (const sub of iter) {
+                        if ((sub as any).status === 'active') {
+                            activeSub = sub;
+                            break;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log("Polar subscription lookup fallback error", e);
+            }
+
+            if (activeSub) {
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: {
+                        polarSubscriptionId: (activeSub as any).id,
+                        subscriptionStatus: 'active'
+                    }
+                });
+                return { status: 'active', subscription: activeSub };
+            } else {
+                // If user has no active subscription but was marked active, downgrade
+                if (user.subscriptionStatus === 'active') {
+                    await prisma.user.update({
+                        where: { id: userId },
+                        data: { subscriptionStatus: 'inactive' }
+                    });
+                }
+                return { status: 'inactive' };
+            }
+
+        } catch (error) {
+            console.error("Failed to sync subscription:", error);
+            // Return current status nicely instead of crashing
+            return { status: user.subscriptionStatus || 'inactive', error: 'Sync failed' };
+        }
     }
 }
 

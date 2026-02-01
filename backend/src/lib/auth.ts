@@ -22,7 +22,7 @@ export const auth = betterAuth({
                             slug: 'subscription'
                         }
                     ],
-                    successUrl: '/dashboard?success=true',
+                    successUrl: '/home?success=true',
                     authenticatedUsersOnly: false
                 }),
                 webhooks({

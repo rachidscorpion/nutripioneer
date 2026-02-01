@@ -33,7 +33,7 @@ export function SubscribeButton({ productId, className }: SubscribeButtonProps) 
                 credentials: "include",
                 body: JSON.stringify({
                     products: effectiveProductId,
-                    successUrl: window.location.origin + "/dashboard?success=true",
+                    successUrl: window.location.origin + "/profile?success=true",
                 }),
             });
 

@@ -294,6 +294,19 @@ export class UsersController {
     }
 
     /**
+     * Sync subscription status manually with Polar
+     */
+    async syncSubscription(c: Context) {
+        const userId = c.get('userId');
+        const result = await usersService.syncSubscription(userId);
+
+        return c.json({
+            success: true,
+            data: result,
+        });
+    }
+
+    /**
      * Delete test account (for development/testing purposes)
      */
     async deleteTestAccount(c: Context) {
