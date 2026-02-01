@@ -271,6 +271,9 @@ export class UsersService {
     /**
      * Sync subscription status with Polar
      */
+    /**
+     * Sync subscription status with Polar
+     */
     async syncSubscription(userId: string) {
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user) throw new ApiError(404, 'User not found');
@@ -281,76 +284,90 @@ export class UsersService {
                 server: process.env.POLAR_ENV === 'production' ? 'production' : 'sandbox',
             });
 
-            let customerId = user.polarCustomerId;
-
-            // 1. If we don't have a customer ID, try to find one by email
-            if (!customerId) {
-                try {
-                    const customersResponse: any = await polar.customers.list({ email: user.email });
-                    if (customersResponse) {
-                        // Robustly handle if it's an async iterator or array/object with items
-                        const iter = customersResponse.items || customersResponse;
-                        for await (const customer of iter) {
-                            if ((customer as any).email === user.email) {
-                                customerId = (customer as any).id;
-                                await prisma.user.update({
-                                    where: { id: userId },
-                                    data: { polarCustomerId: customerId }
-                                });
-                                break;
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.log("Polar customer lookup fallback error", e);
-                }
-            }
-
-            if (!customerId) {
-                // Downgrade if needed
-                if (user.subscriptionStatus === 'active') {
-                    await prisma.user.update({
-                        where: { id: userId },
-                        data: { subscriptionStatus: 'inactive' }
-                    });
-                }
-                return { status: 'inactive', message: 'No customer record found' };
-            }
-
-            // 2. Check for active subscriptions for this customer
+            // We need to find the active subscription across ALL customer records for this email
             let activeSub = null;
+            let activeCustomerId = null;
+
+            // 1. Get all potential customer IDs for this user
+            const customerIds = new Set<string>();
+            if (user.polarCustomerId) {
+                customerIds.add(user.polarCustomerId);
+            }
+
             try {
-                const subsResponse: any = await polar.subscriptions.list({ customerId });
-                if (subsResponse) {
-                    const iter = subsResponse.items || subsResponse;
-                    for await (const sub of iter) {
-                        if ((sub as any).status === 'active') {
-                            activeSub = sub;
-                            break;
+                const customersResponse: any = await polar.customers.list({ email: user.email });
+                if (customersResponse) {
+                    for await (const page of customersResponse) {
+                        const items = (page as any).result?.items || (page as any).items || [];
+                        for (const customer of items) {
+                            if ((customer as any).email === user.email) {
+                                customerIds.add((customer as any).id);
+                            }
                         }
                     }
                 }
             } catch (e) {
-                console.log("Polar subscription lookup fallback error", e);
+                console.error("Error fetching customers:", e);
             }
 
-            if (activeSub) {
+            console.log(`Found ${customerIds.size} customer records for ${user.email}`);
+
+            // 2. Check each customer ID for an active subscription
+            for (const customerId of customerIds) {
+                try {
+                    const subsResponse: any = await polar.subscriptions.list({ customerId });
+                    if (subsResponse) {
+                        for await (const page of subsResponse) {
+                            const items = (page as any).result?.items || (page as any).items || [];
+
+                            for (const sub of items) {
+                                if ((sub as any).status === 'active') {
+                                    activeSub = sub;
+                                    activeCustomerId = customerId;
+                                    break;
+                                }
+                            }
+                            if (activeSub) break;
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Error checking subs for customer ${customerId}:`, e);
+                }
+
+                if (activeSub) break; // Found one!
+            }
+
+            if (activeSub && activeCustomerId) {
+                // Update user with the correct customer ID and active subscription
                 await prisma.user.update({
                     where: { id: userId },
                     data: {
+                        polarCustomerId: activeCustomerId,
                         polarSubscriptionId: (activeSub as any).id,
                         subscriptionStatus: 'active'
                     }
                 });
                 return { status: 'active', subscription: activeSub };
             } else {
-                // If user has no active subscription but was marked active, downgrade
+                // No active subscription found across ANY customer record
                 if (user.subscriptionStatus === 'active') {
                     await prisma.user.update({
                         where: { id: userId },
                         data: { subscriptionStatus: 'inactive' }
                     });
                 }
+
+                // If we found customer IDs but no active sub, ensure we at least link to a valid customer ID (the last one found, or keep existing)
+                // This part is optional but good for consistency. 
+                // For now, if we found a new customer ID via email lookup and didn't have one before, we should probably save it.
+                if (!user.polarCustomerId && customerIds.size > 0) {
+                    const firstFound = Array.from(customerIds)[0];
+                    await prisma.user.update({
+                        where: { id: userId },
+                        data: { polarCustomerId: firstFound }
+                    });
+                }
+
                 return { status: 'inactive' };
             }
 
