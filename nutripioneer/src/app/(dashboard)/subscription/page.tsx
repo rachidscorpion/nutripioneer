@@ -50,7 +50,7 @@ export default function SubscriptionPage() {
                         <div className={styles.cardContent}>
                             <h3 className={styles.planName}>Pro Monthly</h3>
                             <div className={styles.priceRow}>
-                                <span className={styles.price}>$10</span>
+                                <span className={styles.price}>$15</span>
                                 <span className={styles.period}>/month</span>
                             </div>
                             <p className={styles.cancelNote}>
