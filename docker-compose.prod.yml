@@ -1,0 +1,60 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE:-nutripioneer-backend}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/prisma/dev.db:/app/prisma/dev.db
+    networks:
+      - nutripioneer-network
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-nutripioneer-frontend}
+    build:
+      context: ./nutripioneer
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=http://backend:3001
+      - NEXT_PUBLIC_API_URL=https://${DOMAIN_NAME:-yourdomain.com}/api
+    depends_on:
+      - backend
+    networks:
+      - nutripioneer-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nutripioneer-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - nutripioneer-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: nutripioneer-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  nutripioneer-network:
+    driver: bridge
