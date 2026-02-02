@@ -24,7 +24,7 @@ services:
       - "3000:3000"
     environment:
       - BACKEND_URL=http://backend:3001
-      - NEXT_PUBLIC_API_URL=https://${DOMAIN_NAME:-yourdomain.com}/api
+      - NEXT_PUBLIC_API_URL=https://${DOMAIN_NAME:-nutripioneer.com}/api
     depends_on:
       - backend
     networks:
