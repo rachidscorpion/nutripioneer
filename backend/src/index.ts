@@ -5,6 +5,7 @@ import { errorHandler } from '@/middleware/errorHandler';
 import api from '@/routes';
 import authRoutes from '@/routes/auth';
 import menuRoutes from '@/routes/menu';
+import checkoutRoutes from '@/routes/checkout';
 
 const app = new Hono();
 
@@ -28,6 +29,8 @@ app.get('/health', (c) => {
     });
 });
 
+// Mount checkout routes before auth routes (so specific routes are matched first)
+app.route('/api/auth', checkoutRoutes);
 // Mount auth routes (not under /api for Better Auth compatibility)
 app.route('/api/auth', authRoutes);
 

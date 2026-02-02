@@ -15,7 +15,16 @@ export const auth = betterAuth({
                 server: process.env.POLAR_ENV === 'production' ? 'production' : 'sandbox',
             }),
             use: [
-                checkout(),
+                checkout({
+                    products: [
+                        {
+                            productId: process.env.POLAR_PRODUCT1_PRODUCT_ID!,
+                            slug: 'subscription'
+                        }
+                    ],
+                    successUrl: '/home?success=true',
+                    authenticatedUsersOnly: false
+                }),
                 webhooks({
                     secret: process.env.POLAR_WEBHOOK_SECRET!,
                 })

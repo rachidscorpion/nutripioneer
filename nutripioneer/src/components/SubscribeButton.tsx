@@ -25,16 +25,15 @@ export function SubscribeButton({ productId, className }: SubscribeButtonProps) 
         try {
             setIsLoading(true);
 
-            // Call the backend checkout endpoint (proxied via Next.js)
-            // Path: /api/auth/polar/checkout based on Better Auth plugin convention
-            const response = await fetch("/api/auth/polar/checkout", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/polar/checkout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({
                     products: effectiveProductId,
-                    successUrl: window.location.origin + "/dashboard?success=true",
+                    successUrl: window.location.origin + "/profile?success=true",
                 }),
             });
 

@@ -1,0 +1,80 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ghcr.io/${{ github.repository }}/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./nutripioneer
+          push: true
+          tags: ghcr.io/${{ github.repository }}/frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Navigate to project directory
+            cd ~/nutripioneer || git clone https://github.com/${{ github.repository }} ~/nutripioneer && cd ~/nutripioneer
+            
+            # Pull latest code configuration
+            git pull origin main
+            
+            # Login to GHCR (you need to have done 'docker login ghcr.io -u <user> -p <token>' on the server once, or pass it here)
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull latest images
+            docker pull ghcr.io/${{ github.repository }}/backend:latest
+            docker pull ghcr.io/${{ github.repository }}/frontend:latest
+            
+            # Start services
+            # We use the images from registry instead of building locally
+            # We need to override the 'build' context in docker-compose.prod.yml to use 'image'
+            # Or we can just use a separate docker-compose.deploy.yml
+            
+            # For simplicity in this guide, we will set the image names in env vars or just use the override logic.
+            # Let's assume we update docker-compose.prod.yml to use images if they exist, or we can just force recreation.
+            
+            export BACKEND_IMAGE=ghcr.io/${{ github.repository }}/backend:latest
+            export FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/frontend:latest
+            
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml up -d
+            
+            # Run database migrations
+            docker compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy
+            
+            echo "Deployment completed successfully!"

@@ -8,6 +8,7 @@ import metrics from './metrics';
 import grocery from './grocery';
 import food from './food';
 import products from './products';
+import webhooks from './webhooks';
 
 import drugs from './drugs';
 
@@ -23,6 +24,7 @@ api.route('/grocery', grocery);
 api.route('/food', food);
 api.route('/drugs', drugs);
 api.route('/products', products);
+api.route('/webhooks', webhooks);
 
 export default api;
 

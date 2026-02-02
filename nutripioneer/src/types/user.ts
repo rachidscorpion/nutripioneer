@@ -14,6 +14,7 @@ export interface OnboardingData {
         activityLevel: string;
         sleepAvgHours: number;
     };
+
     dietary: {
         favorites: string[];
         dislikes: string[];
@@ -22,3 +23,18 @@ export interface OnboardingData {
         dislikeCuisines?: string[];
     };
 }
+
+export interface NutritionLimits {
+    daily_calories: { min: number; max: number; label?: string };
+    nutrients: {
+        [key: string]: {
+            max?: number;
+            min?: number;
+            label?: string;
+            unit?: string;
+        }
+    };
+    avoid_ingredients?: string[];
+    reasoning?: string;
+}
+

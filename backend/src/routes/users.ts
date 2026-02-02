@@ -23,6 +23,9 @@ users.put('/profile/nutrition-limits', authMiddleware, (c) => usersController.up
 // POST /api/users/profile/generate-limits - Generate nutrition limits via AI
 users.post('/profile/generate-limits', authMiddleware, (c) => usersController.generateNutritionLimits(c));
 
+// POST /api/users/profile/subscription/sync - Sync subscription status
+users.post('/profile/subscription/sync', authMiddleware, (c) => usersController.syncSubscription(c));
+
 // DELETE /api/users/test-account - Delete test account
 users.delete('/test-account', authMiddleware, (c) => usersController.deleteTestAccount(c));
 
