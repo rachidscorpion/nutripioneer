@@ -67,6 +67,12 @@ export const auth = betterAuth({
     trustedOrigins: [
         'http://localhost:3000',
         'http://localhost:3001',
+        'http://5.78.150.159',
+        'https://5.78.150.159',
+        'https://nutripioneer.com',
+        'https://www.nutripioneer.com',
+        'http://nutripioneer.com',
+        'http://www.nutripioneer.com',
         process.env.BETTER_AUTH_URL || '',
     ].filter(Boolean),
 });
