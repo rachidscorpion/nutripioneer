@@ -19,12 +19,14 @@ services:
     build:
       context: ./nutripioneer
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://5.78.150.159/api
     restart: always
     ports:
       - "3000:3000"
     environment:
       - BACKEND_URL=http://backend:3001
-      - NEXT_PUBLIC_API_URL=https://${DOMAIN_NAME:-nutripioneer.com}/api
+      - NEXT_PUBLIC_API_URL=http://5.78.150.159/api
     depends_on:
       - backend
     networks:

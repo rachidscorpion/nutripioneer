@@ -18,11 +18,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/auth/:path*",
-        destination: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/auth/:path*`,
+        destination: `${process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL}/api/auth/:path*`,
       },
       {
         source: "/api/:path*",
-        destination: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/:path*`,
+        destination: `${process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
       },
     ];
   },
