@@ -2,19 +2,22 @@ import axios from 'axios';
 
 
 const isServer = typeof window === 'undefined';
+// On client, default to relative path '' if env var is missing.
+// On server, default to localhost if env var is missing (likely dev mode or misconfig).
 const API_URL = isServer
     ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')
-    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+    : (process.env.NEXT_PUBLIC_API_URL || '');
 
 if (isServer && !process.env.BACKEND_URL) {
     console.warn('⚠️ BACKEND_URL is not set on server, falling back to NEXT_PUBLIC_API_URL or localhost');
 }
 
-
-
+console.log('API_URL', API_URL);
+// Clean up URL to ensure we don't end up with /api/api
+const baseURL = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
 
 const apiClient = axios.create({
-    baseURL: `${API_URL}/api`,
+    baseURL,
     headers: {
         'Content-Type': 'application/json',
     },
