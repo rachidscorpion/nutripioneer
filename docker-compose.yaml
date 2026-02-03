@@ -20,6 +20,6 @@ services:
       - "3000:3000"
     environment:
       - BACKEND_URL=http://backend:3001
-      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NEXT_PUBLIC_API_URL=http://5.78.150.159
     depends_on:
       - backend
