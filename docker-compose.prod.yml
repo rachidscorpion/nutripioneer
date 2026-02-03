@@ -27,6 +27,7 @@ services:
     environment:
       - BACKEND_URL=http://backend:3001
       - NEXT_PUBLIC_API_URL=http://5.78.150.159/api
+      - HOSTNAME=0.0.0.0
     depends_on:
       - backend
     networks:
