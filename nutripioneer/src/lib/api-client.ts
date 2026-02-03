@@ -3,8 +3,8 @@ import axios from 'axios';
 
 const isServer = typeof window === 'undefined';
 const API_URL = isServer
-    ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')
-    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+    ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://backend:3001')
+    : (process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : ''));
 
 if (isServer && !process.env.BACKEND_URL) {
     console.warn('⚠️ BACKEND_URL is not set on server, falling back to NEXT_PUBLIC_API_URL or localhost');
