@@ -1,11 +1,20 @@
 import axios from 'axios';
 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-const baseURL = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+const isServer = typeof window === 'undefined';
+const API_URL = isServer
+    ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')
+    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+
+if (isServer && !process.env.BACKEND_URL) {
+    console.warn('⚠️ BACKEND_URL is not set on server, falling back to NEXT_PUBLIC_API_URL or localhost');
+}
+
+
+
 
 const apiClient = axios.create({
-    baseURL,
+    baseURL: `${API_URL}/api`,
     headers: {
         'Content-Type': 'application/json',
     },
