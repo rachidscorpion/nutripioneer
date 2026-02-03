@@ -12,7 +12,7 @@ const app = new Hono();
 // Global middleware
 app.use('*', logger());
 app.use('*', cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://nutripioneer.com', 'https://www.nutripioneer.com', 'http://5.78.150.159', 'https://5.78.150.159'],
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'Cookie'],
