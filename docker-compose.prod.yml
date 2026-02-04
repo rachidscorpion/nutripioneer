@@ -16,6 +16,12 @@ services:
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
     volumes:
       - ./backend/prisma/dev.db:/app/prisma/dev.db
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - nutripioneer-network
 
@@ -35,9 +41,15 @@ services:
       - NODE_ENV=production
       - BACKEND_URL=http://backend:3001
       - NEXT_PUBLIC_API_URL=https://${DOMAIN}
-      - HOSTNAME=0.0.0.0
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - nutripioneer-network
 
@@ -53,8 +65,10 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     networks:
       - nutripioneer-network
 
