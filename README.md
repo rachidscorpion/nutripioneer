@@ -13,6 +13,43 @@ This project is organized into two main directories:
 
 - [Node.js](https://nodejs.org/) (Introduction of Next.js 16 implies a recent version)
 - [Bun](https://bun.sh/) (Required for the backend)
+- [Docker](https://www.docker.com/) (For containerized deployment)
+
+## Environment Configuration
+
+This project uses a **centralized environment configuration** system with a single `.env` file at the project root. The configuration automatically adjusts based on `NODE_ENV` (development or production).
+
+### Quick Setup
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file and add your API keys and secrets
+
+3. For local development, the defaults work out of the box:
+   ```env
+   NODE_ENV=development
+   ```
+
+4. For production deployment, just set two variables:
+   ```env
+   NODE_ENV=production
+   DOMAIN=yourdomain.com
+   ```
+
+   URLs are automatically configured based on these values!
+
+### Key Environment Variables
+
+- **`NODE_ENV`**: Controls which URLs and settings are used (`development` or `production`)
+- **`DOMAIN`**: Your production domain name (only used when `NODE_ENV=production`)
+- **`BETTER_AUTH_SECRET`**: Secret key for authentication (generate with `openssl rand -base64 32`)
+
+**Note:** All URLs (`FRONTEND_URL`, `BACKEND_URL`, `NEXT_PUBLIC_API_URL`, `BETTER_AUTH_URL`) are automatically set based on `NODE_ENV` and `DOMAIN`. The `NEXT_PUBLIC_` prefix means the variable is exposed to the browser and should only contain public-safe values.
+
+For a complete list of all environment variables, see `.env.example`.
 
 ## Getting Started
 
@@ -61,7 +98,38 @@ This project is organized into two main directories:
    ```bash
    npm run dev
    ```
-   The application will be available at `http://localhost:3000`.
+    The application will be available at `http://localhost:3000`.
+
+## Docker Deployment
+
+### Development with Docker
+
+Start all services (frontend, backend) with Docker Compose:
+
+```bash
+docker compose up
+```
+
+Or run in detached mode:
+
+```bash
+docker compose up -d
+```
+
+### Production Deployment
+
+For production deployment, see the [Deployment Guide](./DEPLOYMENT.md) for detailed instructions including:
+
+- Server provisioning
+- SSL certificate setup
+- CI/CD with GitHub Actions
+- Environment configuration
+
+Quick start for production:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
 
 ## Scripts
 

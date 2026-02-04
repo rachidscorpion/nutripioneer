@@ -2,12 +2,29 @@ import axios from 'axios';
 
 
 const isServer = typeof window === 'undefined';
-const API_URL = isServer
-    ? (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://backend:3001')
-    : (process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : ''));
 
-if (isServer && !process.env.BACKEND_URL) {
-    console.warn('⚠️ BACKEND_URL is not set on server, falling back to NEXT_PUBLIC_API_URL or localhost');
+// Server-side: Use internal backend URL (for Docker networking or localhost)
+// Client-side: Use public API URL from environment or current origin
+const API_URL = isServer
+    ? process.env.BACKEND_URL
+    : process.env.NEXT_PUBLIC_API_URL;
+
+// Validate that API_URL is set
+if (!API_URL) {
+    const errorMsg = isServer
+        ? '❌ BACKEND_URL environment variable is not set. Please check your .env file.'
+        : '❌ NEXT_PUBLIC_API_URL environment variable is not set. Please check your .env file.';
+    throw new Error(errorMsg);
+}
+
+// Log configuration in development
+if (process.env.NODE_ENV === 'development') {
+    console.log(`🔧 API Configuration (${isServer ? 'server' : 'client'}):`, {
+        API_URL,
+        isServer,
+        BACKEND_URL: process.env.BACKEND_URL,
+        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL
+    });
 }
 
 

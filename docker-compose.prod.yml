@@ -8,7 +8,12 @@ services:
     ports:
       - "3001:3001"
     env_file:
-      - ./backend/.env
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./dev.db
+      - BETTER_AUTH_URL=https://${DOMAIN}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
     volumes:
       - ./backend/prisma/dev.db:/app/prisma/dev.db
     networks:
@@ -20,13 +25,16 @@ services:
       context: ./nutripioneer
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: https://nutripioneer.com
+        NEXT_PUBLIC_API_URL: https://${DOMAIN}
     restart: always
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
+      - NODE_ENV=production
       - BACKEND_URL=http://backend:3001
-      - NEXT_PUBLIC_API_URL=https://nutripioneer.com
+      - NEXT_PUBLIC_API_URL=https://${DOMAIN}
       - HOSTNAME=0.0.0.0
     depends_on:
       - backend

@@ -8,3 +8,8 @@ nutripioneer/.next
 nutripioneer/.DS_Store
 backend/.DS_Store
 .DS_Store
+
+# Centralized environment file
+.env
+.env.local
+.env.production
