@@ -20,6 +20,6 @@ services:
       - "3000:3000"
     environment:
       - BACKEND_URL=http://backend:3001
-      - NEXT_PUBLIC_API_URL=http://5.78.150.159
+      - NEXT_PUBLIC_API_URL=https://nutripioneer.com
     depends_on:
       - backend

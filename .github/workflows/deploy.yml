@@ -40,7 +40,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            NEXT_PUBLIC_API_URL=http://5.78.150.159/api
+            NEXT_PUBLIC_API_URL=https://nutripioneer.com/api
 
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
