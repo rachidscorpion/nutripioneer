@@ -55,6 +55,10 @@ export const auth = betterAuth({
             enabled: true,
             maxAge: 60 * 5, // 5 minutes
         },
+        crossSiteCookieAttributes: {
+            sameSite: 'none',
+            secure: true,
+        },
     },
 
     // Base URL for callbacks
