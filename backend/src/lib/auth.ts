@@ -67,18 +67,41 @@ export const auth = betterAuth({
     // Secret for signing tokens
     secret: process.env.BETTER_AUTH_SECRET,
 
-    // Trust host header
-    trustedOrigins: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://5.78.150.159',
-        'https://5.78.150.159',
-        'https://nutripioneer.com',
-        'https://www.nutripioneer.com',
-        'http://nutripioneer.com',
-        'http://www.nutripioneer.com',
-        process.env.BETTER_AUTH_URL || '',
-    ].filter(Boolean),
+    // Trust host header - dynamically build from environment
+    trustedOrigins: (() => {
+        const origins = [];
+
+        // Always trust localhost in development
+        if (process.env.NODE_ENV !== 'production') {
+            origins.push(
+                'http://localhost:3000',
+                'http://localhost:3001',
+                'http://127.0.0.1:3000',
+                'http://127.0.0.1:3001'
+            );
+        }
+
+        // Add the BETTER_AUTH_URL if set
+        if (process.env.BETTER_AUTH_URL) {
+            origins.push(process.env.BETTER_AUTH_URL);
+
+            // Also add www variant and both http/https variants for production
+            try {
+                const url = new URL(process.env.BETTER_AUTH_URL);
+                const hostname = url.hostname;
+
+                if (!hostname.startsWith('www.')) {
+                    origins.push(`${url.protocol}//www.${hostname}`);
+                } else {
+                    origins.push(`${url.protocol}//${hostname.replace('www.', '')}`);
+                }
+            } catch (e) {
+                console.warn('Invalid BETTER_AUTH_URL format:', process.env.BETTER_AUTH_URL);
+            }
+        }
+
+        return origins.filter(Boolean);
+    })(),
 });
 
 // Export auth types

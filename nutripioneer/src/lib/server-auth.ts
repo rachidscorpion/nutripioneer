@@ -1,14 +1,18 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Server-side backend URL for internal API calls
+const BACKEND_URL = process.env.BACKEND_URL;
+
+if (!BACKEND_URL) {
+    throw new Error('❌ BACKEND_URL environment variable is not set. Please check your .env file.');
+}
 
 export async function getSession() {
     try {
         const headersList = await headers();
         const cookie = headersList.get('cookie') || '';
 
-        // Use the internal backend URL for server-side fetching
         const res = await fetch(`${BACKEND_URL}/api/auth/get-session`, {
             headers: {
                 cookie: cookie,

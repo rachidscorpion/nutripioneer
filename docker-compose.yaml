@@ -1,25 +1,43 @@
 services:
   backend:
-    #HONO BACKEND
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: nutripioneer-backend
     ports:
       - "3001:3001"
+    env_file:
+      - .env
     environment:
+      - NODE_ENV=development
       - DATABASE_URL=file:./dev.db
+      - BETTER_AUTH_URL=http://localhost:3000
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
     volumes:
       - ./backend/prisma/dev.db:/app/prisma/dev.db
+    networks:
+      - nutripioneer-network
+
   frontend:
     build:
       context: ./nutripioneer
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3000
     container_name: nutripioneer-frontend
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
-      - BACKEND_URL=http://backend:3001
-      - NEXT_PUBLIC_API_URL=https://nutripioneer.com
+      - NODE_ENV=development
+      - BACKEND_URL=http://localhost:3001
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
     depends_on:
       - backend
+    networks:
+      - nutripioneer-network
+
+networks:
+  nutripioneer-network:
+    driver: bridge

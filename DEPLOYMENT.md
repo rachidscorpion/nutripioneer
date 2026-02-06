@@ -49,16 +49,28 @@ This guide covers how to deploy the NutriPioneer application to a Hetzner VPS (o
     ```
 
 2.  **Environment Variables**:
-     Create a `.env` file in the `backend` directory (and frontend if needed, though most are baked in or runtime).
+     All configuration is now centralized in a single `.env` file at the project root. Copy the example template:
      ```bash
-     nano backend/.env
+     cp .env.example .env
+     nano .env
      ```
-     Add your secrets (DATABASE_URL, BETTER_AUTH_SECRET, OPENAI_API_KEY, etc.).
 
-     **Important**: Before starting, create a `.env` file in the project root with your domain name:
-     ```bash
-     echo "DOMAIN_NAME=yourdomain.com" > .env
+     **Required changes for production:**
+     ```env
+     NODE_ENV=production
+     DOMAIN=nutripioneer.com
      ```
+
+     That's it! URLs are automatically configured based on `NODE_ENV` and `DOMAIN`.
+
+     **Also set these secrets:**
+     - `BETTER_AUTH_SECRET` - Generate with: `openssl rand -base64 32`
+     - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` - From Google Cloud Console
+     - `OPENAI_API_KEY` - Your OpenAI API key
+     - `USDA_API_KEY` - Your USDA API key
+     - All other API keys as needed
+
+     **Important:** The `.env` file is used by all services (backend, frontend, nginx). There's no need for separate `.env` files in subdirectories.
 
 3.  **Start the Application**:
     ```bash
@@ -136,6 +148,12 @@ We have created a workflow in `.github/workflows/deploy.yml` that automates depl
 
 ## Troubleshooting
 
+-   **Environment Configuration**: All environment variables are centralized in the root `.env` file. Simply set `NODE_ENV=production` and `DOMAIN=yourdomain.com` - URLs are auto-configured.
+-   **CORS/Auth Errors**: If you see CORS or `state_mismatch` errors, verify these in your `.env`:
+    - `NODE_ENV` is set to `production`
+    - `DOMAIN` is set to your actual domain (e.g., `nutripioneer.com`)
+    - `BETTER_AUTH_SECRET` is set to a secure random string
+    - For Google OAuth, ensure your Google Cloud Console has the correct redirect URIs: `https://yourdomain.com/api/auth/callback/google`
 -   **Database**: This setup uses SQLite (`dev.db`). For production, ensure the volume `./backend/prisma/dev.db:/app/prisma/dev.db` is correctly mapped so you don't lose data.
 -   **Database Migrations**: If migrations don't run automatically, manually run:
     ```bash
