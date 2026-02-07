@@ -32,7 +32,12 @@ COPY --from=prerelease /app .
 ENV NODE_ENV=production
 ENV PORT=3001
 
+# Copy and setup entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Run the app
 USER bun
 EXPOSE 3001/tcp
-ENTRYPOINT [ "bun", "run", "start" ]
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
+CMD [ "bun", "run", "start" ]
