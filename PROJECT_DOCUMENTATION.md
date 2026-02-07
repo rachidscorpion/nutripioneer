@@ -1925,29 +1925,214 @@ class ApiError extends Error {
 
 ## Deployment
 
-### Backend (Docker)
+### Production Infrastructure
+
+**Backend Hosting:** Hetzner VPS  
+**Container Registry:** GitHub Container Registry (GHCR)  
+**Image:** `ghcr.io/rachidscorpion/nutripioneer:latest`  
+**Reverse Proxy:** Caddy (automatic HTTPS)  
+**Frontend:** Vercel (`https://nutripioneer.vercel.app`)  
+**Backend URL:** `https://5-78-150-159.sslip.io/api`
+
+### CI/CD Pipeline
+
+**Workflow:** `.github/workflows/deploy.yml`
+
+**Triggers:**
+- Push to `main` branch
+- Paths: `backend/**`, `docker-compose.prod.yml`, `.github/workflows/deploy.yml`
+
+**Pipeline Steps:**
+
+1. **Build & Push to GHCR**
+   - Builds backend Docker image from `backend/Dockerfile.prod`
+   - Tags with: commit SHA, branch name, `latest`
+   - Pushes to `ghcr.io/rachidscorpion/nutripioneer`
+
+2. **Deploy to Hetzner (SSH)**
+   - Connects via SSH using `HETZNER_HOST`, `HETZNER_USER`, `HETZNER_SSH_KEY`
+   - Creates `~/nutripioneer/docker-compose.prod.yml` dynamically
+   - Logs into GHCR using `GHCR_PAT` (Personal Access Token)
+   - Pulls latest images
+   - Restarts services with `docker compose up -d --remove-orphans`
+   - Prunes old images
+
+### Docker Compose Production
+
+**File:** `docker-compose.prod.yml`
+
+**Services:**
+
+#### Backend Service
+```yaml
+backend:
+  image: ghcr.io/rachidscorpion/nutripioneer:latest
+  container_name: nutripioneer-backend
+  restart: unless-stopped
+  expose:
+    - "3001"
+  environment:
+    NODE_ENV: production
+    PORT: 3001
+    DATABASE_URL: file:./data/prod.db
+    FRONTEND_URL: https://nutripioneer.vercel.app
+    BETTER_AUTH_URL: https://5-78-150-159.sslip.io/api/auth
+  volumes:
+    - backend_data:/app/data
+  networks:
+    - nutripioneer-network
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
+```
+
+#### Caddy Reverse Proxy
+```yaml
+caddy:
+  image: caddy:alpine
+  container_name: nutripioneer-caddy
+  restart: unless-stopped
+  ports:
+    - "80:80"
+    - "443:443"
+  volumes:
+    - caddy_data:/data
+    - caddy_config:/config
+  command: caddy reverse-proxy --from 5-78-150-159.sslip.io --to backend:3001
+  depends_on:
+    - backend
+  networks:
+    - nutripioneer-network
+```
+
+**Volumes:**
+- `backend_data`: SQLite database persistence
+- `caddy_data`: Caddy data (SSL certificates)
+- `caddy_config`: Caddy configuration
+
+**Networks:**
+- `nutripioneer-network`: Bridge network for service communication
+
+### Required GitHub Secrets
+
+**SSH Access:**
+- `HETZNER_HOST`: Server IP address
+- `HETZNER_USER`: SSH username (e.g., `root`)
+- `HETZNER_SSH_KEY`: Private SSH key for server access
+
+**Container Registry:**
+- `GHCR_PAT`: GitHub Personal Access Token with `read:packages` scope
+
+**Backend Environment Variables:**
+- `BETTER_AUTH_SECRET`: Secret key for Better Auth
+- `GOOGLE_CLIENT_ID`: Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
+- `USDA_API_KEY`: USDA FoodData Central API key
+- `FATSECRET_CLIENT_ID`: FatSecret OAuth client ID
+- `FATSECRET_CLIENT_SECRET`: FatSecret OAuth client secret
+- `OPENFDA_API_KEY`: Open FDA API key
+- `MEALDB_API_KEY`: TheMealDB API key (if required)
+- `OPENAI_API_KEY`: OpenAI API key for GPT-4o/GPT-5-nano
+- `UNSPLASH_APPLICATION_ID`: Unsplash app ID
+- `UNSPLASH_SECRET_KEY`: Unsplash secret key
+- `UNSPLASH_ACCESS_KEY`: Unsplash access key
+- `POLAR_ACCESS_TOKEN`: Polar.sh access token
+- `POLAR_PRODUCT_ID`: Polar.sh product ID
+- `POLAR_WEBHOOK_SECRET`: Polar.sh webhook secret
+- `POLAR_ORGANIZATION_ID`: Polar.sh organization ID
+- `ICD_CLIENT_ID`: WHO ICD-11 OAuth client ID
+- `ICD_CLIENT_SECRET`: WHO ICD-11 OAuth client secret
+
+### Health Checks
+
+**Backend Health Endpoint:** `GET /health`
+
+**Container Health Check:**
+```bash
+curl -f http://localhost:3001/health
+```
+
+**Check Running Containers:**
+```bash
+docker ps --filter "name=nutripioneer"
+```
+
+### Manual Deployment Commands
+
+**SSH into Server:**
+```bash
+ssh root@5-78-150-159.sslip.io
+```
+
+**View Logs:**
+```bash
+docker compose -f ~/nutripioneer/docker-compose.prod.yml logs -f backend
+docker compose -f ~/nutripioneer/docker-compose.prod.yml logs -f caddy
+```
+
+**Restart Services:**
+```bash
+cd ~/nutripioneer
+docker compose -f docker-compose.prod.yml restart
+```
+
+**Update to Latest Image:**
+```bash
+cd ~/nutripioneer
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d --remove-orphans
+```
+
+**Access Database:**
+```bash
+docker exec -it nutripioneer-backend bun run db:studio
+```
+
+### Dockerfiles
+
+**Backend Production:** `backend/Dockerfile.prod`
 ```dockerfile
 FROM oven/bun:1
 WORKDIR /app
 COPY package.json bun.lock ./
-RUN bun install
-COPY . .
+RUN bun install --frozen-lockfile --production
+COPY prisma ./prisma
 RUN bun run db:generate
+COPY . .
 RUN bun run db:push
 EXPOSE 3001
 CMD ["bun", "run", "index.ts"]
 ```
 
-### Frontend (Docker)
+**Frontend Production:** `nutripioneer/Dockerfile`
 ```dockerfile
-FROM node:20-alpine
+FROM node:20-alpine AS base
+FROM base AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV production
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+USER nextjs
 EXPOSE 3000
-CMD ["npm", "start"]
+ENV PORT 3000
+CMD ["node", "server.js"]
 ```
 
 ---
@@ -2074,9 +2259,19 @@ Run: `bun run db:seed`
 
 ---
 
-**Document Version:** 2.0
-**Last Updated:** January 2026
+**Document Version:** 2.1
+**Last Updated:** February 2026
 **Project:** NutriPioneer
+
+**Version 2.1 Changes (February 2026):**
+- Added comprehensive Production Deployment documentation
+- Documented CI/CD pipeline with GitHub Actions
+- Added Docker Compose production configuration details
+- Documented Hetzner server deployment setup
+- Added Caddy reverse proxy configuration
+- Documented all required GitHub Secrets for deployment
+- Added health check and monitoring commands
+- Documented manual deployment procedures
 
 **Version 2.0 Changes (January 2026):**
 - Added Just-in-Time Disease Onboarding system

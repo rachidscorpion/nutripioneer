@@ -100,6 +100,11 @@ export const auth = betterAuth({
             }
         }
 
+        origins.push(
+            'https://5-78-150-159.sslip.io',
+            'https://nutripioneer.com'
+        );
+
         return origins.filter(Boolean);
     })(),
 });
