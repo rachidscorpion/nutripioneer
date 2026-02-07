@@ -87,6 +87,25 @@ jobs:
             echo '      - DATABASE_URL=file:./data/prod.db' >> docker-compose.prod.yml
             echo '      - FRONTEND_URL=https://nutripioneer.vercel.app' >> docker-compose.prod.yml
             echo '      - BETTER_AUTH_URL=https://5-78-150-159.sslip.io/api/auth' >> docker-compose.prod.yml
+            echo '      - BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}' >> docker-compose.prod.yml
+            echo '      - GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}' >> docker-compose.prod.yml
+            echo '      - GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}' >> docker-compose.prod.yml
+            echo '      - USDA_API_KEY=${{ secrets.USDA_API_KEY }}' >> docker-compose.prod.yml
+            echo '      - FATSECRET_CLIENT_ID=${{ secrets.FATSECRET_CLIENT_ID }}' >> docker-compose.prod.yml
+            echo '      - FATSECRET_CLIENT_SECRET=${{ secrets.FATSECRET_CLIENT_SECRET }}' >> docker-compose.prod.yml
+            echo '      - OPENFDA_API_KEY=${{ secrets.OPENFDA_API_KEY }}' >> docker-compose.prod.yml
+            echo '      - MEALDB_API_KEY=${{ secrets.MEALDB_API_KEY }}' >> docker-compose.prod.yml
+            echo '      - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}' >> docker-compose.prod.yml
+            echo '      - UNSPLASH_APPLICATION_ID=${{ secrets.UNSPLASH_APPLICATION_ID }}' >> docker-compose.prod.yml
+            echo '      - UNSPLASH_SECRET_KEY=${{ secrets.UNSPLASH_SECRET_KEY }}' >> docker-compose.prod.yml
+            echo '      - UNSPLASH_ACCESS_KEY=${{ secrets.UNSPLASH_ACCESS_KEY }}' >> docker-compose.prod.yml
+            echo '      - POLAR_ACCESS_TOKEN=${{ secrets.POLAR_ACCESS_TOKEN }}' >> docker-compose.prod.yml
+            echo '      - POLAR_PRODUCT_ID=${{ secrets.POLAR_PRODUCT_ID }}' >> docker-compose.prod.yml
+            echo '      - POLAR_WEBHOOK_SECRET=${{ secrets.POLAR_WEBHOOK_SECRET }}' >> docker-compose.prod.yml
+            echo '      - POLAR_ORGANIZATION_ID=${{ secrets.POLAR_ORGANIZATION_ID }}' >> docker-compose.prod.yml
+            echo '      - POLAR_ENV=production' >> docker-compose.prod.yml
+            echo '      - ICD_CLIENT_ID=${{ secrets.ICD_CLIENT_ID }}' >> docker-compose.prod.yml
+            echo '      - ICD_CLIENT_SECRET=${{ secrets.ICD_CLIENT_SECRET }}' >> docker-compose.prod.yml
             echo '    volumes:' >> docker-compose.prod.yml
             echo '      - backend_data:/app/data' >> docker-compose.prod.yml
             echo '    networks:' >> docker-compose.prod.yml
