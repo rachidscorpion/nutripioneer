@@ -40,7 +40,11 @@ RUN chmod +x /docker-entrypoint.sh
 RUN mkdir -p /app/data && chown -R bun:bun /app/data
 
 # Run the app
-USER bun
+# Install gosu for easy step-down from root
+RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
+
+# Run the app
+# USER bun
 EXPOSE 3001/tcp
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD [ "bun", "run", "start" ]

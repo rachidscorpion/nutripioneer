@@ -16,5 +16,6 @@ else
 fi
 
 # Start the application
-echo "🌟 Starting server..."
-exec "$@"
+echo "🌟 Starting server for user bun..."
+chown -R bun:bun /app/data
+exec gosu bun "$@"
