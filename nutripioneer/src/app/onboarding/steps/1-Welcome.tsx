@@ -156,7 +156,7 @@ export default function WelcomeStep() {
                             : 'Sign in to continue your journey.'}
                     </p>
 
-                    {/* Social Buttons */}
+                    {/* Social Buttons  */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
                         <LoginButton
                             variant="outline"
