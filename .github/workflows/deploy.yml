@@ -72,59 +72,55 @@ jobs:
             # Check if docker is installed
             docker --version || { echo "ERROR: Docker not installed"; exit 1; }
             
-            # Create/Update docker-compose.prod.yml
-            cat <<EOF > docker-compose.prod.yml
-            version: '3.8'
-
-            services:
-              backend:
-                image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-                container_name: nutripioneer-backend
-                restart: unless-stopped
-                expose:
-                  - "3001"
-                environment:
-                  - NODE_ENV=production
-                  - PORT=3001
-                  - DATABASE_URL=file:./data/prod.db
-                  - FRONTEND_URL=https://nutripioneer.vercel.app
-                  - BETTER_AUTH_URL=https://5-78-150-159.sslip.io/api/auth
-                volumes:
-                   - backend_data:/app/data
-                networks:
-                  - nutripioneer-network
-                healthcheck:
-                  test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-                  interval: 30s
-                  timeout: 10s
-                  retries: 3
-                  start_period: 40s
-
-              caddy:
-                image: caddy:alpine
-                container_name: nutripioneer-caddy
-                restart: unless-stopped
-                ports:
-                  - "80:80"
-                  - "443:443"
-                volumes:
-                  - caddy_data:/data
-                  - caddy_config:/config
-                command: caddy reverse-proxy --from 5-78-150-159.sslip.io --to backend:3001
-                depends_on:
-                  - backend
-                networks:
-                  - nutripioneer-network
-
-            volumes:
-              backend_data:
-              caddy_data:
-              caddy_config:
-
-            networks:
-              nutripioneer-network:
-                driver: bridge
-            EOF
+            # Create docker-compose.prod.yml with correct image reference
+            echo 'version: "3.8"' > docker-compose.prod.yml
+            echo 'services:' >> docker-compose.prod.yml
+            echo '  backend:' >> docker-compose.prod.yml
+            echo '    image: ghcr.io/rachidscorpion/nutripioneer:latest' >> docker-compose.prod.yml
+            echo '    container_name: nutripioneer-backend' >> docker-compose.prod.yml
+            echo '    restart: unless-stopped' >> docker-compose.prod.yml
+            echo '    expose:' >> docker-compose.prod.yml
+            echo '      - "3001"' >> docker-compose.prod.yml
+            echo '    environment:' >> docker-compose.prod.yml
+            echo '      - NODE_ENV=production' >> docker-compose.prod.yml
+            echo '      - PORT=3001' >> docker-compose.prod.yml
+            echo '      - DATABASE_URL=file:./data/prod.db' >> docker-compose.prod.yml
+            echo '      - FRONTEND_URL=https://nutripioneer.vercel.app' >> docker-compose.prod.yml
+            echo '      - BETTER_AUTH_URL=https://5-78-150-159.sslip.io/api/auth' >> docker-compose.prod.yml
+            echo '    volumes:' >> docker-compose.prod.yml
+            echo '      - backend_data:/app/data' >> docker-compose.prod.yml
+            echo '    networks:' >> docker-compose.prod.yml
+            echo '      - nutripioneer-network' >> docker-compose.prod.yml
+            echo '    healthcheck:' >> docker-compose.prod.yml
+            echo '      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]' >> docker-compose.prod.yml
+            echo '      interval: 30s' >> docker-compose.prod.yml
+            echo '      timeout: 10s' >> docker-compose.prod.yml
+            echo '      retries: 3' >> docker-compose.prod.yml
+            echo '      start_period: 40s' >> docker-compose.prod.yml
+            echo '  caddy:' >> docker-compose.prod.yml
+            echo '    image: caddy:alpine' >> docker-compose.prod.yml
+            echo '    container_name: nutripioneer-caddy' >> docker-compose.prod.yml
+            echo '    restart: unless-stopped' >> docker-compose.prod.yml
+            echo '    ports:' >> docker-compose.prod.yml
+            echo '      - "80:80"' >> docker-compose.prod.yml
+            echo '      - "443:443"' >> docker-compose.prod.yml
+            echo '    volumes:' >> docker-compose.prod.yml
+            echo '      - caddy_data:/data' >> docker-compose.prod.yml
+            echo '      - caddy_config:/config' >> docker-compose.prod.yml
+            echo '    command: caddy reverse-proxy --from 5-78-150-159.sslip.io --to backend:3001' >> docker-compose.prod.yml
+            echo '    depends_on:' >> docker-compose.prod.yml
+            echo '      - backend' >> docker-compose.prod.yml
+            echo '    networks:' >> docker-compose.prod.yml
+            echo '      - nutripioneer-network' >> docker-compose.prod.yml
+            echo 'volumes:' >> docker-compose.prod.yml
+            echo '  backend_data:' >> docker-compose.prod.yml
+            echo '  caddy_data:' >> docker-compose.prod.yml
+            echo '  caddy_config:' >> docker-compose.prod.yml
+            echo 'networks:' >> docker-compose.prod.yml
+            echo '  nutripioneer-network:' >> docker-compose.prod.yml
+            echo '    driver: bridge' >> docker-compose.prod.yml
+            echo "✓ docker-compose.prod.yml created"
+            cat docker-compose.prod.yml
             
             # Login to GHCR on server to pull image
             echo "Attempting Docker login to GHCR..."
