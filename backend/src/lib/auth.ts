@@ -102,7 +102,10 @@ export const auth = betterAuth({
 
         origins.push(
             'https://5-78-150-159.sslip.io',
-            'https://nutripioneer.com'
+            'https://www.5-78-150-159.sslip.io',
+            'https://nutripioneer.com',
+            'https://www.nutripioneer.com',
+            'http://localhost:3000' // Added local for debugging 
         );
 
         return origins.filter(Boolean);
