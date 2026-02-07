@@ -56,12 +56,22 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           script_stop: true
+          request_pty: true
+          debug: true
           script: |
             set -e
+            echo "=== Deployment started at $(date) ==="
+            echo "Current directory: $(pwd)"
+            echo "User: $(whoami)"
+            
             # Navigate to app directory (create if doesn't exist)
             mkdir -p ~/nutripioneer
             cd ~/nutripioneer
-
+            echo "Changed to: $(pwd)"
+            
+            # Check if docker is installed
+            docker --version || { echo "ERROR: Docker not installed"; exit 1; }
+            
             # Create/Update docker-compose.prod.yml
             cat <<EOF > docker-compose.prod.yml
             version: '3.8'
@@ -117,26 +127,31 @@ jobs:
             EOF
             
             # Login to GHCR on server to pull image
-            # Note: You must create a GitHub PAT with read:packages scope and add it as GHCR_PAT secret
+            echo "Attempting Docker login to GHCR..."
+            if [ -z "${{ secrets.GHCR_PAT }}" ]; then
+              echo "ERROR: GHCR_PAT secret is not set!"
+              echo "Please create a GitHub PAT with read:packages scope and add it as GHCR_PAT secret"
+              exit 1
+            fi
+            
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
             echo "✓ Docker login successful"
 
             # Pull latest images
             echo "Pulling latest images..."
-            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml pull || { echo "ERROR: Failed to pull images"; exit 1; }
             echo "✓ Images pulled successfully"
             
             # Restart services
             echo "Starting services..."
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans || { echo "ERROR: Failed to start services"; exit 1; }
             echo "✓ Services started"
 
             # Show running containers
             echo "Running containers:"
-            docker ps --filter "name=nutripioneer"
+            docker ps --filter "name=nutripioneer" || echo "No containers found"
 
             # Prune old images
             docker image prune -f
 
-            echo "✓ Deployment complete"
+            echo "=== Deployment completed at $(date) ==="
