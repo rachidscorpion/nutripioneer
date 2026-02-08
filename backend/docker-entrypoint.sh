@@ -17,5 +17,16 @@ fi
 
 # Start the application
 echo "🌟 Starting server for user bun..."
+echo "Debugging permissions before chown:"
+ls -la /app/data
+
 chown -R bun:bun /app/data
+chmod 755 /app/data
+if [ -f "/app/data/prod.db" ]; then
+    chmod 666 /app/data/prod.db
+fi
+
+echo "Debugging permissions after chown/chmod:"
+ls -la /app/data
+
 exec gosu bun "$@"
