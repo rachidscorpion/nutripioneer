@@ -49,8 +49,7 @@ export const api = {
         register: (data: any) => apiClient.post('/auth/register', data),
         logout: () => apiClient.post('/auth/sign-out'),
         signInSocial: (provider: string) => apiClient.post('/auth/sign-in/social', {
-            provider,
-            callbackURL: typeof window !== 'undefined' ? `${window.location.origin}/home` : '/home'
+            provider
         }),
     },
     user: {

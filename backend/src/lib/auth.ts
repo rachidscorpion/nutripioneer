@@ -44,7 +44,13 @@ export const auth = betterAuth({
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID || '',
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+            enabled: true,
         },
+    },
+
+    // Social login redirects
+    socialLogin: {
+        successRedirectURL: '/home',
     },
 
     // Session configuration
@@ -55,11 +61,21 @@ export const auth = betterAuth({
             enabled: true,
             maxAge: 60 * 5, // 5 minutes
         },
-        cookiePrefix: 'nutripioneer',
+        freshAge: 60 * 5, // Consider session fresh for 5 minutes
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
     },
 
     // Base URL for callbacks
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+
+    // Advanced configuration
+    advanced: {
+        cookiePrefix: 'nutripioneer',
+        crossSubDomainCookies: {
+            enabled: true,
+        },
+    },
 
     // Redirect URLs after successful auth
     account: {
