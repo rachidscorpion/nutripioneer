@@ -50,7 +50,7 @@ export const api = {
         logout: () => apiClient.post('/auth/sign-out'),
         signInSocial: (provider: string) => apiClient.post('/auth/sign-in/social', {
             provider,
-            callbackURL: typeof window !== 'undefined' ? `${window.location.origin}/onboarding` : undefined
+            callbackURL: typeof window !== 'undefined' ? `${window.location.origin}/home` : '/home'
         }),
     },
     user: {

@@ -55,14 +55,19 @@ export const auth = betterAuth({
             enabled: true,
             maxAge: 60 * 5, // 5 minutes
         },
-        crossSiteCookieAttributes: {
-            sameSite: 'none',
-            secure: true,
-        },
+        cookiePrefix: 'nutripioneer',
     },
 
     // Base URL for callbacks
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+
+    // Redirect URLs after successful auth
+    account: {
+        accountLinking: {
+            enabled: true,
+            trustedProviders: ['google']
+        }
+    },
 
     // Secret for signing tokens
     secret: process.env.BETTER_AUTH_SECRET,
