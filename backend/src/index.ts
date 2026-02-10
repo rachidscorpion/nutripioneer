@@ -28,8 +28,7 @@ const corsOrigins = (() => {
 
     // Always allow these domains in production and development
     origins.push(
-        'https://187-77-11-138.sslip.io',
-        'https://www.187-77-11-138.sslip.io',
+        'https://api.nutripioneer.com',
         'https://nutripioneer.com',
         'https://www.nutripioneer.com'
     );

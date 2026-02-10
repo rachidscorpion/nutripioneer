@@ -1,4 +1,4 @@
-// public-api-url: https://187-77-11-138.sslip.io
+// public-api-url: https://api.nutripioneer.com
 
 import axios from 'axios';
 
