@@ -17,7 +17,7 @@ services:
       - DATABASE_URL=file:./data/prod.db
       # These should be set in the server's .env file or GitHub Secrets
       - FRONTEND_URL=https://nutripioneer.vercel.app # Update this if different
-      - BETTER_AUTH_URL=https://187-77-11-138.sslip.io/api/auth
+      - BETTER_AUTH_URL=https://api.nutripioneer.com/api/auth
     volumes:
       # Persist the sqlite database if it's in the app root
       - backend_data:/app/data
@@ -40,7 +40,7 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
-    command: caddy reverse-proxy --from 187-77-11-138.sslip.io --to backend:3001
+    command: caddy reverse-proxy --from api.nutripioneer.com --to backend:3001
     depends_on:
       - backend
     networks:

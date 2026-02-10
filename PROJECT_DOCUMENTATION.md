@@ -1932,7 +1932,7 @@ class ApiError extends Error {
 **Image:** `ghcr.io/rachidscorpion/nutripioneer:latest`  
 **Reverse Proxy:** Caddy (automatic HTTPS)  
 **Frontend:** Vercel (`https://nutripioneer.vercel.app`)  
-**Backend URL:** `https://187-77-11-138.sslip.io/api`
+**Backend URL:** `https://api.nutripioneer.com/api`
 
 ### CI/CD Pipeline
 
@@ -1976,7 +1976,7 @@ backend:
     PORT: 3001
     DATABASE_URL: file:./data/prod.db
     FRONTEND_URL: https://nutripioneer.vercel.app
-    BETTER_AUTH_URL: https://187-77-11-138.sslip.io/api/auth
+    BETTER_AUTH_URL: https://api.nutripioneer.com/api/auth
   volumes:
     - backend_data:/app/data
   networks:
@@ -2001,7 +2001,7 @@ caddy:
   volumes:
     - caddy_data:/data
     - caddy_config:/config
-  command: caddy reverse-proxy --from 187-77-11-138.sslip.io --to backend:3001
+  command: caddy reverse-proxy --from api.nutripioneer.com --to backend:3001
   depends_on:
     - backend
   networks:
@@ -2064,7 +2064,7 @@ docker ps --filter "name=nutripioneer"
 
 **SSH into Server:**
 ```bash
-ssh root@187-77-11-138.sslip.io
+ssh root@api.nutripioneer.com
 ```
 
 **View Logs:**
