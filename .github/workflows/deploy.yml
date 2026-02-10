@@ -87,7 +87,7 @@ jobs:
             echo '      - PORT=3001' >> docker-compose.prod.yml
             echo '      - DATABASE_URL=file:./data/prod.db' >> docker-compose.prod.yml
             echo '      - FRONTEND_URL=https://nutripioneer.vercel.app' >> docker-compose.prod.yml
-            echo '      - BETTER_AUTH_URL=https://api.nutripioneer.com/api/auth' >> docker-compose.prod.yml
+            echo '      - BETTER_AUTH_URL=https://nutripioneer.com' >> docker-compose.prod.yml
             echo '      - BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}' >> docker-compose.prod.yml
             echo '      - GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}' >> docker-compose.prod.yml
             echo '      - GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}' >> docker-compose.prod.yml
