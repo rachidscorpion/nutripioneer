@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  distDir: path.join(".next"),
   images: {
     unoptimized: true,
     qualities: [100, 75, 50, 25],
