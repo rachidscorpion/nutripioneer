@@ -96,21 +96,21 @@ export class ConditionsController {
             }, 400);
         }
 
-        try {
-            const results = await icdService.searchConditions(query);
+        const results = await icdService.searchConditions(query);
 
+        // If ICD API is unavailable, return empty results with a warning
+        if (results.length === 0) {
             return c.json({
                 success: true,
-                data: results,
+                data: [],
+                warning: 'ICD-11 database search is currently unavailable. You can still add conditions manually.',
             });
-        } catch (error) {
-            console.error('[Conditions] ICD search failed:', error);
-            return c.json({
-                success: false,
-                error: 'Failed to search ICD-11 database',
-                message: error instanceof Error ? error.message : 'Unknown error',
-            }, 500);
         }
+
+        return c.json({
+            success: true,
+            data: results,
+        });
     }
 
     async onboardCondition(c: Context) {

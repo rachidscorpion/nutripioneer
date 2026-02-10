@@ -65,7 +65,15 @@ class ICDService {
             });
 
             if (!response.ok) {
-                throw new Error(`ICD-11 token request failed: ${response.status}`);
+                const errorText = await response.text();
+                console.error('[ICD-11] Token request failed:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: errorText,
+                    clientIdLength: this.clientId.length,
+                    clientIdPrefix: this.clientId.substring(0, 10) + '...',
+                });
+                throw new Error(`ICD-11 token request failed: ${response.status} - ${errorText}`);
             }
 
             const data = await response.json() as ICDTokenResponse;
@@ -104,6 +112,13 @@ class ICDService {
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[ICD-11] Search API failed:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: errorText,
+                    query,
+                });
                 throw new Error(`ICD-11 search failed: ${response.status}`);
             }
 
@@ -131,8 +146,12 @@ class ICDService {
                 return 0;
             });
         } catch (error) {
-            console.error(`[ICD-11] Search failed for "${query}":`, error);
-            throw new Error('Failed to search ICD-11 database');
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            console.error(`[ICD-11] Search failed for "${query}":`, errorMessage);
+
+            // Return empty array instead of throwing - graceful degradation
+            // This allows the app to continue functioning even if ICD API is down
+            return [];
         }
     }
 
