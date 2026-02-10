@@ -45,12 +45,13 @@ export const auth = betterAuth({
             clientId: process.env.GOOGLE_CLIENT_ID || '',
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
             enabled: true,
+            redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/google`,
         },
     },
 
     // Social login redirects
     socialLogin: {
-        successRedirectURL: '/home',
+        successRedirectURL: `${process.env.BETTER_AUTH_URL}/home`,
     },
 
     // Session configuration
