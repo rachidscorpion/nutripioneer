@@ -153,9 +153,10 @@ jobs:
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             echo "✓ Docker login successful"
 
-            # Pull latest images
+            # Pull latest images with IPv4 preference
             echo "Pulling latest images..."
-            docker compose -f docker-compose.prod.yml pull || { echo "ERROR: Failed to pull images"; exit 1; }
+            # Try IPv4 first to avoid IPv6 connectivity issues
+            docker pull ghcr.io/rachidscorpion/nutripioneer:latest --platform linux/amd64 || docker compose -f docker-compose.prod.yml pull || { echo "ERROR: Failed to pull images"; exit 1; }
             echo "✓ Images pulled successfully"
             
             # Restart services
