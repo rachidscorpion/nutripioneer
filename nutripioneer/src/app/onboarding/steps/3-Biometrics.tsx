@@ -77,11 +77,11 @@ export default function BiometricsStep() {
         const num = parseFloat(val);
         if (!isNaN(num)) {
             if (field === 'weight') {
-                // lbs -> kg
-                updateData('biometrics', { weight: num / 2.20462 });
+                // lbs -> kg (round to 1 decimal)
+                updateData('biometrics', { weight: parseFloat((num / 2.20462).toFixed(1)) });
             } else if (field === 'waist') {
-                // in -> cm
-                updateData('biometrics', { waist: num * 2.54 });
+                // in -> cm (round to 1 decimal)
+                updateData('biometrics', { waist: parseFloat((num * 2.54).toFixed(1)) });
             }
         }
     };

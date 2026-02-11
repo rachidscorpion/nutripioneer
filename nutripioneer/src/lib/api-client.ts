@@ -48,14 +48,16 @@ export const api = {
         login: (credentials: any) => apiClient.post('/auth/login', credentials),
         register: (data: any) => apiClient.post('/auth/register', data),
         logout: () => apiClient.post('/auth/sign-out'),
-        signInSocial: (provider: string) => apiClient.post('/auth/sign-in/social', {
-            provider
+        signInSocial: (provider: string, callbackURL?: string) => apiClient.post('/auth/sign-in/social', {
+            provider,
+            callbackURL,
         }),
     },
     user: {
         getProfile: () => apiClient.get('/users/profile'),
         updateProfile: (data: any) => apiClient.patch('/users/profile', data),
-        deleteTestUser: () => apiClient.delete('/users/test-account'), // Hypothetical
+        deleteAccount: () => apiClient.delete('/users/account'),
+        deleteTestUser: () => apiClient.delete('/users/test-account'), // For testing
         // Nutrition Limits
         getNutritionLimits: () => apiClient.get('/users/profile/nutrition-limits'),
         updateNutritionLimits: (data: any) => apiClient.put('/users/profile/nutrition-limits', data),

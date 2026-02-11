@@ -25,10 +25,11 @@ export default function ProfileActions() {
                 await api.recipes.deleteAll();
                 toast.success('All recipes deleted');
             } else if (action === 'deleteAccount') {
-                await api.user.deleteTestUser();
+                await api.user.deleteAccount();
+                await api.auth.logout();
                 toast.success('Account deleted');
-                router.push('/onboarding'); // Redirect to onboarding
-                return; // Don't refresh if we are leaving
+                window.location.href = '/onboarding';
+                return;
             }
             router.refresh();
         } catch (error) {

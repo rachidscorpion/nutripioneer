@@ -45,14 +45,19 @@ export const auth = betterAuth({
             clientId: process.env.GOOGLE_CLIENT_ID || '',
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
             enabled: true,
-            redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/google`,
         },
     },
 
     // Social login redirects
-    socialLogin: {
-        successRedirectURL: `${process.env.BETTER_AUTH_URL}/home`,
-    },
+    // socialLogin: {
+    //    successRedirectURL: `${(process.env.BETTER_AUTH_URL || 'http://localhost:3000').replace(/\/$/, '')}/onboarding`,
+    // },
+
+    // Advanced: use a callback to see what redirect is being used
+    // onBeforeOAuthSuccess: async (ctx) => {
+    //     console.log('[Better Auth] OAuth success, redirecting to:', ctx.redirectURL);
+    //     return ctx;
+    // },
 
     // Session configuration
     session: {
@@ -68,7 +73,7 @@ export const auth = betterAuth({
     },
 
     // Base URL for callbacks
-    baseURL: `${process.env.BETTER_AUTH_URL}` || 'http://localhost:3001',
+    baseURL: `${process.env.BETTER_AUTH_URL}` || 'http://localhost:3000',
 
     // Advanced configuration
     advanced: {

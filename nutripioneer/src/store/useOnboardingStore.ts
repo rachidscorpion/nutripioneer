@@ -39,6 +39,7 @@ export interface OnboardingState {
     prevStep: () => void;
     updateData: (section: keyof OnboardingState, data: any) => void;
     setStep: (step: number) => void;
+    reset: () => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>((set) => ({
@@ -68,6 +69,31 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     nextStep: () => set((state) => ({ step: state.step + 1 })),
     prevStep: () => set((state) => ({ step: Math.max(1, state.step - 1) })), // Prevent going below step 1
     setStep: (step) => set({ step }),
+
+    reset: () => set({
+        step: 1,
+        name: '',
+        email: '',
+        conditions: [],
+        biometrics: {
+            height: 0,
+            weight: 0,
+            waist: 0,
+            age: 0,
+            gender: '',
+            unit: 'imperial',
+        },
+        medical: {
+            insulin: false,
+            medications: [],
+        },
+        dietary: {
+            favorites: [],
+            dislikes: [],
+            favCuisines: [],
+            dislikeCuisines: [],
+        },
+    }),
 
     updateData: (section, data) => set((state) => {
         const currentSection = state[section];

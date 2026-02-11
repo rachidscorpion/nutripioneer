@@ -4,15 +4,17 @@ import { api } from '@/lib/api-client';
 import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
+import { useOnboardingStore } from '@/store/useOnboardingStore';
 
 export default function LogoutButton() {
     const router = useRouter();
+    const { reset } = useOnboardingStore();
 
     const handleLogout = async () => {
         try {
             await api.auth.logout();
-            router.push('/onboarding');
-            router.refresh();
+            reset();
+            window.location.href = '/onboarding';
         } catch (e) {
             console.error("Logout failed", e);
         }

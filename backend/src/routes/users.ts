@@ -29,6 +29,9 @@ users.post('/profile/subscription/sync', authMiddleware, (c) => usersController.
 // DELETE /api/users/test-account - Delete test account
 users.delete('/test-account', authMiddleware, (c) => usersController.deleteTestAccount(c));
 
+// DELETE /api/users/account - Delete current user account
+users.delete('/account', authMiddleware, (c) => usersController.deleteAccount(c));
+
 // ============================================
 // Admin/legacy routes (no auth for backward compatibility)
 // ============================================

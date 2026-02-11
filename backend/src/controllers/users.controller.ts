@@ -318,6 +318,19 @@ export class UsersController {
             message: 'Test account deleted successfully',
         });
     }
+
+    /**
+     * Delete current user's account
+     */
+    async deleteAccount(c: Context) {
+        const userId = c.get('userId');
+        await usersService.delete(userId);
+
+        return c.json({
+            success: true,
+            message: 'Account deleted successfully',
+        });
+    }
 }
 
 export const usersController = new UsersController();
