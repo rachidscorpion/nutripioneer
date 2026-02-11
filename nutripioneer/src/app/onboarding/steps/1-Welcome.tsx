@@ -2,7 +2,7 @@
 
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import styles from '@/styles/Onboarding.module.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { api } from '@/lib/api-client';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
@@ -12,29 +12,30 @@ import NPLoader2 from '@/components/loader/Loader2';
 
 export default function WelcomeStep() {
     const router = useRouter();
-    const { updateData, nextStep } = useOnboardingStore();
-    const [isSignUp, setIsSignUp] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [name, setName] = useState(''); // Only for Sign Up
-    const [showPassword, setShowPassword] = useState(false);
+    const { updateData, nextStep, reset } = useOnboardingStore();
+    const [isSignUp] = useState(false);
+    // const [email, setEmail] = useState('');
+    // const [password, setPassword] = useState('');
+    // const [name, setName] = useState(''); // Only for Sign Up
+    // const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [error, setError] = useState<string | null>(null);
 
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleLogout = async () => {
         try {
             await api.auth.logout();
-            router.push('/onboarding');
-            router.refresh();
+            reset();
+            window.location.href = '/onboarding';
         } catch (e) {
             console.error("Logout failed", e);
         }
     };
 
-    useEffect(() => {
-        setLoading(true);
-        const checkUser = async () => {
+    const checkUserAndNavigate = useCallback(async () => {
+        try {
             const session = await getServerSessionAction();
 
             if (session?.user) {
@@ -54,34 +55,54 @@ export default function WelcomeStep() {
                             if (parsedConditions && parsedConditions.length > 0) {
                                 router.push('/home'); // Redirect to home if setup is complete
                                 return;
+                            } else {
+                                nextStep();
                             }
                         } catch (e) {
+                            nextStep();
                         }
                     } else {
                         // User exists but maybe profile incomplete
                         nextStep();
-                        setLoading(false);
                     }
-                } catch (e) {
-                    handleLogout();
-                    console.error("Failed to fetch user profile", e);
-                    nextStep();
-                    setLoading(false);
+                } catch (e: any) {
+                    // If profile doesn't exist (404), user is new - continue onboarding
+                    if (e.response?.status === 404) {
+                        nextStep();
+                    } else {
+                        // Other errors - try logging out
+                        console.error("Failed to fetch user profile", e);
+                        try {
+                            await api.auth.logout();
+                        } catch (logoutErr) {
+                            console.error("Logout failed", logoutErr);
+                        }
+                        reset();
+                    }
                 }
-            } else {
-                setLoading(false);
             }
-        };
+        } catch (error) {
+            console.error("Error checking user status:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [updateData, nextStep, router, reset]);
 
-        checkUser();
-    }, [updateData, nextStep, router]);
+    useEffect(() => {
+        setLoading(true);
+        checkUserAndNavigate();
+    }, [checkUserAndNavigate]); // Run once on mount
 
     const handleSocialLogin = async (provider: 'google' | 'apple') => {
         try {
             setLoading(true);
-            const { data } = await api.auth.signInSocial(provider);
+            setError(null);
+            const { data } = await api.auth.signInSocial(provider, '/onboarding');
+
             if (data?.url) {
                 window.location.href = data.url;
+            } else {
+                setError('Failed to get redirect URL from server. Please try again.');
                 setLoading(false);
             }
         } catch (err: any) {
@@ -91,6 +112,7 @@ export default function WelcomeStep() {
         }
     };
 
+    /*
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -113,9 +135,8 @@ export default function WelcomeStep() {
                 // Assuming auto-login or we just try logging in:
                 await api.auth.login({ email, password });
 
-                // Trigger re-check or move next
-                router.refresh(); // Refresh to catch cookie
-                nextStep();
+                // Trigger navigation check
+                await checkUserAndNavigate();
 
             } else {
                 await api.auth.login({
@@ -124,16 +145,8 @@ export default function WelcomeStep() {
                 });
 
                 // Login successful (cookie set)
-                router.refresh();
-
                 // Check where to go
-                const session = await getServerSessionAction();
-                if (session?.user) {
-                    // Check profile status similar to useEffect
-                    // For now just nextStep or let useEffect handle it if we trigger a re-render
-                    // Since we duplicate logic, let's just rely on a page refresh or manual check
-                    window.location.reload();
-                }
+                await checkUserAndNavigate();
             }
         } catch (err: any) {
             console.error("Auth error", err);
@@ -142,6 +155,7 @@ export default function WelcomeStep() {
             setLoading(false);
         }
     };
+    */
 
     return (
         <div style={{ padding: '0 0.5rem', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>

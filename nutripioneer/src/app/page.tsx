@@ -41,7 +41,7 @@ export default async function Page() {
     {
       icon: <Zap className="w-8 h-8" />,
       title: "Smart Grocery",
-      description: "Auto-generated shopping lists sorted by aisle to save you time and reduce waste."
+      description: "Auto-generated shopping lists."
     },
     {
       icon: <ScanLine className="w-8 h-8" />,
