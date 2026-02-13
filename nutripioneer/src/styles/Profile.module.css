@@ -53,6 +53,13 @@
     position: relative;
 }
 
+.headerActions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
 .avatarWrapper {
     width: 80px;
     height: 80px;
@@ -733,4 +740,68 @@
     font-size: 1rem;
     font-weight: 600;
     color: var(--foreground);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .pageWrapper {
+        padding: 1rem;
+    }
+
+    .container {
+        gap: 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .userInfo {
+        align-items: center;
+    }
+
+    .emailRow {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .grid2 {
+        grid-template-columns: 1fr;
+    }
+
+    /* Tabs scrollable on mobile */
+    .tabContainer {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 0.25rem;
+        -webkit-overflow-scrolling: touch;
+        /* Smooth scrolling on iOS */
+    }
+
+    .tabBtn {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    /* Adjust info cards padding to fit more content */
+    .glassPanel,
+    .infoCard {
+        padding: 1.25rem;
+    }
+
+    /* Target the save button container via a new class we plan to add, or just generic styles if we modify the component */
+    .headerActions {
+        width: 100%;
+        align-items: stretch;
+        margin-top: 1rem;
+    }
+
+    .headerActions button {
+        width: 100%;
+        justify-content: center;
+    }
 }

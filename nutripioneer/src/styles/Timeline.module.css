@@ -255,7 +255,7 @@
 .btnSecondary {
     flex: 1;
     width: 100%;
-    background-color: #083e77;
+    background-color: var(--primary-blue);
     color: white;
     padding: 0.65rem;
     border-radius: 12px;
@@ -271,7 +271,7 @@
 }
 
 .btnSecondary:hover {
-    background-color: #1e293b;
+    background-color: var(--foreground);
 }
 
 .header {
@@ -474,10 +474,10 @@
 
 .modalTabs {
     display: flex;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--border-subtle);
     position: sticky;
     top: 0;
-    background: white;
+    background: var(--bg-white);
     z-index: 10;
 }
 
@@ -511,8 +511,8 @@
 .stepNumber {
     width: 24px;
     height: 24px;
-    background: #eef2ff;
-    color: #4f46e5;
+    background: var(--bg-white);
+    color: var(--accent-1);
     font-size: 0.75rem;
     font-weight: 700;
     border-radius: 50%;
@@ -553,7 +553,7 @@
 
 .modalFooter {
     padding: 1rem;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--border-subtle);
     background: var(--bg-white);
     display: flex;
     flex-direction: column;
@@ -761,12 +761,13 @@
 }
 
 :global([data-theme='dark']) .btnSecondary {
-    background-color: var(--background);
-    border: 1px solid var(--border-subtle);
+    background-color: var(--accent-1);
+    color: var(--background);
 }
 
 :global([data-theme='dark']) .btnSecondary:hover {
-    background-color: var(--bg-white);
+    background-color: var(--foreground);
+    color: var(--background);
 }
 
 :global([data-theme='dark']) .title {
@@ -823,8 +824,8 @@
 }
 
 :global([data-theme='dark']) .modalTabs {
-    background: #0f172a;
-    border-bottom-color: #1e293b;
+    background: var(--bg-white);
+    border-bottom-color: var(--border-subtle);
 }
 
 :global([data-theme='dark']) .tabBtn {
@@ -837,8 +838,8 @@
 }
 
 :global([data-theme='dark']) .stepNumber {
-    background: rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
+    background: var(--bg-white);
+    color: var(--accent-1);
 }
 
 :global([data-theme='dark']) .stepText {
@@ -859,8 +860,8 @@
 }
 
 :global([data-theme='dark']) .modalFooter {
-    background: #0f172a;
-    border-top-color: #1e293b;
+    background: var(--bg-white);
+    border-top-color: var(--border-subtle);
 }
 
 :global([data-theme='dark']) .infoSection {

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import styles from '@/styles/Timeline.module.css';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface RecipeDetailsModalProps {
     isOpen: boolean;
@@ -23,6 +24,7 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
     const [isAdding, setIsAdding] = useState(false);
     const [scrapedInstructions, setScrapedInstructions] = useState<string[] | null>(null);
     const [loadingInstructions, setLoadingInstructions] = useState(false);
+    const [imgSrc, setImgSrc] = useState(recipe.image || '/assets/np-placeholder.jpg');
 
     useEffect(() => {
         const fetchInstructions = async () => {
@@ -228,12 +230,16 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                         >
                             {/* Header Image */}
                             <div className={styles.modalHeaderImage}>
-                                {recipe.image ? (
-                                    <img src={recipe.image} alt={recipe.name} />
-                                ) : (
-                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#cbd5e1' }}>
-                                        <Utensils size={48} />
-                                    </div>
+                                {imgSrc && (
+                                    <Image
+                                        loading='eager'
+                                        src={imgSrc}
+                                        alt={recipe.name}
+                                        width={500}
+                                        height={500}
+                                        className={styles.cardImage}
+                                        onError={() => setImgSrc('/assets/np-placeholder.jpg')}
+                                    />
                                 )}
 
                                 <div className={styles.modalHeaderOverlay}>

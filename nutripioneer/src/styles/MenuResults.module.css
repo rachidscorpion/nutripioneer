@@ -338,3 +338,82 @@
     color: #b91c1c;
     border: 1px solid #fecaca;
 }
+
+/* Dark Mode Variants */
+:global([data-theme='dark']) .statCardSafe {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+:global([data-theme='dark']) .statCardCaution {
+    background: rgba(234, 179, 8, 0.15);
+    border-color: rgba(234, 179, 8, 0.3);
+}
+
+:global([data-theme='dark']) .statCardAvoid {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+:global([data-theme='dark']) .statValueSafe {
+    color: #4ade80;
+}
+
+:global([data-theme='dark']) .statValueCaution {
+    color: #facc15;
+}
+
+:global([data-theme='dark']) .statValueAvoid {
+    color: #f87171;
+}
+
+:global([data-theme='dark']) .statLabelSafe {
+    color: #86efac;
+}
+
+:global([data-theme='dark']) .statLabelCaution {
+    color: #fde047;
+}
+
+:global([data-theme='dark']) .statLabelAvoid {
+    color: #fca5a5;
+}
+
+:global([data-theme='dark']) .iconSafe {
+    color: #4ade80;
+}
+
+:global([data-theme='dark']) .iconCaution {
+    color: #facc15;
+}
+
+:global([data-theme='dark']) .iconAvoid {
+    color: #f87171;
+}
+
+:global([data-theme='dark']) .badgeSafe {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+:global([data-theme='dark']) .badgeCaution {
+    background: rgba(234, 179, 8, 0.2);
+    color: #facc15;
+    border-color: rgba(234, 179, 8, 0.3);
+}
+
+:global([data-theme='dark']) .badgeAvoid {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+:global([data-theme='dark']) .disclaimer {
+    background: rgba(30, 58, 138, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:global([data-theme='dark']) .disclaimerText {
+    color: #93c5fd;
+}

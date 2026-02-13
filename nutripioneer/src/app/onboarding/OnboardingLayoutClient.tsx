@@ -99,7 +99,7 @@ export default function OnboardingLayoutClient({ children }: { children: React.R
                     </motion.div>
                     <div className={styles.contentWrapper}>
                         <div className={styles.header}>
-                            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #3b82f6, #06b6d4)' }} />
+                            <Image src="/logo.png" alt="NutriPioneer Logo" width={60} height={60} />
                             <span className={styles.brandName}>Nutri Pioneer</span>
                         </div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
