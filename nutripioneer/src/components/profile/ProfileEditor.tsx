@@ -190,7 +190,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                             )}
                         </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                    <div className={styles.headerActions}>
                         <button
                             onClick={handleSave}
                             disabled={isSaving}

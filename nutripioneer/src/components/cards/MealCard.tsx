@@ -4,8 +4,10 @@ import { RefreshCw, ChefHat, CheckSquare, ShoppingBag, Trash2, PlusCircle, Clock
 import { useState } from 'react';
 import { toast } from 'sonner';
 import styles from '@/styles/Timeline.module.css';
+import { useEffect } from 'react';
 import RecipeDetailsModal from '@/components/modals/RecipeDetailsModal';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface MealCardProps {
     meal: any;
@@ -20,8 +22,13 @@ export default function MealCard({ meal, type, planId, userId, status = 'PENDING
     const router = useRouter(); // Initialize router
     const [isLoading, setIsLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [imgSrc, setImgSrc] = useState(meal?.image || '/assets/images/default-meal.png');
     const isCompleted = status === 'COMPLETED';
+
+    // Effect to update image when meal changes (e.g. after swap)
+    useEffect(() => {
+        setImgSrc(meal?.image || '/assets/images/default-meal.png');
+    }, [meal]);
 
     const handleToggle = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -134,8 +141,16 @@ export default function MealCard({ meal, type, planId, userId, status = 'PENDING
                 {type}
             </div>
 
-            {meal.image && (
-                <img src={meal.image} alt={meal.name} className={styles.cardImage} />
+            {imgSrc && (
+                <Image
+                    loading='eager'
+                    src={imgSrc}
+                    alt={meal.name}
+                    width={500}
+                    height={500}
+                    className={styles.cardImage}
+                    onError={() => setImgSrc('/assets/np-placeholder.jpg')}
+                />
             )}
 
             <div className={styles.cardContent}>

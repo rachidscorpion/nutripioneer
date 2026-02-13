@@ -19,18 +19,6 @@ if (!API_URL) {
     throw new Error(errorMsg);
 }
 
-// Log configuration in development
-if (process.env.NODE_ENV === 'development') {
-    console.log(`🔧 API Configuration (${isServer ? 'server' : 'client'}):`, {
-        API_URL,
-        isServer,
-        BACKEND_URL: process.env.BACKEND_URL,
-        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL
-    });
-}
-
-
-
 
 const apiClient = axios.create({
     baseURL: `${API_URL}/api`,
