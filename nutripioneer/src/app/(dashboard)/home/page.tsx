@@ -56,13 +56,15 @@ export default async function HomePage() {
         redirect('/plan');
     }
 
+    const isPro = userProfile?.subscriptionStatus === 'active';
+
     return (
         <main className="min-h-screen bg-slate-50/50 relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none z-0">
                 {/* <InteractiveBackground /> */}
             </div>
 
-            <DashboardHeader conditions={conditions} planId={plan?.id} />
+            <DashboardHeader conditions={conditions} planId={plan?.id} isPro={isPro} />
 
             {plan && <TimelineFeed plan={plan} nutritionLimits={nutritionLimits} />}
         </main>

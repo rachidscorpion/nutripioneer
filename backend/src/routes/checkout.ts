@@ -6,9 +6,10 @@ import { auth } from '@/lib/auth';
 const checkoutRoutes = new Hono();
 
 const polar = new Polar({
-    accessToken: process.env.POLAR_ACCESS_TOKEN!,
-    server: process.env.POLAR_ENV === 'production' ? 'production' : 'sandbox',
+    accessToken: process.env.NEXT_PUBLIC_POLAR_ENV === 'production' ? process.env.POLAR_ACCESS_TOKEN! : process.env.POLAR_SANDBOX_ACCESS_TOKEN!,
+    server: process.env.NEXT_PUBLIC_POLAR_ENV === 'production' ? 'production' : 'sandbox',
 });
+
 
 checkoutRoutes.post('/polar/checkout', async (c) => {
     try {

@@ -11,7 +11,7 @@ export const auth = betterAuth({
     plugins: [
         polar({
             client: new Polar({
-                accessToken: process.env.POLAR_ACCESS_TOKEN!,
+                accessToken: process.env.POLAR_ENV === 'production' ? process.env.POLAR_ACCESS_TOKEN! : process.env.POLAR_SANDBOX_ACCESS_TOKEN!,
                 server: process.env.POLAR_ENV === 'production' ? 'production' : 'sandbox',
             }),
             use: [

@@ -8,3 +8,18 @@
 [data-theme='dark'] .container {
     background: linear-gradient(135deg, var(--background), rgba(59, 130, 246, 0.05));
 }
+
+.loadingSpinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--primary-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
