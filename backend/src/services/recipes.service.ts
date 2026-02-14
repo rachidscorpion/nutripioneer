@@ -291,11 +291,9 @@ export class RecipesService {
             }
 
             // Call FatSecret
-            console.log(`Searching FatSecret for ${mealType}...`, JSON.stringify(opts));
             const searchResult = await fatSecretService.searchNutrientLimitedRecipes(opts);
 
             let hits = searchResult?.recipes?.recipe || [];
-            console.log(`FatSecret returned ${hits.length} hits for ${mealType}`);
 
             // Filter
             if (excludeExternalId) {
@@ -415,7 +413,6 @@ export class RecipesService {
                 });
             } catch (err) {
                 console.warn(`Initial Edamam search failed for ${mealType}: ${err instanceof Error ? err.message : String(err)}`);
-                console.log('Retrying without cuisine preferences...');
                 searchResult = await edamamService.searchRecipes(user, {
                     mealType,
                     random: true,
@@ -423,16 +420,12 @@ export class RecipesService {
                 });
             }
 
-            console.log(`Edamam returned ${searchResult?.hits?.length || 0} hits for ${mealType}`);
-
             if ((!searchResult?.hits || searchResult.hits.length === 0)) {
-                console.log(`Edamam returned 0 hits for ${mealType}. Retrying without cuisine preferences...`);
                 searchResult = await edamamService.searchRecipes(user, {
                     mealType,
                     random: true,
                     ignoreCuisines: true
                 });
-                console.log(`Edamam retry returned ${searchResult?.hits?.length || 0} hits for ${mealType}`);
             }
 
             let hits = searchResult?.hits || [];
@@ -464,7 +457,6 @@ export class RecipesService {
                 }
 
                 const hit = hitWrapper.recipe;
-                console.log(`Selected hit index ${randomIndex}: ${hit.label}`);
 
                 const externalId = hit.uri.split('#recipe_')[1] || hit.uri;
 
@@ -529,15 +521,12 @@ export class RecipesService {
                     }
                 });
             } else {
-                console.log('No hits remaining after filtering');
                 // Fall through to local fallback
             }
         } catch (error) {
             console.error(`Error fetching ${mealType} from Edamam:`, error);
         }
 
-        console.log('Falling back to local random recipe');
-        // Fallback: Local Random
         const count = await prisma.recipe.count({
             where: { tags: { contains: mealType } }
         });
@@ -551,7 +540,6 @@ export class RecipesService {
                 skip
             });
         } else {
-            // No tagged recipes, random from all
             const total = await prisma.recipe.count();
             const skip = Math.floor(Math.random() * total);
             recipes = await prisma.recipe.findMany({ take: 1, skip });

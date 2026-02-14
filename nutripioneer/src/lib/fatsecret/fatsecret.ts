@@ -262,7 +262,6 @@ export const searchFoods = async (
 
         checkApiError(response.data);
 
-        // console.log('DEBUG: foods search response', JSON.stringify(response.data, null, 2));
         const data = response.data.foods_search || response.data.foods;
         if (!data) {
             console.warn("Unexpected response structure", response.data);

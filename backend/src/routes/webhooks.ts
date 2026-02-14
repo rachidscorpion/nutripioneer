@@ -41,10 +41,6 @@ webhooks.post('/polar', async (c) => {
         }
 
         const body = JSON.parse(rawBody);
-        console.log('=== Webhook event received ===');
-        console.log('Event type:', body.type);
-        console.log('Timestamp:', body.timestamp);
-        console.log('Data:', JSON.stringify(body.data, null, 2));
 
         // Handle different event types
         switch (body.type) {
@@ -63,11 +59,10 @@ webhooks.post('/polar', async (c) => {
 
             case 'checkout.completed':
                 // Checkout completed, subscription might be created
-                console.log('Checkout completed:', body.data);
                 break;
 
             default:
-                console.log('Unhandled event type:', body.type);
+                break;
         }
 
         return c.json({ success: true });
@@ -86,9 +81,6 @@ async function handleSubscriptionUpdate(data: any) {
     const subscriptionId = data.id;
     const status = data.status; // active, trialing, canceled, past_due, etc.
 
-    console.log('Processing subscription update:', { customerId, subscriptionId, status });
-    console.log('Full webhook data:', JSON.stringify(data, null, 2));
-
     // Try to find user by customer.externalId (from checkout externalCustomerId)
     // This solves the chicken-and-egg problem where polarCustomerId isn't set yet
     let user = null;
@@ -98,7 +90,6 @@ async function handleSubscriptionUpdate(data: any) {
             where: { id: data.customer.externalId }
         });
         if (user) {
-            console.log('✓ Found user by customer.externalId:', data.customer.externalId);
         }
     }
 
@@ -108,7 +99,6 @@ async function handleSubscriptionUpdate(data: any) {
             where: { id: data.metadata.userId }
         });
         if (user) {
-            console.log('✓ Found user by metadata.userId:', data.metadata.userId);
         }
     }
 
@@ -118,7 +108,6 @@ async function handleSubscriptionUpdate(data: any) {
             where: { polarCustomerId: customerId }
         });
         if (user) {
-            console.log('✓ Found user by polarCustomerId:', customerId);
         }
     }
 
@@ -128,7 +117,6 @@ async function handleSubscriptionUpdate(data: any) {
             where: { email: data.customer.email }
         });
         if (user) {
-            console.log('✓ Found user by customer.email:', data.customer.email);
         }
     }
 
@@ -163,15 +151,6 @@ async function handleSubscriptionUpdate(data: any) {
             subscriptionStatus: subscriptionStatus
         }
     });
-
-    console.log(`✓ Updated user subscription:`, {
-        email: user.email,
-        userId: user.id,
-        polarCustomerId: customerId,
-        polarSubscriptionId: subscriptionId,
-        subscriptionStatus: subscriptionStatus,
-        polarStatus: status
-    });
 }
 
 /**
@@ -182,9 +161,6 @@ async function handleSubscriptionCanceled(data: any) {
     const subscriptionId = data.id;
     const status = data.status;
 
-    console.log('Processing canceled subscription:', { customerId, subscriptionId, status });
-    console.log('Full webhook data:', JSON.stringify(data, null, 2));
-
     // Try to find user by customer.externalId (from checkout externalCustomerId)
     let user = null;
 
@@ -193,7 +169,6 @@ async function handleSubscriptionCanceled(data: any) {
             where: { id: data.customer.externalId }
         });
         if (user) {
-            console.log('✓ Found user by customer.externalId:', data.customer.externalId);
         }
     }
 
@@ -203,7 +178,6 @@ async function handleSubscriptionCanceled(data: any) {
             where: { id: data.metadata.userId }
         });
         if (user) {
-            console.log('✓ Found user by metadata.userId:', data.metadata.userId);
         }
     }
 
@@ -213,7 +187,6 @@ async function handleSubscriptionCanceled(data: any) {
             where: { polarCustomerId: customerId }
         });
         if (user) {
-            console.log('✓ Found user by polarCustomerId:', customerId);
         }
     }
 
@@ -223,7 +196,6 @@ async function handleSubscriptionCanceled(data: any) {
             where: { email: data.customer.email }
         });
         if (user) {
-            console.log('✓ Found user by customer.email:', data.customer.email);
         }
     }
 
@@ -244,8 +216,6 @@ async function handleSubscriptionCanceled(data: any) {
             subscriptionStatus: 'canceled'
         }
     });
-
-    console.log('✓ Updated user subscription to canceled:', user.email);
 }
 
 export default webhooks;

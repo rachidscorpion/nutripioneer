@@ -23,7 +23,6 @@ export default function SubscriptionPage() {
                 const response = await fetch('/api/products');
                 const data = await response.json();
                 setProducts(data.data);
-                console.log(data);
             } catch (error) {
                 console.error('Failed to fetch products:', error);
             }

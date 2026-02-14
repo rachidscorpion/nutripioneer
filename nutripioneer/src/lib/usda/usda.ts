@@ -168,11 +168,9 @@ const getBarcodeVariations = (barcode: string): string[] => {
 
 export const getNutritionFromBarcode = async (barcode: string) => {
     try {
-        console.log("Fetching product from OpenFoodFacts for barcode:", barcode);
         const offProduct = await getProductByBarcode(barcode);
 
         if (offProduct) {
-            console.log("✅ Found in OpenFoodFacts:", offProduct.product_name);
             const nutriments = offProduct.nutriments || {};
             return {
                 name: offProduct.product_name || offProduct.product_name_en || "Unknown Product",

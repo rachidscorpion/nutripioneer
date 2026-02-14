@@ -131,14 +131,12 @@ const SEED_DATA = {
 };
 
 async function seedMedicalData() {
-    console.log('🌱 Start seeding medical data...');
 
     // 1. Clear existing medical data
     await prisma.ingredientExclusion.deleteMany({});
     await prisma.nutrientLimit.deleteMany({});
     await prisma.condition.deleteMany({});
 
-    console.log('🧹 Cleared existing medical tables');
 
     // 2. Seed Conditions
     const conditionMap: Record<string, string> = {}; // slug -> id
@@ -159,7 +157,6 @@ async function seedMedicalData() {
         });
         conditionMap[c.slug] = result.id;
     }
-    console.log(`✅ Seeded ${Object.keys(conditionMap).length} Conditions`);
 
     // 3. Seed Exclusions
     // A. Specific Exclusions
@@ -196,7 +193,6 @@ async function seedMedicalData() {
             }
         }
     }
-    console.log('✅ Seeded Ingredient Exclusions');
 
     // 4. Seed Nutrient Limits
     for (const lim of SEED_DATA.nutrientLimits) {
@@ -213,14 +209,11 @@ async function seedMedicalData() {
             });
         }
     }
-    console.log('✅ Seeded Nutrient Limits');
 }
 
 
 async function main() {
-    console.log('🌱 Starting database seed...');
     await seedMedicalData();
-    console.log('✅ All seeding complete!');
 }
 
 main()

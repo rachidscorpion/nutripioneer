@@ -2,7 +2,7 @@ import app from './src/index';
 
 const PORT = process.env.PORT || 3001;
 
-console.log(`🚀 NutriPioneer API running at http://localhost:${PORT}`);
+console.log(`・✿ NutriPioneer API running at http://localhost:${PORT}`);
 
 export default {
     port: PORT,

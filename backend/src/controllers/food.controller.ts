@@ -46,7 +46,6 @@ export class FoodController {
     async search(c: Context) {
         const query = c.req.query('q');
         const type = c.req.query('type') as 'Brand' | 'Generic' | undefined;
-        console.log(query, type);
         if (!query) return c.json({ success: true, data: [] });
 
         const results = await foodService.search(query, type);

@@ -55,7 +55,6 @@ export const auth = betterAuth({
 
     // Advanced: use a callback to see what redirect is being used
     // onBeforeOAuthSuccess: async (ctx) => {
-    //     console.log('[Better Auth] OAuth success, redirecting to:', ctx.redirectURL);
     //     return ctx;
     // },
 

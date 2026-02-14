@@ -310,8 +310,6 @@ export class UsersService {
                 console.error("Error fetching customers:", e);
             }
 
-            console.log(`Found ${customerIds.size} customer records for ${user.email}`);
-
             // 2. Check each customer ID for an active subscription
             for (const customerId of customerIds) {
                 try {

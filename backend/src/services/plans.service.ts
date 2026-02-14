@@ -221,7 +221,6 @@ export class PlansService {
 
             let recipe = await recipesService.findOrCreateFromEdamam(user, type);
             if (!recipe) {
-                console.log(`Edamam failed for ${type}, falling back to FatSecret`);
                 recipe = await recipesService.findOrCreateFromFatSecret(user, type);
             }
             return recipe;
@@ -462,7 +461,6 @@ export class PlansService {
 
         // Secondary Source: FatSecret
         if (!newRecipe) {
-            console.log('Edamam swap failed, trying FatSecret');
             newRecipe = await recipesService.findOrCreateFromFatSecret(user, edamamType, excludeExternalId);
         }
 

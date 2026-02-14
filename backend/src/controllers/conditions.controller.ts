@@ -116,7 +116,6 @@ export class ConditionsController {
     async onboardCondition(c: Context) {
         try {
             const body = await c.req.json();
-            console.log('[Conditions] Onboard request body:', JSON.stringify(body, null, 2));
             const { icdCode, title, uri, description } = body;
 
             // Allow icdCode to be optional (use URI as fallback unique identifier if needed, though we use icdCode for uniqueness usually)

@@ -63,14 +63,6 @@ app.use('*', cors({
     exposeHeaders: ['Set-Cookie'],
 }));
 
-// Log CORS configuration in development
-if (process.env.NODE_ENV === 'development') {
-    console.log('🔧 CORS Configuration:', {
-        NODE_ENV: process.env.NODE_ENV,
-        corsOrigins
-    });
-}
-
 app.use('*', errorHandler);
 
 // Health check endpoint
