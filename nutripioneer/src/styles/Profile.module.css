@@ -605,6 +605,24 @@
     background: rgba(255, 255, 255, 0.3);
 }
 
+.manageSubscriptionBtn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.manageSubscriptionBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
 /* Pro Badge for subscribed users */
 .proBadge {
     display: inline-flex;
