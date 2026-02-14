@@ -78,7 +78,7 @@ export default async function ProfilePage(props: { searchParams: Promise<{ succe
             <ProfileActions />
 
             {/* Subscription Link */}
-            {user?.subscriptionStatus === 'active' ? (
+            {user?.subscriptionStatus === 'active' && user?.polarCustomerId ? (
                 <div className={styles.upgradeBanner} style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
                     <div className={styles.upgradeBannerContent}>
                         <span className={styles.upgradeBannerTitle}>Pro Member Active</span>
