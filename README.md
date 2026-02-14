@@ -1,6 +1,6 @@
 # NutriPioneer
 
-NutriPioneer is a comprehensive nutrition and meal planning application.
+AI-powered nutrition and meal planning for users with complex health conditions (CKD, Diabetes, Hypertension, PCOS, High Cholesterol). Features Just-in-Time (JIT) disease onboarding via WHO ICD-11 integration, personalized meal plans, and real-time food safety analysis.
 
 ## Project Structure
 
@@ -8,6 +8,15 @@ This project is organized into two main directories:
 
 - **`nutripioneer/`**: The frontend application built with Next.js.
 - **`backend/`**: The backend API built with Hono and running on Bun.
+
+## Key Features
+
+- **6-Step Onboarding Flow** - Conditions, biometrics, medications, dietary preferences → AI-generated nutrition limits
+- **JIT Disease Onboarding** - Search any condition via WHO ICD-11 (55,000+ conditions), AI auto-generates clinical nutrition rules
+- **Smart Meal Planning** - Recipes from FatSecret/Edamam/TheMealDB filtered by your medical constraints
+- **Food Safety Scanner** - Real-time conflict analysis for phosphate/potassium additives, hidden sugars, trans fats
+- **Restaurant Rescue** - Upload menu photos → AI identifies SAFE/CAUTION/AVOID items
+- **Health Metrics** - Track glucose, blood pressure, weight, water intake
 
 ## Prerequisites
 
@@ -145,19 +154,64 @@ docker compose -f docker-compose.prod.yml up -d --build
 - `npm run build`: Build the application for production.
 - `npm run start`: Start the production server.
 
+## Quick Reference
+
+### Common Tasks
+
+```bash
+# Database management
+cd backend && bun run db:push          # Push schema changes
+cd backend && bun run db:studio        # Open Prisma Studio
+
+# API base URL
+Backend: http://localhost:3001/api
+Frontend: http://localhost:3000
+
+# Key endpoints
+GET  /api/conditions                   # List available conditions
+GET  /api/conditions/search?q=         # Search ICD-11 for any condition
+POST /api/conditions/onboard           # AI-generate nutrition rules for condition
+POST /api/plans/generate               # Generate daily meal plan
+GET  /api/food/analyze?q=              # Analyze food safety
+POST /api/menu/scan                    # Scan restaurant menu image
+```
+
 ## Tech Stack
 
 **Frontend:**
-- Next.js 16
+- Next.js 16 (App Router)
 - React 19
-- Framer Motion & Motion (Animations)
 - Zustand (State Management)
+- Framer Motion (Animations)
 - Lucide React (Icons)
-- Sonner (Toast notifications)
+- Axios (HTTP Client)
+- CSS Modules
 
 **Backend:**
 - Hono (Web Framework)
 - Bun (Runtime)
-- Prisma (ORM)
-- Better Auth
-- OpenAI Integration
+- Prisma ORM + SQLite
+- Better Auth (email/password + OAuth)
+- Polar.sh (Subscriptions)
+
+**AI & APIs:**
+- OpenAI (GPT-4o, GPT-5-nico) - Menu analysis, nutrition limits, JIT onboarding
+- WHO ICD-11 - 55,000+ medical conditions
+- FatSecret - Primary recipe/food database
+- Edamam - Recipe search with nutritional filters
+- TheMealDB - Secondary recipe source
+- USDA FoodData Central - Authoritative nutrition data
+- Open Food Facts - Barcode scanning
+- FDA RxNorm - Medication lookup
+
+## Medical Constraints
+
+The system enforces condition-specific nutrition limits:
+
+- **CKD:** Low phosphorus (<1000mg), low potassium (<3000mg), limited protein (0.6-0.8g/kg), avoid phosphate additives
+- **Type 2 Diabetes:** Carb limits per meal (45-75g), limit sugars (>25g/day), prioritize fiber
+- **Hypertension:** Low sodium (<2300mg), high potassium encouraged (DASH diet)
+- **PCOS:** Minimize sugars, avoid inflammatory oils and nitrates
+- **High Cholesterol:** Limit saturated fat (<13g), zero trans fats, limit cholesterol (<200mg/day)
+
+For complete architecture details, API documentation, and algorithms, see [PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md).
