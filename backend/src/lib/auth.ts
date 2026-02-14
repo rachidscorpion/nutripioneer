@@ -26,7 +26,7 @@ export const auth = betterAuth({
                     authenticatedUsersOnly: false
                 }),
                 webhooks({
-                    secret: process.env.POLAR_WEBHOOK_SECRET!,
+                    secret: process.env.POLAR_ENV === 'production' ? process.env.POLAR_WEBHOOK_SECRET! : process.env.POLAR_SANDBOX_WEBHOOK_SECRET!,
                 })
             ]
         })

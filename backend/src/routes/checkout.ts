@@ -25,6 +25,7 @@ checkoutRoutes.post('/polar/checkout', async (c) => {
         const checkoutData: {
             products: string[];
             successUrl: string;
+            externalCustomerId?: string;
             customerEmail?: string;
             customerName?: string;
             metadata?: Record<string, string>;
@@ -34,6 +35,7 @@ checkoutRoutes.post('/polar/checkout', async (c) => {
         };
 
         if (session?.user) {
+            checkoutData.externalCustomerId = session.user.id;
             checkoutData.customerEmail = session.user.email;
             checkoutData.customerName = session.user.name;
             checkoutData.metadata = {
