@@ -160,7 +160,7 @@ webhooks.post('/polar', async (c) => {
             case 'subscription.created':
             case 'subscription.updated':
             case 'subscription.active':
-            case 'subscription.past_due':
+            // case 'subscription.past_due': // Not supported in SDK
             case 'subscription.uncanceled':
                 await handleSubscriptionUpdate(event.data);
                 break;
@@ -202,15 +202,19 @@ webhooks.post('/polar', async (c) => {
                 break;
 
             case 'checkout.created':
-            case 'checkout.completed':
+            // case 'checkout.completed': // Not supported in SDK
             case 'checkout.updated':
                 // Checkout events - may contain customer/subscription data
+                // Note: The current Checkout type definition does not include 'subscription' or 'customer' objects
+                // We rely on subscription.* and order.* events to handle these updates
+                /*
                 if (event.data.subscription) {
                     await handleSubscriptionUpdate(event.data.subscription);
                 }
                 if (event.data.customer) {
                     await handleCustomerUpdate(event.data.customer);
                 }
+                */
                 break;
 
             case 'customer.created':
@@ -250,13 +254,13 @@ webhooks.post('/polar', async (c) => {
 
                 break;
 
-            case 'member.created':
-            case 'member.updated':
-            case 'member.deleted':
-                // Member events - not currently used for subscription updates
-                handleMemberDeleted(event.data);
+            // case 'member.created':
+            // case 'member.updated':
+            // case 'member.deleted':
+            // Member events - not currently used for subscription updates
+            // handleMemberDeleted(event.data);
 
-                break;
+            // break;
 
             default:
 
