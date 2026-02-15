@@ -17,10 +17,12 @@ export default function RestaurantRescuePage() {
     useEffect(() => {
         async function checkSubscription() {
             try {
-                const res = await fetch('/api/auth/session');
-                const data = await res.json();
-                setIsPro(data.user?.subscriptionStatus === 'active');
+                const response = await api.user.getProfile();
+                if (response.data && response.data.data) {
+                    setIsPro(response.data.data.subscriptionStatus === 'active');
+                }
             } catch (e) {
+                // Silently fail if not logged in or other error, defaulting to non-pro
                 console.error('Failed to check subscription', e);
             } finally {
                 setIsLoading(false);
