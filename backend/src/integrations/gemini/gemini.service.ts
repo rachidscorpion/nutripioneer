@@ -1,7 +1,8 @@
-import OpenAI from 'openai';
 
-// Initialize OpenAI (Make sure to set OPENAI_API_KEY in your env)
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// Initialize Gemini (Make sure to set GEMINI_API_KEY in your env)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export interface ConditionProfile {
     label: string;
@@ -105,15 +106,16 @@ IMPORTANT RULES:
 - Choose an appropriate icon from the Lucide icon set
 - Color should reflect severity (red for critical, yellow for moderate, green for safe)`;
 
-    const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "system", content: prompt }],
-        response_format: { type: "json_object" },
+    const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        generationConfig: { responseMimeType: "application/json" }
     });
 
-    const content = completion.choices[0]?.message?.content;
+    const result = await model.generateContent(prompt);
+    const content = result.response.text();
+
     if (!content) {
-        throw new Error("OpenAI returned empty content for condition profile");
+        throw new Error("Gemini returned empty content for condition profile");
     }
 
     const parsed = JSON.parse(content) as ConditionProfile;
@@ -139,9 +141,6 @@ export async function calculateMedicalLimits(profile: HealthProfile): Promise<Co
 
     PATIENT DATA:
     - Conditions: ${JSON.stringify(profile.conditions)} 
-      (Note: 'ckd-3b-5' means Stage 3b-5 Kidney Disease)
-      (Note: 'htn' means Hypertension)
-      (Note: 't2dm' means Type 2 Diabetes)
     - Biometrics: Age ${profile.biometrics.age}, Weight ${profile.biometrics.weight}kg, Gender ${profile.biometrics.gender}
 
     OUTPUT FORMAT (JSON ONLY):
@@ -161,19 +160,21 @@ export async function calculateMedicalLimits(profile: HealthProfile): Promise<Co
          "FIBTG": { "min": number, "label": "Fiber", "unit": "g" },
          "CHOLE": { "max": number, "label": "Cholesterol", "unit": "mg" }
       },
-      "avoid_ingredients": ["string", "string"], <-- No sentences
-      "reasoning": "Brief clinical explanation for these limits." <-- keep it short
+      "avoid_ingredients": ["string", "string"],
+      "reasoning": "Brief clinical explanation for these limits."
     }
     `;
-    const completion = await openai.chat.completions.create({
-        model: "gpt-5-nano",
-        messages: [{ role: "system", content: prompt }],
-        response_format: { type: "json_object" },
+
+    const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        generationConfig: { responseMimeType: "application/json" }
     });
 
-    const content = completion.choices[0]?.message?.content;
+    const result = await model.generateContent(prompt);
+    const content = result.response.text();
+
     if (!content) {
-        throw new Error("OpenAI returned empty content");
+        throw new Error("Gemini returned empty content");
     }
 
     return JSON.parse(content);
@@ -218,37 +219,36 @@ OUTPUT FORMAT (JSON ONLY):
 }
 `;
 
-    const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-            {
-                role: "system",
-                content: prompt
-            },
-            {
-                role: "user",
-                content: [
-                    {
-                        type: "text",
-                        text: "Please analyze this restaurant menu image."
-                    },
-                    {
-                        type: "image_url",
-                        image_url: {
-                            url: imageBase64,
-                            detail: "high"
-                        }
-                    }
-                ]
-            }
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 4096
+    // Extract base64 details if it's a data URL
+    let mimeType: string = 'image/jpeg';
+    let data: string = imageBase64;
+
+    // Check for standard data URI format
+    const matches = imageBase64.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+    if (matches && matches.length === 3 && matches[1] && matches[2]) {
+        mimeType = matches[1];
+        data = matches[2];
+    }
+
+    const model = genAI.getGenerativeModel({
+        model: "gemini-3-flash-preview",
+        generationConfig: { responseMimeType: "application/json" }
     });
 
-    const content = completion.choices[0]?.message?.content;
+    const result = await model.generateContent([
+        prompt,
+        {
+            inlineData: {
+                data: data,
+                mimeType: mimeType
+            }
+        }
+    ]);
+
+    const content = result.response.text();
+
     if (!content) {
-        throw new Error("OpenAI returned empty content for menu analysis");
+        throw new Error("Gemini returned empty content for menu analysis");
     }
 
     try {
@@ -276,7 +276,7 @@ OUTPUT FORMAT (JSON ONLY):
 
         return parsed as MenuAnalysisResult;
     } catch (error) {
-        console.error('Failed to parse OpenAI response:', error);
+        console.error('Failed to parse Gemini response:', error);
         throw new Error('Failed to parse menu analysis results');
     }
 }

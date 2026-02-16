@@ -44,6 +44,7 @@ export const api = {
     user: {
         getProfile: () => apiClient.get('/users/profile'),
         updateProfile: (data: any) => apiClient.patch('/users/profile', data),
+        updatePreferences: (data: any) => apiClient.patch('/users/profile/preferences', data),
         deleteAccount: () => apiClient.delete('/users/account'),
         deleteTestUser: () => apiClient.delete('/users/test-account'), // For testing
         // Nutrition Limits

@@ -1,4 +1,4 @@
-import { analyzeMenuImage, type MenuAnalysisResult, type HealthProfile } from '@/integrations/openai/openai.service';
+import { analyzeMenuImage, type MenuAnalysisResult, type HealthProfile } from '@/integrations/gemini/gemini.service';
 
 interface ScanMenuOptions {
     imageBuffer: Buffer;
@@ -38,7 +38,7 @@ export class MenuService {
 
         try {
             const analysis = await analyzeMenuImage(imageBase64, profile);
-            
+
             if (!analysis.items || analysis.items.length === 0) {
                 throw new Error('No menu items were detected in the image');
             }
