@@ -14,14 +14,12 @@ export function SubscribeButton({ productId, className }: SubscribeButtonProps) 
     const [isLoading, setIsLoading] = useState(false);
 
     // If no productId provided via props, try env or default
-    const effectiveProductId = productId || process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID;
-
+    const effectiveProductId = process.env.NEXT_PUBLIC_POLAR_ENV === 'production' ? process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID : process.env.NEXT_PUBLIC_POLAR_SANDBOX_PRODUCT_ID
     const handleSubscribe = async () => {
         if (!effectiveProductId) {
             toast.error("Product ID not configured");
             return;
         }
-
         try {
             setIsLoading(true);
 
@@ -38,7 +36,6 @@ export function SubscribeButton({ productId, className }: SubscribeButtonProps) 
             });
 
             const data = await response.json();
-
             if (!response.ok) {
                 throw new Error(data.message || data.error || "Failed to create checkout");
             }

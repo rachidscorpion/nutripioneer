@@ -70,8 +70,6 @@ export class FoodService {
                 }
             }
 
-            console.log(`[FoodService] No FatSecret results for "${query}", falling back to USDA`);
-
             // 2. Fallback to USDA Search
             const usdaResults = await usdaService.searchFoods(query, { pageSize: 5 });
             if (usdaResults.foods && usdaResults.foods.length > 0) {
@@ -194,7 +192,6 @@ export class FoodService {
 
             // 2. Fallback to USDA Search (using barcode as query)
             // USDA supports searching by GTIN
-            console.log(`[FoodService] No OFF results for barcode "${code}", falling back to USDA`);
             return this.analyze(code, limits);
 
         } catch (error) {

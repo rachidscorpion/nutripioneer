@@ -177,6 +177,7 @@ export default function SynthesizingStep() {
             if (result.success) {
                 addLog('Profile Successfully Created', 'Redirecting to your dashboard...', CheckCircle, 'success');
                 setIsComplete(true);
+                store.completeOnboarding();
                 setTimeout(() => {
                     router.replace('/home');
                 }, 1500);

@@ -103,8 +103,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('theme', newTheme);
         // DOM update handled by useEffect above
 
-        // Persist to backend
-        api.user.updateProfile({
+        // Persist to backend using dedicated preferences endpoint (no side effects)
+        api.user.updatePreferences({
             preferences: JSON.stringify({ theme: newTheme })
         }).catch(err => console.error("Failed to persist theme", err));
     };

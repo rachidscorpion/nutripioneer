@@ -14,6 +14,9 @@ users.get('/profile', authMiddleware, (c) => usersController.getProfile(c));
 // PATCH /api/users/profile - Update current user profile
 users.patch('/profile', authMiddleware, (c) => usersController.updateProfile(c));
 
+// PATCH /api/users/profile/preferences - Update user preferences only (no side effects)
+users.patch('/profile/preferences', authMiddleware, (c) => usersController.updatePreferences(c));
+
 // GET /api/users/profile/nutrition-limits - Get nutrition limits
 users.get('/profile/nutrition-limits', authMiddleware, (c) => usersController.getNutritionLimits(c));
 

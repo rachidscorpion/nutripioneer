@@ -34,9 +34,10 @@ interface PlanViewProps {
     plan?: PlanWithMeals | null;
     dateString: string;
     isOwner?: boolean;
+    isPro?: boolean;
 }
 
-export default function PlanView({ plan, dateString, isOwner = false }: PlanViewProps) {
+export default function PlanView({ plan, dateString, isOwner = false, isPro = false }: PlanViewProps) {
     const [y, m, d] = dateString.split('-').map(Number);
     const date = new Date(y, m - 1, d);
 
@@ -331,6 +332,7 @@ export default function PlanView({ plan, dateString, isOwner = false }: PlanView
                 onClose={() => setIsFoodModalOpen(false)}
                 conditions={[]}
                 planId={plan?.id}
+                isPro={isPro}
             />
         </div>
     );

@@ -11,7 +11,7 @@ export const auth = betterAuth({
     plugins: [
         polar({
             client: new Polar({
-                accessToken: process.env.POLAR_ACCESS_TOKEN!,
+                accessToken: process.env.POLAR_ENV === 'production' ? process.env.POLAR_ACCESS_TOKEN! : process.env.POLAR_SANDBOX_ACCESS_TOKEN!,
                 server: process.env.POLAR_ENV === 'production' ? 'production' : 'sandbox',
             }),
             use: [
@@ -26,7 +26,7 @@ export const auth = betterAuth({
                     authenticatedUsersOnly: false
                 }),
                 webhooks({
-                    secret: process.env.POLAR_WEBHOOK_SECRET!,
+                    secret: process.env.POLAR_ENV === 'production' ? process.env.POLAR_WEBHOOK_SECRET! : process.env.POLAR_SANDBOX_WEBHOOK_SECRET!,
                 })
             ]
         })
@@ -55,7 +55,6 @@ export const auth = betterAuth({
 
     // Advanced: use a callback to see what redirect is being used
     // onBeforeOAuthSuccess: async (ctx) => {
-    //     console.log('[Better Auth] OAuth success, redirecting to:', ctx.redirectURL);
     //     return ctx;
     // },
 

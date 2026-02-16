@@ -280,7 +280,7 @@ export class UsersService {
 
         try {
             const polar = new Polar({
-                accessToken: process.env.POLAR_ACCESS_TOKEN!,
+                accessToken: process.env.POLAR_ENV === 'production' ? process.env.POLAR_ACCESS_TOKEN! : process.env.POLAR_SANDBOX_ACCESS_TOKEN!,
                 server: process.env.POLAR_ENV === 'production' ? 'production' : 'sandbox',
             });
 
@@ -309,8 +309,6 @@ export class UsersService {
             } catch (e) {
                 console.error("Error fetching customers:", e);
             }
-
-            console.log(`Found ${customerIds.size} customer records for ${user.email}`);
 
             // 2. Check each customer ID for an active subscription
             for (const customerId of customerIds) {

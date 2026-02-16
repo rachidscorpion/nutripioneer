@@ -318,8 +318,8 @@
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
-    align-items: flex-start;
-    /* Align top on mobile to avoid centering issues with keyboard */
+    align-items: center;
+    /* Center vertically on mobile */
     height: auto;
     min-height: 100vh;
   }

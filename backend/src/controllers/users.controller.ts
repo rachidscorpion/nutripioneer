@@ -176,6 +176,24 @@ export class UsersController {
     }
 
     /**
+     * Update user's preferences only (without triggering limit regeneration)
+     */
+    async updatePreferences(c: Context) {
+        const userId = c.get('userId');
+        const body = await c.req.json();
+
+        // Only update the preferences field, nothing else
+        const user = await usersService.update(userId, {
+            preferences: body.preferences
+        });
+
+        return c.json({
+            success: true,
+            data: user,
+        });
+    }
+
+    /**
      * Get user's nutrition limits
      */
     async getNutritionLimits(c: Context) {

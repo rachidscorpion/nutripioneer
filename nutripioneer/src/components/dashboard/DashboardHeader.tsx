@@ -6,9 +6,10 @@ import FoodCheckModal from '@/components/modals/FoodCheckModal';
 interface DashboardHeaderProps {
     conditions: string[];
     planId?: string;
+    isPro?: boolean;
 }
 
-export default function DashboardHeader({ conditions, planId }: DashboardHeaderProps) {
+export default function DashboardHeader({ conditions, planId, isPro = false }: DashboardHeaderProps) {
     const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
 
     return (
@@ -36,6 +37,7 @@ export default function DashboardHeader({ conditions, planId }: DashboardHeaderP
                 onClose={() => setIsFoodModalOpen(false)}
                 conditions={conditions}
                 planId={planId}
+                isPro={isPro}
             />
         </header>
     );

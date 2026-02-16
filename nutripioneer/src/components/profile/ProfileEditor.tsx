@@ -9,6 +9,7 @@ import { Save, User, Settings, Heart, Utensils, Shield, Search, Trash2, CheckCir
 import styles from '@/styles/Profile.module.css';
 import { useTheme, THEMES } from '@/context/ThemeContext';
 import ConditionSearch from '@/components/conditions/ConditionSearch';
+import ProGate from '@/components/pro/ProGate';
 
 // Use loose type or interface matching API response
 interface ExtendedUser {
@@ -543,128 +544,140 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                     )}
 
                     {activeTab === 'nutrition' && (
-                        <div>
-                            <h3 className={styles.sectionTitle}>
-                                <Activity className={styles.iconBlue} size={24} />
-                                Nutrition Limits
-                            </h3>
+                        <ProGate
+                            isPro={user.subscriptionStatus === 'active'}
+                            feature="Nutrition Limits"
+                            description="Customize your daily calorie and nutrient targets based on your dietitian's recommendations"
+                            benefits={[
+                                "Override AI-generated limits",
+                                "Set custom min/max values for all nutrients",
+                                "Adjust targets based on medical advice"
+                            ]}
+                            mode="readonly"
+                        >
+                            <div>
+                                <h3 className={styles.sectionTitle}>
+                                    <Activity className={styles.iconBlue} size={24} />
+                                    Nutrition Limits
+                                </h3>
 
-                            <div className={styles.infoCard} style={{ marginBottom: '1.5rem', borderColor: 'var(--primary-blue-alpha)' }}>
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <div style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '50%',
-                                        background: 'var(--blue-50)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexShrink: 0
-                                    }}>
-                                        <Shield size={16} className={styles.iconBlue} />
-                                    </div>
-                                    <div>
-                                        <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--foreground)', marginBottom: '4px' }}>Medical Nutrition Therapy</h4>
-                                        <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', lineHeight: '1.4' }}>
-                                            Got nutrition limits from your physitian? You can update them here. Any updates here will be used by our AI to ensure your meal plans are safe.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {isLoadingLimits ? (
-                                <p className={styles.emptyStateText}>Loading limits...</p>
-                            ) : !nutritionLimits ? (
-                                <div className={styles.infoCard}>
-                                    <p className={styles.emptyStateText}>No nutrition limits generated yet. Complete your profile to generate them.</p>
-                                </div>
-                            ) : (
-                                <div className={styles.grid2}>
-                                    {/* Calories */}
-                                    <div className={styles.infoCard} style={{ gridColumn: '1/-1' }}>
-                                        <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            Daily Calories
-                                        </h4>
-                                        <div className={styles.grid2}>
-                                            <div className={styles.fieldGroup}>
-                                                <label className={styles.label}>Minimum (kcal)</label>
-                                                <input
-                                                    type="number"
-                                                    value={nutritionLimits.daily_calories.min}
-                                                    onChange={(e) => setNutritionLimits({
-                                                        ...nutritionLimits,
-                                                        daily_calories: { ...nutritionLimits.daily_calories, min: parseInt(e.target.value) }
-                                                    })}
-                                                    className={styles.input}
-                                                />
-                                            </div>
-                                            <div className={styles.fieldGroup}>
-                                                <label className={styles.label}>Maximum (kcal)</label>
-                                                <input
-                                                    type="number"
-                                                    value={nutritionLimits.daily_calories.max}
-                                                    onChange={(e) => setNutritionLimits({
-                                                        ...nutritionLimits,
-                                                        daily_calories: { ...nutritionLimits.daily_calories, max: parseInt(e.target.value) }
-                                                    })}
-                                                    className={styles.input}
-                                                />
-                                            </div>
+                                <div className={styles.infoCard} style={{ marginBottom: '1.5rem', borderColor: 'var(--primary-blue-alpha)' }}>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <div style={{
+                                            width: '32px',
+                                            height: '32px',
+                                            borderRadius: '50%',
+                                            background: 'var(--blue-50)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            flexShrink: 0
+                                        }}>
+                                            <Shield size={16} className={styles.iconBlue} />
+                                        </div>
+                                        <div>
+                                            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--foreground)', marginBottom: '4px' }}>Medical Nutrition Therapy</h4>
+                                            <p style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)', lineHeight: '1.4' }}>
+                                                Got nutrition limits from your physitian? You can update them here. Any updates here will be used by our AI to ensure your meal plans are safe.
+                                            </p>
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Nutrients */}
-                                    {Object.entries(nutritionLimits.nutrients).map(([key, limit]) => {
-                                        // Skip if it doesn't have min/max
-                                        if (limit.max === undefined && limit.min === undefined) return null;
-
-                                        return (
-                                            <div key={key} className={styles.infoCard}>
-                                                <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    {limit.label || key} <span style={{ fontSize: '0.8em', color: 'var(--muted-foreground)' }}>({limit.unit})</span>
-                                                </h4>
-                                                <div style={{ display: 'flex', gap: '1rem' }}>
-                                                    {limit.min !== undefined && (
-                                                        <div className={styles.fieldGroup} style={{ flex: 1 }}>
-                                                            <label className={styles.label}>Min</label>
-                                                            <input
-                                                                type="number"
-                                                                value={limit.min}
-                                                                onChange={(e) => setNutritionLimits({
-                                                                    ...nutritionLimits,
-                                                                    nutrients: {
-                                                                        ...nutritionLimits.nutrients,
-                                                                        [key]: { ...limit, min: parseInt(e.target.value) }
-                                                                    }
-                                                                })}
-                                                                className={styles.input}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    {limit.max !== undefined && (
-                                                        <div className={styles.fieldGroup} style={{ flex: 1 }}>
-                                                            <label className={styles.label}>Max</label>
-                                                            <input
-                                                                type="number"
-                                                                value={limit.max}
-                                                                onChange={(e) => setNutritionLimits({
-                                                                    ...nutritionLimits,
-                                                                    nutrients: {
-                                                                        ...nutritionLimits.nutrients,
-                                                                        [key]: { ...limit, max: parseInt(e.target.value) }
-                                                                    }
-                                                                })}
-                                                                className={styles.input}
-                                                            />
-                                                        </div>
-                                                    )}
+                                {isLoadingLimits ? (
+                                    <p className={styles.emptyStateText}>Loading limits...</p>
+                                ) : !nutritionLimits ? (
+                                    <div className={styles.infoCard}>
+                                        <p className={styles.emptyStateText}>No nutrition limits generated yet. Complete your profile to generate them.</p>
+                                    </div>
+                                ) : (
+                                    <div className={styles.grid2}>
+                                        {/* Calories */}
+                                        <div className={styles.infoCard} style={{ gridColumn: '1/-1' }}>
+                                            <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                Daily Calories
+                                            </h4>
+                                            <div className={styles.grid2}>
+                                                <div className={styles.fieldGroup}>
+                                                    <label className={styles.label}>Minimum (kcal)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={nutritionLimits.daily_calories.min}
+                                                        onChange={(e) => setNutritionLimits({
+                                                            ...nutritionLimits,
+                                                            daily_calories: { ...nutritionLimits.daily_calories, min: parseInt(e.target.value) }
+                                                        })}
+                                                        className={styles.input}
+                                                    />
+                                                </div>
+                                                <div className={styles.fieldGroup}>
+                                                    <label className={styles.label}>Maximum (kcal)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={nutritionLimits.daily_calories.max}
+                                                        onChange={(e) => setNutritionLimits({
+                                                            ...nutritionLimits,
+                                                            daily_calories: { ...nutritionLimits.daily_calories, max: parseInt(e.target.value) }
+                                                        })}
+                                                        className={styles.input}
+                                                    />
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
+                                        </div>
+
+                                        {/* Nutrients */}
+                                        {Object.entries(nutritionLimits.nutrients).map(([key, limit]) => {
+                                            // Skip if it doesn't have min/max
+                                            if (limit.max === undefined && limit.min === undefined) return null;
+
+                                            return (
+                                                <div key={key} className={styles.infoCard}>
+                                                    <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        {limit.label || key} <span style={{ fontSize: '0.8em', color: 'var(--muted-foreground)' }}>({limit.unit})</span>
+                                                    </h4>
+                                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                                        {limit.min !== undefined && (
+                                                            <div className={styles.fieldGroup} style={{ flex: 1 }}>
+                                                                <label className={styles.label}>Min</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={limit.min}
+                                                                    onChange={(e) => setNutritionLimits({
+                                                                        ...nutritionLimits,
+                                                                        nutrients: {
+                                                                            ...nutritionLimits.nutrients,
+                                                                            [key]: { ...limit, min: parseInt(e.target.value) }
+                                                                        }
+                                                                    })}
+                                                                    className={styles.input}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        {limit.max !== undefined && (
+                                                            <div className={styles.fieldGroup} style={{ flex: 1 }}>
+                                                                <label className={styles.label}>Max</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={limit.max}
+                                                                    onChange={(e) => setNutritionLimits({
+                                                                        ...nutritionLimits,
+                                                                        nutrients: {
+                                                                            ...nutritionLimits.nutrients,
+                                                                            [key]: { ...limit, max: parseInt(e.target.value) }
+                                                                        }
+                                                                    })}
+                                                                    className={styles.input}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </ProGate>
                     )}
 
                     {activeTab === 'settings' && (

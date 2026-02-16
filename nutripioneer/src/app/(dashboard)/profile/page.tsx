@@ -5,6 +5,7 @@ import Link from 'next/link';
 import ProfileEditor from '@/components/profile/ProfileEditor';
 import ProfileActions from '@/components/profile/ProfileActions';
 import LogoutButton from '@/components/profile/LogoutButton';
+import ManageSubscriptionButton from '@/components/profile/ManageSubscriptionButton';
 import { OnboardingData } from '@/types/user';
 import { ArrowRight } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
@@ -77,12 +78,18 @@ export default async function ProfilePage(props: { searchParams: Promise<{ succe
             <ProfileActions />
 
             {/* Subscription Link */}
-            {user?.subscriptionStatus === 'active' ? (
+            {user?.subscriptionStatus === 'active' && user?.polarCustomerId ? (
                 <div className={styles.upgradeBanner} style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
                     <div className={styles.upgradeBannerContent}>
                         <span className={styles.upgradeBannerTitle}>Pro Member Active</span>
                         <span className={styles.upgradeBannerSubtitle}>Thanks for supporting NutriPioneer!</span>
                     </div>
+                    {user?.polarCustomerId && (
+                        <ManageSubscriptionButton
+                            customerId={user.polarCustomerId}
+                            className={styles.manageSubscriptionBtn}
+                        />
+                    )}
                 </div>
             ) : (
                 <Link href="/subscription" className={styles.upgradeBanner}>

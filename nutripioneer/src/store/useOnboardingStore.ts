@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface OnboardingState {
     step: number;
@@ -40,9 +41,12 @@ export interface OnboardingState {
     updateData: (section: keyof OnboardingState, data: any) => void;
     setStep: (step: number) => void;
     reset: () => void;
+    completeOnboarding: () => void;
 }
 
-export const useOnboardingStore = create<OnboardingState>((set) => ({
+export const useOnboardingStore = create<OnboardingState>()(
+    persist(
+        (set) => ({
     step: 1,
     name: '',
     email: '',
@@ -107,4 +111,49 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
         // Otherwise replace it directly (for primitives or arrays)
         return { [section]: data };
     }),
-}));
+
+    completeOnboarding: () => {
+        // Reset state to initial values
+        set({
+            step: 1,
+            name: '',
+            email: '',
+            conditions: [],
+            biometrics: {
+                height: 0,
+                weight: 0,
+                waist: 0,
+                age: 0,
+                gender: '',
+                unit: 'imperial',
+            },
+            medical: {
+                insulin: false,
+                medications: [],
+            },
+            dietary: {
+                favorites: [],
+                dislikes: [],
+                favCuisines: [],
+                dislikeCuisines: [],
+            },
+        });
+        // Clear persisted storage
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('nutripioneer-onboarding-storage');
+        }
+    },
+}),
+    {
+        name: 'nutripioneer-onboarding-storage',
+        partialize: (state) => ({
+            step: state.step,
+            name: state.name,
+            email: state.email,
+            conditions: state.conditions,
+            biometrics: state.biometrics,
+            medical: state.medical,
+            dietary: state.dietary,
+        }),
+    }
+));

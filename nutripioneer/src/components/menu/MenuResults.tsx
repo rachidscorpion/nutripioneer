@@ -23,6 +23,115 @@ interface MenuResultsProps {
     onReset: () => void;
 }
 
+const getStatusIcon = (status: MenuItem['status']) => {
+    switch (status) {
+        case 'SAFE':
+            return <Check className={styles.iconSafe} size={20} strokeWidth={2.5} />;
+        case 'CAUTION':
+            return <AlertTriangle className={styles.iconCaution} size={20} strokeWidth={2.5} />;
+        case 'AVOID':
+            return <X className={styles.iconAvoid} size={20} strokeWidth={2.5} />;
+    }
+};
+
+const getStatusBadge = (status: MenuItem['status']) => {
+    const badgeClass = status === 'SAFE'
+        ? styles.badgeSafe
+        : status === 'CAUTION'
+            ? styles.badgeCaution
+            : styles.badgeAvoid;
+
+    return (
+        <span className={`${styles.badge} ${badgeClass}`}>
+            {status}
+        </span>
+    );
+};
+
+const getItemCardClass = (status: MenuItem['status']) => {
+    const statusClass = status === 'SAFE'
+        ? 'Safe'
+        : status === 'CAUTION'
+            ? 'Caution'
+            : 'Avoid';
+    return `${styles.itemCard} ${styles['itemCard' + statusClass]}`;
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            type: "spring",
+            stiffness: 260,
+            damping: 20
+        }
+    }
+};
+
+interface ItemCardProps {
+    item: MenuItem;
+    isExpanded: boolean;
+    onToggle: () => void;
+}
+
+const ItemCard = ({ item, isExpanded, onToggle }: ItemCardProps) => (
+    <motion.div
+        variants={itemVariants}
+        className={getItemCardClass(item.status)}
+    >
+        <button
+            onClick={onToggle}
+            className={styles.itemHeader}
+            type="button"
+        >
+            <div className={styles.itemContent}>
+                <div className={styles.itemNameRow}>
+                    {getStatusIcon(item.status)}
+                    <h3 className={styles.itemName}>{item.name}</h3>
+                    {getStatusBadge(item.status)}
+                </div>
+                {item.description && (
+                    <p className={styles.itemDescription}>{item.description}</p>
+                )}
+            </div>
+            <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+            >
+                <ChevronDown className="text-gray-400" size={20} />
+            </motion.div>
+        </button>
+        <AnimatePresence initial={false}>
+            {isExpanded && (
+                <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className={styles.itemDetails}
+                >
+                    <div className={styles.detailsContent}>
+                        <div className={styles.detailsSection}>
+                            <p className={styles.detailsLabel}>Nutrition Analysis</p>
+                            <p className={styles.detailsText}>{item.reasoning}</p>
+                        </div>
+                        {item.modification && (
+                            <div className={styles.modificationBox}>
+                                <p className={styles.detailsLabel} style={{ color: '#2563eb', marginBottom: '0.25rem' }}>
+                                    Recommended Modification
+                                </p>
+                                <p className={styles.modificationText}>{item.modification}</p>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </motion.div>
+);
+
 export default function MenuResults({ result, onReset }: MenuResultsProps) {
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
@@ -38,43 +147,9 @@ export default function MenuResults({ result, onReset }: MenuResultsProps) {
         });
     };
 
-    const getStatusIcon = (status: MenuItem['status']) => {
-        switch (status) {
-            case 'SAFE':
-                return <Check className={styles.iconSafe} size={20} strokeWidth={2.5} />;
-            case 'CAUTION':
-                return <AlertTriangle className={styles.iconCaution} size={20} strokeWidth={2.5} />;
-            case 'AVOID':
-                return <X className={styles.iconAvoid} size={20} strokeWidth={2.5} />;
-        }
-    };
-
-    const getStatusBadge = (status: MenuItem['status']) => {
-        const badgeClass = status === 'SAFE'
-            ? styles.badgeSafe
-            : status === 'CAUTION'
-                ? styles.badgeCaution
-                : styles.badgeAvoid;
-
-        return (
-            <span className={`${styles.badge} ${badgeClass}`}>
-                {status}
-            </span>
-        );
-    };
-
     const safeItems = result.items.filter((item) => item.status === 'SAFE');
     const cautionItems = result.items.filter((item) => item.status === 'CAUTION');
     const avoidItems = result.items.filter((item) => item.status === 'AVOID');
-
-    const getItemCardClass = (status: MenuItem['status']) => {
-        const statusClass = status === 'SAFE'
-            ? 'Safe'
-            : status === 'CAUTION'
-                ? 'Caution'
-                : 'Avoid';
-        return `${styles.itemCard} ${styles['itemCard' + statusClass]}`;
-    };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -85,75 +160,6 @@ export default function MenuResults({ result, onReset }: MenuResultsProps) {
             }
         }
     };
-
-    const itemVariants: any = {
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                type: "spring",
-                stiffness: 260,
-                damping: 20
-            }
-        }
-    };
-
-    const ItemCard = ({ item }: { item: MenuItem }) => (
-        <motion.div
-            variants={itemVariants}
-            className={getItemCardClass(item.status)}
-            layout
-        >
-            <button
-                onClick={() => toggleExpand(item.name)}
-                className={styles.itemHeader}
-            >
-                <div className={styles.itemContent}>
-                    <div className={styles.itemNameRow}>
-                        {getStatusIcon(item.status)}
-                        <h3 className={styles.itemName}>{item.name}</h3>
-                        {getStatusBadge(item.status)}
-                    </div>
-                    {item.description && (
-                        <p className={styles.itemDescription}>{item.description}</p>
-                    )}
-                </div>
-                <motion.div
-                    animate={{ rotate: expandedItems.has(item.name) ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    <ChevronDown className="text-gray-400" size={20} />
-                </motion.div>
-            </button>
-            <AnimatePresence initial={false}>
-                {expandedItems.has(item.name) && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className={styles.itemDetails}
-                    >
-                        <div className={styles.detailsContent}>
-                            <div className={styles.detailsSection}>
-                                <p className={styles.detailsLabel}>Nutrition Analysis</p>
-                                <p className={styles.detailsText}>{item.reasoning}</p>
-                            </div>
-                            {item.modification && (
-                                <div className={styles.modificationBox}>
-                                    <p className={styles.detailsLabel} style={{ color: '#2563eb', marginBottom: '0.25rem' }}>
-                                        Recommended Modification
-                                    </p>
-                                    <p className={styles.modificationText}>{item.modification}</p>
-                                </div>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
-    );
 
     return (
         <div className={styles.container}>
@@ -217,7 +223,12 @@ export default function MenuResults({ result, onReset }: MenuResultsProps) {
                         </h2>
                         <div className={styles.itemList}>
                             {safeItems.map((item) => (
-                                <ItemCard key={item.name} item={item} />
+                                <ItemCard
+                                    key={item.name}
+                                    item={item}
+                                    isExpanded={expandedItems.has(item.name)}
+                                    onToggle={() => toggleExpand(item.name)}
+                                />
                             ))}
                         </div>
                     </div>
@@ -233,7 +244,12 @@ export default function MenuResults({ result, onReset }: MenuResultsProps) {
                         </h2>
                         <div className={styles.itemList}>
                             {cautionItems.map((item) => (
-                                <ItemCard key={item.name} item={item} />
+                                <ItemCard
+                                    key={item.name}
+                                    item={item}
+                                    isExpanded={expandedItems.has(item.name)}
+                                    onToggle={() => toggleExpand(item.name)}
+                                />
                             ))}
                         </div>
                     </div>
@@ -249,7 +265,12 @@ export default function MenuResults({ result, onReset }: MenuResultsProps) {
                         </h2>
                         <div className={styles.itemList}>
                             {avoidItems.map((item) => (
-                                <ItemCard key={item.name} item={item} />
+                                <ItemCard
+                                    key={item.name}
+                                    item={item}
+                                    isExpanded={expandedItems.has(item.name)}
+                                    onToggle={() => toggleExpand(item.name)}
+                                />
                             ))}
                         </div>
                     </div>
