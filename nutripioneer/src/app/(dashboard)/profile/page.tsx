@@ -103,9 +103,11 @@ export default async function ProfilePage(props: { searchParams: Promise<{ succe
                 </Link>
             )}
 
-            <Link href="/feedback" className={styles.feedbackBtn}>
-                <Send size={18} /> Submit Feedback
-            </Link>
+            <div className={styles.feedbackContainer}>
+                <Link href="/feedback" className={styles.feedbackBtn}>
+                    <Send size={16} /> Submit Feedback
+                </Link>
+            </div>
 
             <LogoutButton />
         </main>

@@ -27,13 +27,13 @@ export interface ConditionProfile {
 export interface HealthProfile {
     conditions: string[]; // e.g., ["ckd-3b-5", "htn"]
     medications: any[];   // Your existing med objects
+    nutritionLimits: ComputedLimits;
     biometrics: {
         weight: number;   // 82
         height: number;   // 160
         age: number;      // 23
         gender: string;   // Male
     };
-    nutritionLimits: ComputedLimits;
 }
 
 export interface ComputedLimits {
