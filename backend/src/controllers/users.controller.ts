@@ -1,7 +1,7 @@
 import type { Context } from 'hono';
 import { usersService } from '@/services/users.service';
 import { createUserSchema, updateUserSchema, paginationSchema } from '@/schemas';
-import { calculateMedicalLimits, type HealthProfile } from '@/integrations/openai/openai.service';
+import { calculateMedicalLimits, type HealthProfile } from '@/integrations/gemini/gemini.service';
 
 export class UsersController {
     async getAll(c: Context) {

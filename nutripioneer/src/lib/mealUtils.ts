@@ -1,5 +1,10 @@
 
-import { FoodNutrient } from '@/lib/usda/usda';
+// import { FoodNutrient } from '@/lib/usda/usda';
+
+export interface FoodNutrient {
+    nutrientNumber: string;
+    value: number;
+}
 
 export function getNutrient(nutrients: FoodNutrient[] | undefined, number: string): number {
     const n = nutrients?.find(x => x.nutrientNumber === number);

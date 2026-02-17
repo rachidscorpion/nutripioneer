@@ -15,7 +15,7 @@ app.use('*', logger());
 // Dynamic CORS configuration based on environment
 const corsOrigins = (() => {
     const origins = [];
-    
+
     // Always allow localhost in development
     if (process.env.NODE_ENV !== 'production') {
         origins.push(
@@ -24,7 +24,7 @@ const corsOrigins = (() => {
             'http://127.0.0.1:3000',
             'http://127.0.0.1:3001'
         );
-        
+
         // Allow ngrok URLs in development
         const ngrokUrl = process.env.NGROK_URL;
         if (ngrokUrl) {
@@ -36,21 +36,21 @@ const corsOrigins = (() => {
             }
         }
     }
-    
+
     // Always allow these domains in production and development
     origins.push(
         'https://api.nutripioneer.com',
         'https://nutripioneer.com',
         'https://www.nutripioneer.com'
     );
-    
+
     // Add production URLs from environment
     const frontendUrl = process.env.BETTER_AUTH_URL || process.env.FRONTEND_URL;
     if (frontendUrl) {
         try {
             const url = new URL(frontendUrl);
             origins.push(frontendUrl);
-            
+
             // Add www and protocol variants
             const hostname = url.hostname;
             if (!hostname.startsWith('www.')) {
@@ -62,7 +62,7 @@ const corsOrigins = (() => {
             console.warn('Invalid frontend URL in CORS config:', frontendUrl);
         }
     }
-    
+
     return origins;
 })();
 
@@ -95,6 +95,10 @@ app.route('/api', api);
 
 // Mount menu routes
 app.route('/api/menu', menuRoutes);
+
+// Mount feedback routes
+import feedbackRoutes from '@/routes/feedback';
+app.route('/api/feedback', feedbackRoutes);
 
 // 404 fallback
 app.notFound((c) => {

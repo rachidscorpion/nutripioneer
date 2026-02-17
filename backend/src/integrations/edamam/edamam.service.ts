@@ -340,7 +340,6 @@ class EdamamService {
      */
     async searchRecipes(userProfile: any, options: RecipeSearchOptions = {}) {
         // 1. Determine the divider for daily limits (Default to 3 meals if not specified)
-        const mealsPerDay = 5;
 
         // 2. Base Params - let request() handle app_id/app_key
         const params = new URLSearchParams({
@@ -376,8 +375,8 @@ class EdamamService {
                 const addNutrient = (code: string, min: number | undefined, max: number | undefined) => {
                     let val = '';
                     // We allow a buffer (e.g. 10%) or strict division. Here we do strict / 3.
-                    const mealMin = min ? Math.round(min / mealsPerDay) : '';
-                    const mealMax = max ? Math.round(max / mealsPerDay) : '';
+                    const mealMin = min ? Math.round(min / 4) : 0;
+                    const mealMax = max ? Math.round(max / 4) : 0;
 
                     if (mealMin && mealMax) val = `${mealMin}-${mealMax}`;
                     else if (mealMin) val = `${mealMin}+`;

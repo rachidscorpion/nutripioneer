@@ -35,10 +35,33 @@ model User {
   
   metricLogs     MetricLog[]
   sessions       Session[]
-  accounts       Account[]
-  
-  savedRecipes   Recipe[]
-  groceryItems   GroceryItem[]
+   accounts       Account[]
+   
+   savedRecipes   UserRecipe[]
+   groceryItems   GroceryItem[]
+   feedbacks      Feedback[]
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  userEmail String
+  type      String   // BUG, FEATURE, GENERAL, OTHER
+  message   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserRecipe {
+  id        String   @id @default(cuid())
+  userId    String
+  recipeId  String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
 }
 
 model GroceryItem {
@@ -171,11 +194,11 @@ model Recipe {
   ingredients    String       // JSON: [{"item": "Rice", "measure": "1 cup"}, ...]
   
   // Relations
-  plansAsBreakfast Plan[] @relation("Breakfast")
-  plansAsLunch     Plan[] @relation("Lunch")
-  plansAsDinner    Plan[] @relation("Dinner")
-  
-  users            User[]
+   plansAsBreakfast Plan[] @relation("Breakfast")
+   plansAsLunch     Plan[] @relation("Lunch")
+   plansAsDinner    Plan[] @relation("Dinner")
+   
+   savedByUsers    UserRecipe[]
 }
 
 model RestaurantItem {
@@ -239,5 +262,5 @@ model MetricLog {
   tag            String?  // "Fasting", "Post-Meal", "Stress"
   
   // Relations
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

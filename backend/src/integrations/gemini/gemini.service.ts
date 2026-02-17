@@ -34,7 +34,7 @@ export interface HealthProfile {
         age: number;      // 23
         gender: string;   // Male
     };
-    nutritionLimits: ComputedLimits;
+    nutritionLimits?: ComputedLimits;
 }
 
 export interface ComputedLimits {
@@ -107,7 +107,7 @@ IMPORTANT RULES:
 - Color should reflect severity (red for critical, yellow for moderate, green for safe)`;
 
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-3-flash-preview",
         generationConfig: { responseMimeType: "application/json" }
     });
 
@@ -166,7 +166,7 @@ export async function calculateMedicalLimits(profile: HealthProfile): Promise<Co
     `;
 
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-3-flash-preview",
         generationConfig: { responseMimeType: "application/json" }
     });
 
