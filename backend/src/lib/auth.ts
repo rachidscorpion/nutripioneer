@@ -67,8 +67,8 @@ export const auth = betterAuth({
             maxAge: 60 * 5, // 5 minutes
         },
         freshAge: 60 * 5, // Consider session fresh for 5 minutes
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        secure: true,
     },
 
     // Base URL for callbacks
