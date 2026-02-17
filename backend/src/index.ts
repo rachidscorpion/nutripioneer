@@ -100,6 +100,10 @@ app.route('/api/menu', menuRoutes);
 import feedbackRoutes from '@/routes/feedback';
 app.route('/api/feedback', feedbackRoutes);
 
+// Mount admin routes
+import adminRoutes from '@/routes/admin';
+app.route('/api/admin', adminRoutes);
+
 // 404 fallback
 app.notFound((c) => {
     return c.json({

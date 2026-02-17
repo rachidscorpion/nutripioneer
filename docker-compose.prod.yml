@@ -16,8 +16,9 @@ services:
       - PORT=3001
       - DATABASE_URL=file:./data/prod.db
       # These should be set in the server's .env file or GitHub Secrets
-      - FRONTEND_URL=https://nutripioneer.vercel.app # Update this if different
-      - BETTER_AUTH_URL=https://nutripioneer.com
+      - FRONTEND_URL=https://www.nutripioneer.com
+      - BETTER_AUTH_URL=https://www.nutripioneer.com
+      - RESEND_API_KEY=${RESEND_API_KEY}
     volumes:
       # Persist the sqlite database if it's in the app root
       - backend_data:/app/data
