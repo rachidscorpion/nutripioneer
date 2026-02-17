@@ -72,13 +72,14 @@ export const auth = betterAuth({
     },
 
     // Base URL for callbacks
-    baseURL: `${process.env.BETTER_AUTH_URL}` || 'http://localhost:3000',
+    baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
 
     // Advanced configuration
     advanced: {
         cookiePrefix: 'nutripioneer',
         crossSubDomainCookies: {
             enabled: true,
+            domain: process.env.NODE_ENV === 'production' ? '.nutripioneer.com' : undefined,
         },
     },
 
