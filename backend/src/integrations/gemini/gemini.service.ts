@@ -1,8 +1,14 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize Gemini (Make sure to set GEMINI_API_KEY in your env)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Lazy initialization to ensure env vars are loaded
+function getGenAI() {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        throw new Error('GEMINI_API_KEY is not set in environment variables');
+    }
+    return new GoogleGenerativeAI(apiKey);
+}
 
 export interface ConditionProfile {
     label: string;
@@ -106,6 +112,7 @@ IMPORTANT RULES:
 - Choose an appropriate icon from the Lucide icon set
 - Color should reflect severity (red for critical, yellow for moderate, green for safe)`;
 
+    const genAI = getGenAI();
     const model = genAI.getGenerativeModel({
         model: "gemini-3-flash-preview",
         generationConfig: { responseMimeType: "application/json" }
@@ -160,11 +167,12 @@ export async function calculateMedicalLimits(profile: HealthProfile): Promise<Co
          "FIBTG": { "min": number, "label": "Fiber", "unit": "g" },
          "CHOLE": { "max": number, "label": "Cholesterol", "unit": "mg" }
       },
-      "avoid_ingredients": ["string", "string"],
-      "reasoning": "Brief clinical explanation for these limits."
+       "avoid_ingredients": ["string", "string"],
+       "reasoning": "Brief clinical explanation for these limits."
     }
     `;
 
+    const genAI = getGenAI();
     const model = genAI.getGenerativeModel({
         model: "gemini-3-flash-preview",
         generationConfig: { responseMimeType: "application/json" }
@@ -216,8 +224,8 @@ OUTPUT FORMAT (JSON ONLY):
     }
   ],
   "summary": "Overall summary of how safe this menu is for the patient"
-}
-`;
+    }
+    `;
 
     // Extract base64 details if it's a data URL
     let mimeType: string = 'image/jpeg';
@@ -230,6 +238,7 @@ OUTPUT FORMAT (JSON ONLY):
         data = matches[2];
     }
 
+    const genAI = getGenAI();
     const model = genAI.getGenerativeModel({
         model: "gemini-3-flash-preview",
         generationConfig: { responseMimeType: "application/json" }

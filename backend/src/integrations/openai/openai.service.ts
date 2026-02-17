@@ -1,7 +1,13 @@
 import OpenAI from 'openai';
 
-// Initialize OpenAI (Make sure to set OPENAI_API_KEY in your env)
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Lazy initialization to ensure env vars are loaded
+function getOpenAI() {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+        throw new Error('OPENAI_API_KEY is not set in environment variables');
+    }
+    return new OpenAI({ apiKey });
+}
 
 export interface ConditionProfile {
     label: string;
@@ -105,6 +111,7 @@ IMPORTANT RULES:
 - Choose an appropriate icon from the Lucide icon set
 - Color should reflect severity (red for critical, yellow for moderate, green for safe)`;
 
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "system", content: prompt }],
@@ -165,6 +172,7 @@ export async function calculateMedicalLimits(profile: HealthProfile): Promise<Co
       "reasoning": "Brief clinical explanation for these limits." <-- keep it short
     }
     `;
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
         model: "gpt-5-nano",
         messages: [{ role: "system", content: prompt }],
@@ -218,6 +226,7 @@ OUTPUT FORMAT (JSON ONLY):
 }
 `;
 
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
