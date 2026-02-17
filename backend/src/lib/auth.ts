@@ -49,9 +49,9 @@ export const auth = betterAuth({
     },
 
     // Social login redirects
-    // socialLogin: {
-    //    successRedirectURL: `${(process.env.BETTER_AUTH_URL || 'http://localhost:3000').replace(/\/$/, '')}/onboarding`,
-    // },
+    socialLogin: {
+       successRedirectURL: `${(process.env.FRONTEND_URL || 'https://nutripioneer.com').replace(/\/$/, '')}/home`,
+    },
 
     // Advanced: use a callback to see what redirect is being used
     // onBeforeOAuthSuccess: async (ctx) => {
