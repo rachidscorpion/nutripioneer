@@ -12,13 +12,43 @@ services:
     expose:
       - "3001"
     environment:
-      - NODE_ENV=production
-      - PORT=3001
-      - DATABASE_URL=file:./data/prod.db
-      # These should be set in the server's .env file or GitHub Secrets
-      - FRONTEND_URL=https://nutripioneer.com
-      - BETTER_AUTH_URL=https://nutripioneer.com
-      - RESEND_API_KEY=${RESEND_API_KEY}
+       - NODE_ENV=production
+       - PORT=3001
+       - DATABASE_URL=file:./data/prod.db
+       # Frontend & Auth URLs
+       - FRONTEND_URL=https://nutripioneer.com
+       - BETTER_AUTH_URL=https://nutripioneer.com
+       # Auth Secrets
+       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+       # AI Services
+       - GEMINI_API_KEY=${GEMINI_API_KEY}
+       - OPENAI_API_KEY=${OPENAI_API_KEY}
+       # Food & Nutrition APIs
+       - USDA_API_KEY=${USDA_API_KEY}
+       - FATSECRET_CLIENT_ID=${FATSECRET_CLIENT_ID}
+       - FATSECRET_CLIENT_SECRET=${FATSECRET_CLIENT_SECRET}
+       - OPENFDA_API_KEY=${OPENFDA_API_KEY}
+       - MEALDB_API_KEY=${MEALDB_API_KEY}
+       # Medical & Drug APIs
+       - ICD_CLIENT_ID=${ICD_CLIENT_ID}
+       - ICD_CLIENT_SECRET=${ICD_CLIENT_SECRET}
+       # Payment (Polar.sh)
+       - POLAR_ENV=production
+       - POLAR_ACCESS_TOKEN=${POLAR_ACCESS_TOKEN}
+       - POLAR_PRODUCT1_PRODUCT_ID=${POLAR_PRODUCT1_PRODUCT_ID}
+       - POLAR_WEBHOOK_SECRET=${POLAR_WEBHOOK_SECRET}
+       - POLAR_ORGANIZATION_ID=${POLAR_ORGANIZATION_ID}
+       # Media APIs
+       - UNSPLASH_APPLICATION_ID=${UNSPLASH_APPLICATION_ID}
+       - UNSPLASH_SECRET_KEY=${UNSPLASH_SECRET_KEY}
+       - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY}
+       # Email Service
+       - RESEND_API_KEY=${RESEND_API_KEY}
+       # Admin (for development/testing)
+       - ADMIN_EMAIL=${ADMIN_EMAIL}
+       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       # Persist the sqlite database if it's in the app root
       - backend_data:/app/data
