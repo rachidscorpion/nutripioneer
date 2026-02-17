@@ -54,11 +54,15 @@ export class UsersService {
                     take: 10,
                 },
                 savedRecipes: {
-                    select: {
-                        id: true,
-                        name: true,
-                        image: true,
-                        category: true,
+                    include: {
+                        recipe: {
+                            select: {
+                                id: true,
+                                name: true,
+                                image: true,
+                                category: true,
+                            },
+                        },
                     },
                 },
                 groceryItems: {
@@ -71,7 +75,10 @@ export class UsersService {
             throw new ApiError(404, 'User not found');
         }
 
-        return user;
+        return {
+            ...user,
+            savedRecipes: user.savedRecipes.map(sr => sr.recipe),
+        };
     }
 
     /**
@@ -213,56 +220,61 @@ export class UsersService {
      * Get user's saved recipes
      */
     async getSavedRecipes(userId: string) {
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
+        const userRecipes = await prisma.userRecipe.findMany({
+            where: { userId },
             include: {
-                savedRecipes: true,
+                recipe: true,
             },
         });
 
-        if (!user) {
-            throw new ApiError(404, 'User not found');
-        }
-
-        return user.savedRecipes;
+        return userRecipes.map(ur => ur.recipe);
     }
 
     /**
      * Add recipe to user's saved recipes
      */
     async saveRecipe(userId: string, recipeId: string) {
-        const [user, recipe] = await Promise.all([
+        const [user, recipe, existing] = await Promise.all([
             prisma.user.findUnique({ where: { id: userId } }),
             prisma.recipe.findUnique({ where: { id: recipeId } }),
+            prisma.userRecipe.findUnique({
+                where: {
+                    userId_recipeId: {
+                        userId,
+                        recipeId,
+                    },
+                },
+            }),
         ]);
 
         if (!user) throw new ApiError(404, 'User not found');
         if (!recipe) throw new ApiError(404, 'Recipe not found');
+        if (existing) throw new ApiError(400, 'Recipe already saved');
 
-        return prisma.user.update({
-            where: { id: userId },
+        const userRecipe = await prisma.userRecipe.create({
             data: {
-                savedRecipes: {
-                    connect: { id: recipeId },
-                },
+                userId,
+                recipeId,
             },
             include: {
-                savedRecipes: {
+                recipe: {
                     select: { id: true, name: true },
                 },
             },
         });
+
+        return userRecipe.recipe;
     }
 
     /**
      * Remove recipe from user's saved recipes
      */
     async unsaveRecipe(userId: string, recipeId: string) {
-        return prisma.user.update({
-            where: { id: userId },
-            data: {
-                savedRecipes: {
-                    disconnect: { id: recipeId },
+        await prisma.userRecipe.delete({
+            where: {
+                userId_recipeId: {
+                    userId,
+                    recipeId,
                 },
             },
         });
