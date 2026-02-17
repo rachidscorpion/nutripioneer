@@ -39,6 +39,17 @@ model User {
   
   savedRecipes   Recipe[]
   groceryItems   GroceryItem[]
+  feedbacks      Feedback[]
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  userEmail String
+  type      String   // BUG, FEATURE, GENERAL, OTHER
+  message   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model GroceryItem {

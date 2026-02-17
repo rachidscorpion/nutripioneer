@@ -4,6 +4,7 @@ import "./globals.css";
 import DeleteTestUserBtn from "@/components/DeleteTestUserBtn";
 import ManagePlanControls from "@/components/plan/ManagePlanControls";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
           {/* <DeleteTestUserBtn />
           <ManagePlanControls /> */}
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

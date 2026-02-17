@@ -117,6 +117,9 @@ export const api = {
             });
         },
     },
+    feedback: {
+        submit: (data: any) => apiClient.post('/feedback', data),
+    },
 };
 
 export default apiClient;

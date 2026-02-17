@@ -7,7 +7,7 @@ import ProfileActions from '@/components/profile/ProfileActions';
 import LogoutButton from '@/components/profile/LogoutButton';
 import ManageSubscriptionButton from '@/components/profile/ManageSubscriptionButton';
 import { OnboardingData } from '@/types/user';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Send } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
 
 export default async function ProfilePage(props: { searchParams: Promise<{ success?: string }> }) {
@@ -102,6 +102,10 @@ export default async function ProfilePage(props: { searchParams: Promise<{ succe
                     </span>
                 </Link>
             )}
+
+            <Link href="/feedback" className={styles.feedbackBtn}>
+                <Send size={18} /> Submit Feedback
+            </Link>
 
             <LogoutButton />
         </main>

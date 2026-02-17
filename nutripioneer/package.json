@@ -12,6 +12,7 @@
     "@polar-sh/sdk": "^0.43.1",
     "@prisma/client": "^5.22.0",
     "@types/lodash.debounce": "^4.0.9",
+    "@vercel/analytics": "^1.6.1",
     "axios": "^1.13.2",
     "cheerio": "^1.1.2",
     "date-fns": "^4.1.0",
