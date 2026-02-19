@@ -79,14 +79,19 @@ jobs:
             ${{ env.DOT_ENV_CONTENT }}
             ENVEOF
 
-            # Recreate backend container
-            docker compose -f docker-compose.prod.yml up -d --force-recreate backend
+            # Pull latest images and restart backend (no force-recreate to preserve volume data)
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d backend
 
             # Wait for container to be healthy
             sleep 10
 
             # Check if container is running
             docker compose -f docker-compose.prod.yml ps
+
+            # Verify database volume is mounted
+            echo "🔍 Checking database volume..."
+            docker compose -f docker-compose.prod.yml exec backend ls -lh /app/data/
 
             # Verify GEMINI_API_KEY is loaded
             docker compose -f docker-compose.prod.yml exec backend printenv | grep GEMINI
