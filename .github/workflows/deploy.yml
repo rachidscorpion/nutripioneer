@@ -99,6 +99,7 @@ jobs:
             echo '      - OPENFDA_API_KEY=${{ secrets.OPENFDA_API_KEY }}' >> docker-compose.prod.yml
             echo '      - MEALDB_API_KEY=${{ secrets.MEALDB_API_KEY }}' >> docker-compose.prod.yml
             echo '      - OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}' >> docker-compose.prod.yml
+            echo '      - GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}' >> docker-compose.prod.yml
             echo '      - UNSPLASH_APPLICATION_ID=${{ secrets.UNSPLASH_APPLICATION_ID }}' >> docker-compose.prod.yml
             echo '      - UNSPLASH_SECRET_KEY=${{ secrets.UNSPLASH_SECRET_KEY }}' >> docker-compose.prod.yml
             echo '      - UNSPLASH_ACCESS_KEY=${{ secrets.UNSPLASH_ACCESS_KEY }}' >> docker-compose.prod.yml
