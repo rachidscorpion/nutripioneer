@@ -16,8 +16,10 @@ import {
     Leaf,
     HeartPulse,
     ChefHat,
-    Loader2
+    Loader2,
 } from 'lucide-react';
+import { AxiosError } from 'axios';
+import { toast } from 'sonner';
 
 // Semantic types for our log items
 type LogType = 'system' | 'meal' | 'analysis' | 'success';
@@ -155,6 +157,20 @@ export default function SynthesizingStep() {
                     return { success: true };
                 } catch (error) {
                     console.error("Onboarding submission error:", error);
+
+                    if (error instanceof AxiosError && error.response?.status === 401) {
+                        toast.error('Session expired. Please log in again.');
+                        try {
+                            await api.auth.logout();
+                        } catch (e) {
+                            console.error("Logout failed", e);
+                        }
+                        // Force redirect to onboarding start
+                        window.location.href = '/onboarding';
+                        return { success: false, handled: true };
+                    }
+
+                    toast.error('Failed to save profile. Please try again.');
                     return { success: false };
                 }
             };
@@ -181,6 +197,8 @@ export default function SynthesizingStep() {
                 setTimeout(() => {
                     router.replace('/home');
                 }, 1500);
+            } else if ((result as any).handled) {
+                // Error was handled (e.g. redirect), do nothing
             } else {
                 addLog('Error', 'Failed to save profile. Please try again.', Activity, 'system');
             }
