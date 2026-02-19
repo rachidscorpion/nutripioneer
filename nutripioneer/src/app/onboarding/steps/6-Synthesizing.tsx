@@ -6,8 +6,6 @@ import { api } from '@/lib/api-client';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Search,
-    Database,
     User,
     Activity,
     Utensils,
@@ -15,7 +13,6 @@ import {
     ScanLine,
     Leaf,
     HeartPulse,
-    ChefHat,
     Loader2,
 } from 'lucide-react';
 import { AxiosError } from 'axios';

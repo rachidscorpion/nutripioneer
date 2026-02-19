@@ -69,7 +69,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script_stop: true
           script: |
-            cd /path/to/nutripioneer  # Update this to your actual path
+            cd /nutripioneer  # Update this to your actual path
 
             # Pull latest changes
             git pull origin main
