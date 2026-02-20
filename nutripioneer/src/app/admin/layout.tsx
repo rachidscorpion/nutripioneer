@@ -59,7 +59,7 @@ function AdminSidebarAndLayout({
 
     const handleLogout = () => {
         logout();
-        router.push('/admin/login');
+        window.location.href = '/admin/login';
     };
 
     const toggleSidebar = () => {
