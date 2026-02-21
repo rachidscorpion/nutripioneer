@@ -31,7 +31,8 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.260830587028-c6i3nkrnm35kubrrclgo0pd4703cge91"
         }
-      ]
+      ],
+      "expo-video"
     ],
     "web": {
       "favicon": "./assets/favicon.png"

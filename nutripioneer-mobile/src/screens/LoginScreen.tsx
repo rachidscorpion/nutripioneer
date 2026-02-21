@@ -5,12 +5,12 @@ import {
     TouchableOpacity,
     StyleSheet,
     Platform,
-    ImageBackground,
     Image,
     StatusBar,
     Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import apiClient, { api, setAuthToken } from '../lib/api-client';
 import { useNavigation } from '@react-navigation/native';
@@ -18,6 +18,12 @@ import { useNavigation } from '@react-navigation/native';
 export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
+
+    const player = useVideoPlayer(require('../../assets/background-video-1.mp4'), player => {
+        player.loop = true;
+        player.muted = true;
+        player.play();
+    });
 
     useEffect(() => {
         GoogleSignin.configure({
@@ -104,11 +110,13 @@ export default function LoginScreen() {
     };
 
     return (
-        <ImageBackground
-            source={{ uri: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1080&auto=format&fit=crop' }}
-            style={styles.backgroundImage}
-            resizeMode="cover"
-        >
+        <View style={styles.backgroundImage}>
+            <VideoView
+                player={player}
+                style={StyleSheet.absoluteFill}
+                contentFit="cover"
+                nativeControls={false}
+            />
             <StatusBar barStyle="light-content" />
             <View style={styles.overlay}>
                 <View style={styles.safeArea}>
@@ -147,7 +155,7 @@ export default function LoginScreen() {
                     </View>
                 </View>
             </View>
-        </ImageBackground>
+        </View>
     );
 }
 
@@ -204,9 +212,13 @@ const styles = StyleSheet.create({
     },
     googleButton: {
         flexDirection: 'row',
-        backgroundColor: '#13ec5b', // Using brand color
+        alignSelf: 'center',
         borderRadius: 12,
-        height: 60,
+        borderWidth: 1,
+        borderColor: '#61d588ff',
+        backgroundColor: 'transparent', // add blur effect
+        height: 50,
+        width: '80%',
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#13ec5b',
@@ -221,9 +233,10 @@ const styles = StyleSheet.create({
     },
     googleIcon: {
         marginRight: 12,
+        color: '#61d588ff',
     },
     googleButtonText: {
-        color: '#000',
+        color: '#61d588ff',
         fontSize: 18,
         fontWeight: '700',
         letterSpacing: 0.5,
