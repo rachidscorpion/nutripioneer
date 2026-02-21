@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -9,20 +9,65 @@ import {
     ImageBackground,
     Image,
     StatusBar,
+    Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import { api, setAuthToken } from '../lib/api-client';
+import { useNavigation } from '@react-navigation/native';
 
 export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
+    const navigation = useNavigation();
+
+    useEffect(() => {
+        GoogleSignin.configure({
+            iosClientId: '260830587028-q0nfq6efvl8fh6s0lvdbqq2v25q3lr3g.apps.googleusercontent.com',
+            webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+            offlineAccess: true,
+        });
+    }, []);
 
     const handleGoogleSignIn = async () => {
-        console.log('Google Sign-In pressed');
-        setLoading(true);
         try {
-            // TODO: Implement actual Google Sign-In logic
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-            console.error('Google Sign-In Error:', error);
+            setLoading(true);
+
+            if (Platform.OS === 'android') {
+                await GoogleSignin.hasPlayServices();
+            }
+
+            const signInResult = await GoogleSignin.signIn();
+            const idToken = signInResult.data?.idToken;
+
+            if (!idToken) {
+                Alert.alert('Error', 'Failed to get Google ID token. Please try again.');
+                return;
+            }
+
+            const response = await api.auth.signInWithGoogle(idToken);
+
+
+            if (response.data?.token) {
+                await setAuthToken(response.data.token);
+            }
+
+            Alert.alert('Success', 'Signed in successfully!', [
+                {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('Home' as never),
+                },
+            ]);
+        } catch (error: any) {
+            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                Alert.alert('Cancelled', 'Sign-in was cancelled');
+            } else if (error.code === statusCodes.IN_PROGRESS) {
+                Alert.alert('In Progress', 'Sign-in is already in progress');
+            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                Alert.alert('Error', 'Google Play Services not available');
+            } else {
+                console.error('Google Sign-In Error:', error);
+                Alert.alert('Error', error.response?.data?.message || 'Sign-in failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }

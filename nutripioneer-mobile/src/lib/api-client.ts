@@ -46,6 +46,8 @@ export const api = {
             apiClient.post('/auth/sign-out'),
         signInSocial: (provider: string, callbackURL?: string) => 
             apiClient.post('/auth/sign-in/social', { provider, callbackURL }),
+        signInWithGoogle: (idToken: string) => 
+            apiClient.post('/auth/sign-in/google', { idToken }),
     },
     user: {
         getProfile: () => apiClient.get('/users/profile'),

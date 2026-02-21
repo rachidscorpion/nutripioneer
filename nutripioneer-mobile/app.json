@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nutripioneer.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,8 +22,17 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.nutripioneer.mobile"
     },
+    "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.260830587028-c6i3nkrnm35kubrrclgo0pd4703cge91"
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }
