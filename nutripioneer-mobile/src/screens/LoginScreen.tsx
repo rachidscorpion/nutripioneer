@@ -14,10 +14,12 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import apiClient, { api, setAuthToken } from '../lib/api-client';
 import { useNavigation } from '@react-navigation/native';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 
 export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
+    const updateData = useOnboardingStore(state => state.updateData);
 
     const player = useVideoPlayer(require('../../assets/background-video-1.mp4'), player => {
         player.loop = true;
@@ -66,9 +68,17 @@ export default function LoginScreen() {
 
             // Check if user is onboarded
             let isOnboarded = false;
+            let userName = '';
+            let userEmail = '';
             try {
                 const profileRes = await api.user.getProfile();
                 const user = profileRes.data?.data;
+
+                if (user) {
+                    userName = user.name || '';
+                    userEmail = user.email || '';
+                }
+
                 if (user?.conditions) {
                     const parsedConditions = typeof user.conditions === 'string'
                         ? JSON.parse(user.conditions)
@@ -81,18 +91,13 @@ export default function LoginScreen() {
                 console.error('Error fetching profile to check onboarding', e.response?.status, e.message);
             }
 
-            Alert.alert('Success', 'Signed in successfully!', [
-                {
-                    text: 'OK',
-                    onPress: () => {
-                        if (isOnboarded) {
-                            navigation.navigate('Home' as never);
-                        } else {
-                            navigation.navigate('Onboarding' as never);
-                        }
-                    },
-                },
-            ]);
+            if (isOnboarded) {
+                navigation.navigate('Home' as never);
+            } else {
+                updateData('name', userName);
+                updateData('email', userEmail);
+                navigation.navigate('OnboardingConditions' as never);
+            }
         } catch (error: any) {
             if (error.code === statusCodes.SIGN_IN_CANCELLED) {
                 Alert.alert('Cancelled', 'Sign-in was cancelled');
