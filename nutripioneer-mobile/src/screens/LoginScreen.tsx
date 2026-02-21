@@ -92,7 +92,7 @@ export default function LoginScreen() {
             }
 
             if (isOnboarded) {
-                navigation.navigate('Home' as never);
+                navigation.navigate('Dashboard' as never);
             } else {
                 updateData('name', userName);
                 updateData('email', userEmail);

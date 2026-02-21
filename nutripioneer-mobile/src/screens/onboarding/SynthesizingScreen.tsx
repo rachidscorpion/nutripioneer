@@ -118,7 +118,7 @@ export default function SynthesizingScreen() {
                 store.completeOnboarding();
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'Home' as never }],
+                    routes: [{ name: 'Dashboard' as never }],
                 });
             }
         };
