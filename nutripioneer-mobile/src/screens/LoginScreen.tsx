@@ -4,7 +4,6 @@ import {
     Text,
     TouchableOpacity,
     StyleSheet,
-    SafeAreaView,
     Platform,
     ImageBackground,
     Image,
@@ -13,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import { api, setAuthToken } from '../lib/api-client';
+import apiClient, { api, setAuthToken } from '../lib/api-client';
 import { useNavigation } from '@react-navigation/native';
 
 export default function LoginScreen() {
@@ -46,15 +45,46 @@ export default function LoginScreen() {
 
             const response = await api.auth.signInWithGoogle(idToken);
 
+            // The backend returns { success: true, user: {...}, session: { token: '...', expiresAt: '...' } }
+            const sessionToken = response.data?.session?.token;
 
-            if (response.data?.token) {
-                await setAuthToken(response.data.token);
+            if (sessionToken) {
+                // Must await this to ensure AsyncStorage has it
+                await setAuthToken(sessionToken);
+                // ALSO we need to manually set it on the axios instance for the very next request
+                // Because interceptors read from AsyncStorage which can be slow
+                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+            } else {
+                console.error("No session token received from backend:", response.data);
+            }
+
+            // Check if user is onboarded
+            let isOnboarded = false;
+            try {
+                const profileRes = await api.user.getProfile();
+                const user = profileRes.data?.data;
+                if (user?.conditions) {
+                    const parsedConditions = typeof user.conditions === 'string'
+                        ? JSON.parse(user.conditions)
+                        : user.conditions;
+                    if (parsedConditions && parsedConditions.length > 0) {
+                        isOnboarded = true;
+                    }
+                }
+            } catch (e: any) {
+                console.error('Error fetching profile to check onboarding', e.response?.status, e.message);
             }
 
             Alert.alert('Success', 'Signed in successfully!', [
                 {
                     text: 'OK',
-                    onPress: () => navigation.navigate('Home' as never),
+                    onPress: () => {
+                        if (isOnboarded) {
+                            navigation.navigate('Home' as never);
+                        } else {
+                            navigation.navigate('Onboarding' as never);
+                        }
+                    },
                 },
             ]);
         } catch (error: any) {
@@ -81,7 +111,7 @@ export default function LoginScreen() {
         >
             <StatusBar barStyle="light-content" />
             <View style={styles.overlay}>
-                <SafeAreaView style={styles.safeArea}>
+                <View style={styles.safeArea}>
                     <View style={styles.container}>
                         <View style={styles.content}>
                             <View style={styles.header}>
@@ -115,7 +145,7 @@ export default function LoginScreen() {
                             <View style={{ flex: 1 }} />
                         </View>
                     </View>
-                </SafeAreaView>
+                </View>
             </View>
         </ImageBackground>
     );

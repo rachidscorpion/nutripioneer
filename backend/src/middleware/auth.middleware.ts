@@ -1,5 +1,6 @@
 import type { Context, Next } from 'hono';
 import { auth } from '@/lib/auth';
+import prisma from '@/db/client';
 
 /**
  * Auth middleware that validates session and attaches userId to context
@@ -7,9 +8,30 @@ import { auth } from '@/lib/auth';
  */
 export async function authMiddleware(c: Context, next: Next) {
     try {
-        const session = await auth.api.getSession({
+        let session: any = await auth.api.getSession({
             headers: c.req.raw.headers,
         });
+
+        // Fallback for custom mobile session tokens
+        if (!session) {
+            const authHeader = c.req.header('Authorization');
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const token = authHeader.substring(7);
+                const dbSession = await prisma.session.findFirst({
+                    where: { token },
+                    include: { user: true }
+                });
+
+                if (dbSession && dbSession.expiresAt > new Date()) {
+                    // Reconstruct session object to match Better Auth's expected format
+                    const { user, ...sessionData } = dbSession;
+                    session = {
+                        session: sessionData,
+                        user: user
+                    };
+                }
+            }
+        }
 
         if (!session) {
             return c.json(
@@ -46,9 +68,29 @@ export async function authMiddleware(c: Context, next: Next) {
  */
 export async function optionalAuthMiddleware(c: Context, next: Next) {
     try {
-        const session = await auth.api.getSession({
+        let session: any = await auth.api.getSession({
             headers: c.req.raw.headers,
         });
+
+        // Fallback for custom mobile session tokens
+        if (!session) {
+            const authHeader = c.req.header('Authorization');
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const token = authHeader.substring(7);
+                const dbSession = await prisma.session.findFirst({
+                    where: { token },
+                    include: { user: true }
+                });
+
+                if (dbSession && dbSession.expiresAt > new Date()) {
+                    const { user, ...sessionData } = dbSession;
+                    session = {
+                        session: sessionData,
+                        user: user
+                    };
+                }
+            }
+        }
 
         if (session) {
             c.set('userId', session.user.id);
