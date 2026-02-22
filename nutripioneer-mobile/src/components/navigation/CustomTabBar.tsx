@@ -101,8 +101,13 @@ function TabItem({
     });
 
     const textOpacity = animation.interpolate({
-        inputRange: [0, 0.5, 1],
+        inputRange: [0, 0.7, 1],
         outputRange: [0, 0, 1]
+    });
+
+    const labelWidth = animation.interpolate({
+        inputRange: [0, 0.7, 1],
+        outputRange: [0, 0, 100]
     });
 
     return (
@@ -125,7 +130,7 @@ function TabItem({
                 {isFocused && (
                     <Animated.Text
                         numberOfLines={1}
-                        style={[styles.label, { opacity: textOpacity }]}
+                        style={[styles.label, { opacity: textOpacity, width: labelWidth }]}
                     >
                         {label}
                     </Animated.Text>

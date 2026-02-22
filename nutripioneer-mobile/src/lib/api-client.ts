@@ -38,15 +38,15 @@ apiClient.interceptors.response.use(
 
 export const api = {
     auth: {
-        login: (credentials: { email: string; password: string }) => 
+        login: (credentials: { email: string; password: string }) =>
             apiClient.post('/auth/login', credentials),
-        register: (data: { email: string; password: string; name: string }) => 
+        register: (data: { email: string; password: string; name: string }) =>
             apiClient.post('/auth/register', data),
-        logout: () => 
+        logout: () =>
             apiClient.post('/auth/sign-out'),
-        signInSocial: (provider: string, callbackURL?: string) => 
+        signInSocial: (provider: string, callbackURL?: string) =>
             apiClient.post('/auth/sign-in/social', { provider, callbackURL }),
-        signInWithGoogle: (idToken: string) => 
+        signInWithGoogle: (idToken: string) =>
             apiClient.post('/auth/sign-in/google', { idToken }),
     },
     user: {
@@ -64,45 +64,46 @@ export const api = {
     plans: {
         getDaily: (date: string) => apiClient.get(`/plans/daily?date=${date}`),
         generate: (date: string) => apiClient.post('/plans/generate', { date }),
-        updateStatus: (id: string, type: string, status: string) => 
+        updateStatus: (id: string, type: string, status: string) =>
             apiClient.patch(`/plans/${id}/status`, { type, status }),
         update: (id: string, data: any) => apiClient.patch(`/plans/${id}`, data),
         delete: (date: string) => apiClient.delete(`/plans/daily?date=${date}`),
         addExternalMeal: (data: any) => apiClient.post('/plans/external-meal', data),
-        removeMeal: (planId: string, type: string) => 
+        removeMeal: (planId: string, type: string) =>
             apiClient.delete(`/plans/${planId}/meals/${type}`),
     },
     meals: {
-        swap: (planId: string, type: string) => 
+        swap: (planId: string, type: string) =>
             apiClient.post(`/plans/${planId}/meals/${type}/swap`, {}),
     },
     recipes: {
         regenerateAll: () => apiClient.post('/recipes/regenerate-all'),
         deleteAll: () => apiClient.delete('/recipes/storage/all'),
+        getInstructions: (url: string) => apiClient.get(`/recipe?url=${encodeURIComponent(url)}`),
     },
     items: {},
     food: {
-        analyze: (query: string, type?: 'Brand' | 'Generic') => 
+        analyze: (query: string, type?: 'Brand' | 'Generic') =>
             apiClient.get(`/food/analyze?q=${encodeURIComponent(query)}${type ? `&type=${type}` : ''}`),
-        search: (query: string, type?: 'Brand' | 'Generic') => 
+        search: (query: string, type?: 'Brand' | 'Generic') =>
             apiClient.get(`/food/search?q=${encodeURIComponent(query)}${type ? `&type=${type}` : ''}`),
         analyzeBarcode: (code: string) => apiClient.get(`/food/barcode/${code}`),
     },
     grocery: {
         list: () => apiClient.get('/grocery'),
         add: (name: string) => apiClient.post('/grocery', { name }),
-        toggle: (id: string, isChecked: boolean) => 
+        toggle: (id: string, isChecked: boolean) =>
             apiClient.patch(`/grocery/${id}/toggle`, { isChecked }),
         remove: (id: string) => apiClient.delete(`/grocery/${id}`),
         clear: () => apiClient.delete('/grocery/all'),
         seed: () => apiClient.post('/grocery/seed', {}),
-        addIngredients: (ingredients: string[]) => 
+        addIngredients: (ingredients: string[]) =>
             apiClient.post('/grocery/ingredients', { ingredients }),
         generateShoppingList: (entries: any[]) => apiClient.post('/grocery/generate', { entries }),
     },
     conditions: {
         list: () => apiClient.get('/conditions'),
-        search: (query: string) => 
+        search: (query: string) =>
             apiClient.get(`/conditions/search?q=${encodeURIComponent(query)}`),
         onboard: (data: any) => apiClient.post('/conditions/onboard', data),
         getById: (id: string) => apiClient.get(`/conditions/${id}`),
@@ -112,9 +113,9 @@ export const api = {
         history: () => apiClient.get('/metrics'),
     },
     drugs: {
-        search: (query: string) => 
+        search: (query: string) =>
             apiClient.get(`/drugs/search?q=${encodeURIComponent(query)}`),
-        details: (name: string, rxcui: string) => 
+        details: (name: string, rxcui: string) =>
             apiClient.get(`/drugs/details?name=${encodeURIComponent(name)}&rxcui=${rxcui}`),
     },
     products: {

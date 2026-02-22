@@ -118,7 +118,7 @@ export default function MedicalScreen() {
                         </Text>
                     </View>
                     <View style={[styles.checkbox, medical.insulin && styles.checkboxActive]}>
-                        {medical.insulin && <Ionicons name="checkmark" size={16} color="#000" />}
+                        {medical.insulin && <Ionicons name="checkmark-outline" size={16} color="#000" />}
                     </View>
                 </TouchableOpacity>
 
