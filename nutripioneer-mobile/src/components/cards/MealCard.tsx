@@ -76,22 +76,35 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
     };
 
     const handleAddToGrocery = async () => {
+        setIsLoading(true);
         try {
-            let ingredients = [];
+            let parsedIngredients = [];
             try {
-                ingredients = JSON.parse(meal.ingredients);
+                parsedIngredients = typeof meal.ingredients === 'string'
+                    ? JSON.parse(meal.ingredients)
+                    : meal.ingredients || [];
             } catch (e) {
-                console.log("Failed to parse", e);
+                console.log("Failed to parse ingredients", e);
+                Alert.alert('Info', 'No ingredients found');
+                setIsLoading(false);
                 return;
             }
-            if (ingredients.length > 0) {
-                await api.grocery.addIngredients(ingredients);
+
+            const ingredientsPayload = parsedIngredients.map((i: any) =>
+                i.measure ? `${i.item} (${i.measure})` : i.item || i
+            );
+
+            if (ingredientsPayload.length > 0) {
+                await api.grocery.addIngredients(ingredientsPayload);
                 Alert.alert('Success', 'Items added to grocery list');
             } else {
                 Alert.alert('Info', 'No ingredients to add');
             }
         } catch (e) {
+            console.error("Failed to add groceries", e);
             Alert.alert('Error', 'Failed to add ingredients');
+        } finally {
+            setIsLoading(false);
         }
     };
 

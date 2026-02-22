@@ -32,7 +32,13 @@
           "iosUrlScheme": "com.googleusercontent.apps.260830587028-q0nfq6efvl8fh6s0lvdbqq2v25q3lr3g"
         }
       ],
-      "expo-video"
+      "expo-video",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Nutripioneer to use your location to find nearby grocery stores."
+        }
+      ]
     ],
     "web": {
       "favicon": "./assets/favicon.png"

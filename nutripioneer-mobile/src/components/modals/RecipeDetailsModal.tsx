@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, Image, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Modal, Image, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 
@@ -130,11 +130,13 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
 
             if (ingredientsPayload.length > 0) {
                 await api.grocery.addIngredients(ingredientsPayload);
-                alert('Added ingredients to grocery list');
+                Alert.alert('Success', 'Added ingredients to grocery list');
+            } else {
+                Alert.alert('Info', 'No ingredients found to add');
             }
         } catch (e) {
             console.error(e);
-            alert('Error adding ingredients');
+            Alert.alert('Error', 'Error adding ingredients');
         } finally {
             setIsAdding(false);
         }
