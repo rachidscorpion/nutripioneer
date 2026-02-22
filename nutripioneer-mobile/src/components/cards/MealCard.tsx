@@ -39,10 +39,15 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
                 onPress: async () => {
                     setIsLoading(true);
                     try {
-                        await api.plans.removeMeal(planId, type);
-                        onUpdate?.();
-                    } catch (e) {
-                        Alert.alert('Error', 'Failed to remove meal');
+                        if (planId && type) {
+                            await api.plans.removeMeal(planId, type);
+                            onUpdate?.();
+                        } else {
+                            throw new Error('Missing planId or type');
+                        }
+                    } catch (e: any) {
+                        console.error("Failed to remove meal", e);
+                        Alert.alert('Error', e.response?.data?.message || 'Failed to remove meal');
                     } finally {
                         setIsLoading(false);
                     }
@@ -108,6 +113,14 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
         }
     };
 
+    const [imgSrc, setImgSrc] = useState(meal?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Update image when meal changes
+    useEffect(() => {
+        setImgSrc(meal?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
+    }, [meal]);
+
     if (!meal) {
         return (
             <View style={[styles.card, styles.emptyCard]}>
@@ -123,14 +136,6 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
             </View>
         );
     }
-
-    const [imgSrc, setImgSrc] = useState(meal.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // Update image when meal changes
-    useEffect(() => {
-        setImgSrc(meal?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
-    }, [meal]);
 
     let tags: string[] = [];
     try {

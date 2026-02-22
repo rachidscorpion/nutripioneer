@@ -38,7 +38,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Nutripioneer to use your location to find nearby grocery stores."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
