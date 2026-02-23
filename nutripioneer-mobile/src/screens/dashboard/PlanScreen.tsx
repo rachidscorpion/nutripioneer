@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
     View,
     Text,
@@ -68,9 +69,11 @@ export default function PlanScreen() {
         }
     }, [currentDate]); // add currentDate to dependency so it doesn't cause stale closure if ever used
 
-    useEffect(() => {
-        fetchPlan(currentDate);
-    }, [currentDate, fetchPlan]);
+    useFocusEffect(
+        useCallback(() => {
+            fetchPlan(currentDate);
+        }, [currentDate, fetchPlan])
+    );
 
     const handleDateChange = (days: number) => {
         const newDate = new Date(currentDate);

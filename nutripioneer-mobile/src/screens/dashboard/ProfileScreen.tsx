@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 
@@ -10,6 +10,7 @@ const TABS = [
     { id: 'conditions', label: 'Conditions', icon: 'droplet' },
     { id: 'medical', label: 'Health', icon: 'heart' },
     { id: 'dietary', label: 'Food', icon: 'coffee' },
+    { id: 'nutrition', label: 'Nutrition', icon: 'activity' },
     { id: 'settings', label: 'Settings', icon: 'settings' },
 ];
 
@@ -39,16 +40,22 @@ export default function ProfileScreen() {
     const [conditionResults, setConditionResults] = useState<any[]>([]);
     const [isSearchingCondition, setIsSearchingCondition] = useState(false);
 
-    useEffect(() => {
-        loadProfile();
-    }, []);
+    // Nutrition Limits
+    const [nutritionLimits, setNutritionLimits] = useState<any>(null);
+    const [isLoadingLimits, setIsLoadingLimits] = useState(true);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadProfile();
+        }, [])
+    );
 
     const loadProfile = async () => {
         setLoading(true);
         try {
             const res = await api.user.getProfile();
             if (res.data) {
-                const u = res.data;
+                const u = res.data.data ? res.data.data : res.data;
                 setUser(u);
 
                 // Parse OnboardingData
@@ -85,6 +92,19 @@ export default function ProfileScreen() {
             if (condRes.data?.data) {
                 setAvailableConditions(condRes.data.data);
             }
+
+            // Load Nutrition Limits
+            try {
+                const limitsRes = await api.user.getNutritionLimits();
+                if (limitsRes.data?.data) {
+                    setNutritionLimits(limitsRes.data.data);
+                }
+            } catch (e) {
+                console.error("Failed to load nutrition limits", e);
+            } finally {
+                setIsLoadingLimits(false);
+            }
+
         } catch (e) {
             console.error('Failed to load profile', e);
             Alert.alert('Error', 'Failed to load profile data');
@@ -101,6 +121,10 @@ export default function ProfileScreen() {
                 conditions: selectedConditions
             };
             await api.user.updateProfile(finalPayload);
+            if (nutritionLimits) {
+                await api.user.updateNutritionLimits(nutritionLimits);
+            }
+
             Alert.alert('Success', 'Profile updated successfully');
         } catch (e) {
             console.error(e);
@@ -441,6 +465,111 @@ export default function ProfileScreen() {
                                         placeholderTextColor="#666"
                                     />
                                 </View>
+                            </View>
+                        </View>
+                    )}
+
+                    {activeTab === 'nutrition' && (
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Nutrition Limits</Text>
+                            <View style={[styles.card, { borderColor: 'rgba(59, 130, 246, 0.5)' }]}>
+                                <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+                                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(59, 130, 246, 0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                                        <Feather name="shield" size={16} color="#3b82f6" />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff', marginBottom: 4 }}>Medical Nutrition Therapy</Text>
+                                        <Text style={{ fontSize: 12, color: '#a1a1aa' }}>
+                                            Customize your daily calorie and nutrient targets based on your dietitian's recommendations.
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {isLoadingLimits ? (
+                                    <ActivityIndicator size="small" color="#3b82f6" />
+                                ) : !nutritionLimits ? (
+                                    <Text style={styles.emptyText}>No nutrition limits generated yet. Complete your profile to generate them.</Text>
+                                ) : (
+                                    <View>
+                                        <View style={{ marginBottom: 24 }}>
+                                            <Text style={[styles.label, { fontSize: 16, color: '#fff' }]}>Daily Calories</Text>
+                                            <View style={styles.row}>
+                                                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
+                                                    <Text style={styles.label}>Min (kcal)</Text>
+                                                    <TextInput
+                                                        style={styles.input}
+                                                        keyboardType="numeric"
+                                                        value={String(nutritionLimits.daily_calories.min || '')}
+                                                        onChangeText={(v) => setNutritionLimits({
+                                                            ...nutritionLimits,
+                                                            daily_calories: { ...nutritionLimits.daily_calories, min: parseInt(v) || 0 }
+                                                        })}
+                                                    />
+                                                </View>
+                                                <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
+                                                    <Text style={styles.label}>Max (kcal)</Text>
+                                                    <TextInput
+                                                        style={styles.input}
+                                                        keyboardType="numeric"
+                                                        value={String(nutritionLimits.daily_calories.max || '')}
+                                                        onChangeText={(v) => setNutritionLimits({
+                                                            ...nutritionLimits,
+                                                            daily_calories: { ...nutritionLimits.daily_calories, max: parseInt(v) || 0 }
+                                                        })}
+                                                    />
+                                                </View>
+                                            </View>
+                                        </View>
+
+                                        {Object.entries(nutritionLimits.nutrients).map(([key, limit]: [string, any]) => {
+                                            if (limit.max === undefined && limit.min === undefined) return null;
+
+                                            return (
+                                                <View key={key} style={{ marginBottom: 16 }}>
+                                                    <Text style={[styles.label, { fontSize: 14, color: '#fff' }]}>
+                                                        {limit.label || key} <Text style={{ color: '#a1a1aa', fontSize: 12 }}>({limit.unit})</Text>
+                                                    </Text>
+                                                    <View style={styles.row}>
+                                                        {limit.min !== undefined && (
+                                                            <View style={[styles.inputGroup, { flex: 1, marginRight: limit.max !== undefined ? 8 : 0 }]}>
+                                                                <Text style={styles.label}>Min</Text>
+                                                                <TextInput
+                                                                    style={styles.input}
+                                                                    keyboardType="numeric"
+                                                                    value={String(limit.min || '')}
+                                                                    onChangeText={(v) => setNutritionLimits({
+                                                                        ...nutritionLimits,
+                                                                        nutrients: {
+                                                                            ...nutritionLimits.nutrients,
+                                                                            [key]: { ...limit, min: parseInt(v) || 0 }
+                                                                        }
+                                                                    })}
+                                                                />
+                                                            </View>
+                                                        )}
+                                                        {limit.max !== undefined && (
+                                                            <View style={[styles.inputGroup, { flex: 1, marginLeft: limit.min !== undefined ? 8 : 0 }]}>
+                                                                <Text style={styles.label}>Max</Text>
+                                                                <TextInput
+                                                                    style={styles.input}
+                                                                    keyboardType="numeric"
+                                                                    value={String(limit.max || '')}
+                                                                    onChangeText={(v) => setNutritionLimits({
+                                                                        ...nutritionLimits,
+                                                                        nutrients: {
+                                                                            ...nutritionLimits.nutrients,
+                                                                            [key]: { ...limit, max: parseInt(v) || 0 }
+                                                                        }
+                                                                    })}
+                                                                />
+                                                            </View>
+                                                        )}
+                                                    </View>
+                                                </View>
+                                            );
+                                        })}
+                                    </View>
+                                )}
                             </View>
                         </View>
                     )}
