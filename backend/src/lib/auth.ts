@@ -2,15 +2,17 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { polar, checkout, webhooks } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
-import { SignJWT } from 'jose';
+import { importPKCS8, SignJWT } from 'jose';
 import prisma from '@/db/client';
 
 // Generate Apple client secret JWT dynamically
-function generateAppleClientSecret(): string {
-    const privateKey = process.env.APPLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    if (!privateKey) {
+async function generateAppleClientSecret(): Promise<string> {
+    const privateKeyStr = process.env.APPLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    if (!privateKeyStr) {
         throw new Error('APPLE_PRIVATE_KEY is not set');
     }
+
+    const privateKey = await importPKCS8(privateKeyStr, 'ES256');
 
     const now = Math.floor(Date.now() / 1000);
 
@@ -27,6 +29,12 @@ function generateAppleClientSecret(): string {
         .setExpirationTime(now + 15777000) // 6 months (max allowed)
         .sign(privateKey);
 }
+
+// Pre-generate Apple client secret since `jose` requires async operations
+const appleClientSecret = await generateAppleClientSecret().catch(err => {
+    console.warn('Failed to generate Apple client secret:', err.message);
+    return '';
+});
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -72,7 +80,7 @@ export const auth = betterAuth({
         },
         apple: {
             clientId: process.env.APPLE_CLIENT_ID || '',
-            clientSecret: () => generateAppleClientSecret(),
+            clientSecret: appleClientSecret,
             clientKey: process.env.APPLE_KEY_ID || '',
             teamId: process.env.APPLE_TEAM_ID || '',
             enabled: true,
