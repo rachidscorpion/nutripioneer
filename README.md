@@ -56,7 +56,7 @@ This project uses a **centralized environment configuration** system with a sing
 - **`DOMAIN`**: Your production domain name (only used when `NODE_ENV=production`)
 - **`BETTER_AUTH_SECRET`**: Secret key for authentication (generate with `openssl rand -base64 32`)
 
-**Note:** All URLs (`FRONTEND_URL`, `BACKEND_URL`, `NEXT_PUBLIC_API_URL`, `BETTER_AUTH_URL`) are automatically set based on `NODE_ENV` and `DOMAIN`. The `NEXT_PUBLIC_` prefix means the variable is exposed to the browser and should only contain public-safe values.
+**Note:** All URLs (`FRONTEND_URL`, `NEXT_PUBLIC_API_URL`, `BETTER_AUTH_URL`) are automatically set based on `NODE_ENV` and `DOMAIN`. The `NEXT_PUBLIC_` prefix means the variable is exposed to the browser and should only contain public-safe values.
 
 For a complete list of all environment variables, see `.env.example`.
 

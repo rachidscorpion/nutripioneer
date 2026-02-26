@@ -5,18 +5,13 @@ import axios from 'axios';
 
 const isServer = typeof window === 'undefined';
 
-// Server-side: Use internal backend URL (for Docker networking or localhost)
-// Client-side: Use public API URL from environment or current origin
-const API_URL = isServer
-    ? process.env.BACKEND_URL
-    : process.env.NEXT_PUBLIC_API_URL;
+// Server-side: Use absolute backend URL
+// Client-side: Use relative URL to force Next.js proxy (preserves x-forwarded-host)
+const API_URL = isServer ? process.env.NEXT_PUBLIC_API_URL : '';
 
-// Validate that API_URL is set
-if (!API_URL) {
-    const errorMsg = isServer
-        ? '❌ BACKEND_URL environment variable is not set. Please check your .env file.'
-        : '❌ NEXT_PUBLIC_API_URL environment variable is not set. Please check your .env file.';
-    throw new Error(errorMsg);
+// Validate that API_URL is set on the server
+if (isServer && !API_URL) {
+    throw new Error('❌ NEXT_PUBLIC_API_URL environment variable is not set. Please check your .env file.');
 }
 
 
