@@ -110,6 +110,10 @@ jobs:
             echo '      - POLAR_ENV=production' >> docker-compose.prod.yml
             echo '      - ICD_CLIENT_ID=${{ secrets.ICD_CLIENT_ID }}' >> docker-compose.prod.yml
             echo '      - ICD_CLIENT_SECRET=${{ secrets.ICD_CLIENT_SECRET }}' >> docker-compose.prod.yml
+            echo '      - APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}' >> docker-compose.prod.yml
+            echo '      - APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}' >> docker-compose.prod.yml
+            echo '      - APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}' >> docker-compose.prod.yml
+            echo '      - APPLE_PRIVATE_KEY=${{ secrets.APPLE_PRIVATE_KEY }}' >> docker-compose.prod.yml
             echo '    volumes:' >> docker-compose.prod.yml
             echo '      - backend_data:/app/data' >> docker-compose.prod.yml
             echo '    networks:' >> docker-compose.prod.yml

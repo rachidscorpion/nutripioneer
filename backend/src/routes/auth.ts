@@ -70,8 +70,8 @@ authRoutes.post('/sign-in/google', async (c) => {
 
         const googleUserId = payload.sub;
         const email = payload.email;
-        const name = payload.name || email.split('@')[0];
-        const image = payload.picture;
+        const name = payload.name || email.split('@')[0] || 'User';
+        const image = payload.picture || null;
 
         // Find or create user
         let user = await prisma.user.findUnique({
@@ -114,7 +114,7 @@ authRoutes.post('/sign-in/google', async (c) => {
             // Update the idToken and updatedAt
             await prisma.account.update({
                 where: { id: accountId },
-                data: { 
+                data: {
                     idToken,
                     updatedAt: new Date(),
                 },
@@ -139,7 +139,7 @@ authRoutes.post('/sign-in/google', async (c) => {
         // Set session cookie
         const cookieName = 'nutripioneer.session_token';
         const cookieValue = sessionToken;
-        
+
         c.header('Set-Cookie', `${cookieName}=${cookieValue}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}`);
 
         return c.json({
@@ -158,6 +158,133 @@ authRoutes.post('/sign-in/google', async (c) => {
     } catch (error) {
         console.error('Google sign-in error:', error);
         return c.json({ error: 'Failed to sign in with Google' }, 500);
+    }
+});
+
+/**
+ * Apple Sign-In for React Native (uses ID token directly)
+ * This endpoint accepts an Apple ID token and creates a session
+ */
+authRoutes.post('/sign-in/apple', async (c) => {
+    try {
+        const { idToken, user: appleUser } = await c.req.json();
+
+        if (!idToken) {
+            return c.json({ error: 'ID token is required' }, 400);
+        }
+
+        const { jwtVerify, decodeProtectedHeader, createRemoteJWKSet } = await import('jose');
+
+        const header = decodeProtectedHeader(idToken);
+        const kid = header.kid;
+
+        if (!kid) {
+            return c.json({ error: 'Invalid ID token: missing kid' }, 400);
+        }
+
+        const jwtMatch = createRemoteJWKSet(
+            new URL('https://appleid.apple.com/auth/keys')
+        );
+
+        const { payload } = await jwtVerify(idToken, jwtMatch, {
+            issuer: 'https://appleid.apple.com',
+            audience: process.env.APPLE_CLIENT_ID,
+        });
+
+        if (!payload.sub) {
+            return c.json({ error: 'Invalid ID token: missing sub' }, 400);
+        }
+
+        const appleUserId = payload.sub as string;
+        const email = payload.email as string | undefined;
+        const emailVerified = payload.email_verified === true || payload.email_verified === 'true';
+
+        let name = email?.split('@')[0] || 'Apple User';
+        if (appleUser?.name) {
+            const { firstName, lastName } = appleUser.name;
+            name = `${firstName || ''} ${lastName || ''}`.trim() || name;
+        }
+
+        let user = await prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user && email) {
+            user = await prisma.user.create({
+                data: {
+                    email,
+                    name,
+                    image: null,
+                    emailVerified,
+                },
+            });
+        } else if (!user) {
+            return c.json({ error: 'Email is required from Apple' }, 400);
+        }
+
+        const accountId = `apple:${appleUserId}`;
+        let account = await prisma.account.findUnique({
+            where: { id: accountId },
+        });
+
+        if (!account) {
+            account = await prisma.account.create({
+                data: {
+                    id: accountId,
+                    accountId: appleUserId,
+                    providerId: 'apple',
+                    userId: user.id,
+                    idToken,
+                    accessToken: null,
+                    refreshToken: null,
+                    expiresAt: null,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+            });
+        } else {
+            await prisma.account.update({
+                where: { id: accountId },
+                data: {
+                    idToken,
+                    updatedAt: new Date(),
+                },
+            });
+        }
+
+        const sessionToken = generateSessionToken();
+        const sessionExpiresAt = new Date(Date.now() + 60 * 60 * 24 * 7 * 1000);
+
+        const session = await prisma.session.create({
+            data: {
+                id: sessionToken,
+                userId: user.id,
+                expiresAt: sessionExpiresAt,
+                token: sessionToken,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        });
+
+        const cookieName = 'nutripioneer.session_token';
+        c.header('Set-Cookie', `${cookieName}=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}`);
+
+        return c.json({
+            success: true,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+            },
+            session: {
+                token: sessionToken,
+                expiresAt: sessionExpiresAt,
+            },
+        });
+    } catch (error) {
+        console.error('Apple sign-in error:', error);
+        return c.json({ error: 'Failed to sign in with Apple' }, 500);
     }
 });
 

@@ -2,7 +2,31 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { polar, checkout, webhooks } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
+import { SignJWT } from 'jose';
 import prisma from '@/db/client';
+
+// Generate Apple client secret JWT dynamically
+function generateAppleClientSecret(): string {
+    const privateKey = process.env.APPLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    if (!privateKey) {
+        throw new Error('APPLE_PRIVATE_KEY is not set');
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+
+    return new SignJWT({
+        iss: process.env.APPLE_TEAM_ID,
+        sub: process.env.APPLE_CLIENT_ID,
+        aud: 'https://appleid.apple.com',
+    })
+        .setProtectedHeader({
+            alg: 'ES256',
+            kid: process.env.APPLE_KEY_ID!,
+        })
+        .setIssuedAt(now)
+        .setExpirationTime(now + 15777000) // 6 months (max allowed)
+        .sign(privateKey);
+}
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -46,11 +70,18 @@ export const auth = betterAuth({
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
             enabled: true,
         },
+        apple: {
+            clientId: process.env.APPLE_CLIENT_ID || '',
+            clientSecret: () => generateAppleClientSecret(),
+            clientKey: process.env.APPLE_KEY_ID || '',
+            teamId: process.env.APPLE_TEAM_ID || '',
+            enabled: true,
+        },
     },
 
     // Social login redirects
     socialLogin: {
-       successRedirectURL: `${(process.env.FRONTEND_URL || 'https://nutripioneer.com').replace(/\/$/, '')}/home`,
+        successRedirectURL: `${(process.env.FRONTEND_URL || 'https://nutripioneer.com').replace(/\/$/, '')}/home`,
     },
 
     // Advanced: use a callback to see what redirect is being used
@@ -67,18 +98,23 @@ export const auth = betterAuth({
             maxAge: 60 * 5, // 5 minutes
         },
         freshAge: 60 * 5, // Consider session fresh for 5 minutes
-        sameSite: 'none',
-        secure: true,
     },
 
     // Base URL for callbacks
-    baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+    baseURL: process.env.BETTER_AUTH_URL,
+
+    // Trust proxy headers to dynamically determine base URL
+    trustedProxyHeaders: true,
 
     // Advanced configuration
     advanced: {
+        defaultCookieAttributes: {
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production',
+        },
         cookiePrefix: 'nutripioneer',
         crossSubDomainCookies: {
-            enabled: true,
+            enabled: process.env.NODE_ENV === 'production',
             domain: process.env.NODE_ENV === 'production' ? '.nutripioneer.com' : undefined,
         },
     },
@@ -87,7 +123,7 @@ export const auth = betterAuth({
     account: {
         accountLinking: {
             enabled: true,
-            trustedProviders: ['google']
+            trustedProviders: ['google', 'apple']
         }
     },
 
@@ -104,7 +140,8 @@ export const auth = betterAuth({
                 'http://localhost:3000',
                 'http://localhost:3001',
                 'http://127.0.0.1:3000',
-                'http://127.0.0.1:3001'
+                'http://127.0.0.1:3001',
+                'https://columellar-semicatalytic-rina.ngrok-free.dev'
             );
         }
 
@@ -112,18 +149,12 @@ export const auth = betterAuth({
         if (process.env.BETTER_AUTH_URL) {
             origins.push(process.env.BETTER_AUTH_URL);
 
-            // Also add www variant and both http/https variants for production
+            // Also add http variant for ngrok
             try {
                 const url = new URL(process.env.BETTER_AUTH_URL);
-                const hostname = url.hostname;
-
-                if (!hostname.startsWith('www.')) {
-                    origins.push(`${url.protocol}//www.${hostname}`);
-                } else {
-                    origins.push(`${url.protocol}//${hostname.replace('www.', '')}`);
-                }
+                origins.push(`http://${url.host}`);
             } catch (e) {
-                console.warn('Invalid BETTER_AUTH_URL format:', process.env.BETTER_AUTH_URL);
+                // ignore invalid URL
             }
         }
 
@@ -131,7 +162,10 @@ export const auth = betterAuth({
             'https://api.nutripioneer.com',
             'https://nutripioneer.com',
             'https://www.nutripioneer.com',
-            'http://localhost:3000' // Added local for debugging 
+            'https://appleid.apple.com', // Required for OAuth callback
+            'https://accounts.google.com',
+            'http://localhost:3000', // Added local for debugging
+            'https://columellar-semicatalytic-rina.ngrok-free.dev'
         );
 
         return origins.filter(Boolean);

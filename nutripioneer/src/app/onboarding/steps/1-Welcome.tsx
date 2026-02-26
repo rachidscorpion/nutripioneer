@@ -188,7 +188,7 @@ export default function WelcomeStep() {
                         >
                             Continue with Google
                         </LoginButton>
-                        {/* <LoginButton
+                        <LoginButton
                             variant="primary"
                             onClick={() => handleSocialLogin('apple')}
                             disabled={loading}
@@ -200,7 +200,7 @@ export default function WelcomeStep() {
                             }
                         >
                             Continue with Apple
-                        </LoginButton> */}
+                        </LoginButton>
                     </div>
                     <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.8rem', lineHeight: '1.4', marginTop: '2rem' }}>
                         By continuing, you agree to our Terms of Service and Privacy Policy.

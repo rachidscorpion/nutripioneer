@@ -12,6 +12,20 @@ const app = new Hono();
 // Global middleware
 app.use('*', logger());
 
+// Debug middleware for OAuth flow
+app.use('*', async (c, next) => {
+    const forwardedHost = c.req.header('x-forwarded-host');
+    const host = c.req.header('host');
+    const path = c.req.path;
+
+    // Log OAuth-related requests
+    if (path.includes('auth') || path.includes('callback')) {
+        console.log(`[OAuth Debug] Path: ${path}, Host: ${host}, Forwarded-Host: ${forwardedHost}`);
+    }
+
+    await next();
+});
+
 // Dynamic CORS configuration based on environment
 const corsOrigins = (() => {
     const origins = [];
@@ -22,7 +36,8 @@ const corsOrigins = (() => {
             'http://localhost:3000',
             'http://localhost:3001',
             'http://127.0.0.1:3000',
-            'http://127.0.0.1:3001'
+            'http://127.0.0.1:3001',
+            'https://columellar-semicatalytic-rina.ngrok-free.dev'
         );
 
         // Allow ngrok URLs in development

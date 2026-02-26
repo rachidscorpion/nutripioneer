@@ -17,6 +17,12 @@ services:
        - PORT=3001
        - DATABASE_URL=file:./data/prod.db
 
+       # Apple Sign-In
+       - APPLE_CLIENT_ID=${APPLE_CLIENT_ID}
+       - APPLE_KEY_ID=${APPLE_KEY_ID}
+       - APPLE_TEAM_ID=${APPLE_TEAM_ID}
+       - APPLE_PRIVATE_KEY=${APPLE_PRIVATE_KEY}
+
     volumes:
       - backend_data:/app/data
     networks:

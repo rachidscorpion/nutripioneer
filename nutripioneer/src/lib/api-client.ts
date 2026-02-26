@@ -25,8 +25,17 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true // Send cookies (Better Auth session)
+    withCredentials: true, // Send cookies (Better Auth session)
 });
+
+// For OAuth, we need to use the current origin (or ngrok URL) for callbacks
+const getAppURL = () => {
+    if (typeof window !== 'undefined') {
+        // Use current window location for OAuth callbacks
+        return window.location.origin;
+    }
+    return process.env.NEXT_PUBLIC_APP_URL;
+};
 
 // Auth uses httpOnly cookies automatically for requests
 
@@ -36,10 +45,14 @@ export const api = {
         login: (credentials: any) => apiClient.post('/auth/login', credentials),
         register: (data: any) => apiClient.post('/auth/register', data),
         logout: () => apiClient.post('/auth/sign-out'),
-        signInSocial: (provider: string, callbackURL?: string) => apiClient.post('/auth/sign-in/social', {
-            provider,
-            callbackURL,
-        }),
+        signInSocial: (provider: string, callbackURL?: string) => {
+            // For OAuth, use current origin (or ngrok URL) as callback to avoid state_mismatch
+            const url = callbackURL || `${getAppURL()}/home`;
+            return apiClient.post('/auth/sign-in/social', {
+                provider,
+                callbackURL: url,
+            });
+        },
     },
     user: {
         getProfile: () => apiClient.get('/users/profile'),
