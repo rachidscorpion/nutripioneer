@@ -29,7 +29,7 @@ export default function App() {
         <Stack.Screen name="OnboardingDietary" component={DietaryScreen} />
         <Stack.Screen name="OnboardingSynthesizing" component={SynthesizingScreen} />
       </Stack.Navigator>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </NavigationContainer>
   );
 }

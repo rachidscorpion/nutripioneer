@@ -48,6 +48,8 @@ export const api = {
             apiClient.post('/auth/sign-in/social', { provider, callbackURL }),
         signInWithGoogle: (idToken: string) =>
             apiClient.post('/auth/sign-in/google', { idToken }),
+        signInWithApple: (idToken: string, user?: any) =>
+            apiClient.post('/auth/sign-in/apple', { idToken, user }),
     },
     user: {
         getProfile: () => apiClient.get('/users/profile'),

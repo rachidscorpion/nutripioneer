@@ -15,6 +15,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import apiClient, { api, setAuthToken } from '../lib/api-client';
 import { useNavigation } from '@react-navigation/native';
 import { useOnboardingStore } from '../store/useOnboardingStore';
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
@@ -114,6 +115,89 @@ export default function LoginScreen() {
         }
     };
 
+    const handleAppleSignIn = async () => {
+        try {
+            setLoading(true);
+            const credential = await AppleAuthentication.signInAsync({
+                requestedScopes: [
+                    AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                    AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                ],
+            });
+
+            if (!credential.identityToken) {
+                Alert.alert('Error', 'Failed to get Apple identity token. Please try again.');
+                return;
+            }
+
+            const payload: any = {
+                idToken: credential.identityToken,
+            };
+
+            if (credential.fullName) {
+                payload.user = {
+                    name: {
+                        firstName: credential.fullName.givenName,
+                        lastName: credential.fullName.familyName,
+                    },
+                };
+            }
+
+            const response = await api.auth.signInWithApple(payload.idToken, payload.user);
+
+            const sessionToken = response.data?.session?.token;
+
+            if (sessionToken) {
+                await setAuthToken(sessionToken);
+                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+            } else {
+                console.error("No session token received from backend:", response.data);
+            }
+
+            // Check if user is onboarded
+            let isOnboarded = false;
+            let userName = '';
+            let userEmail = '';
+            try {
+                const profileRes = await api.user.getProfile();
+                const user = profileRes.data?.data;
+
+                if (user) {
+                    userName = user.name || '';
+                    userEmail = user.email || '';
+                }
+
+                if (user?.conditions) {
+                    const parsedConditions = typeof user.conditions === 'string'
+                        ? JSON.parse(user.conditions)
+                        : user.conditions;
+                    if (parsedConditions && parsedConditions.length > 0) {
+                        isOnboarded = true;
+                    }
+                }
+            } catch (e: any) {
+                console.error('Error fetching profile to check onboarding', e.response?.status, e.message);
+            }
+
+            if (isOnboarded) {
+                navigation.navigate('Dashboard' as never);
+            } else {
+                updateData('name', userName);
+                updateData('email', userEmail);
+                navigation.navigate('OnboardingConditions' as never);
+            }
+        } catch (error: any) {
+            if (error.code === 'ERR_REQUEST_CANCELED') {
+                Alert.alert('Cancelled', 'Sign-in was cancelled');
+            } else {
+                console.error('Apple Sign-In Error:', error);
+                Alert.alert('Error', error.response?.data?.message || 'Sign-in failed. Please try again.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <View style={styles.backgroundImage}>
             <VideoView
@@ -148,6 +232,19 @@ export default function LoginScreen() {
                                         {loading ? 'Continuing...' : 'Continue with Google'}
                                     </Text>
                                 </TouchableOpacity>
+
+                                {Platform.OS === 'ios' && (
+                                    <TouchableOpacity
+                                        style={[styles.appleButton, loading && styles.buttonDisabled]}
+                                        onPress={handleAppleSignIn}
+                                        disabled={loading}
+                                    >
+                                        <Ionicons name="logo-apple" size={24} color="#000" style={styles.appleIcon} />
+                                        <Text style={styles.appleButtonText}>
+                                            {loading ? 'Continuing...' : 'Continue with Apple'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
 
                                 <Text style={styles.disclaimerText}>
                                     By continuing, you agree to our Terms of Service and Privacy Policy.
@@ -211,9 +308,8 @@ const styles = StyleSheet.create({
         fontWeight: '400',
     },
     formContainer: {
-        width: '100%',
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
     },
     googleButton: {
         flexDirection: 'row',
@@ -242,6 +338,34 @@ const styles = StyleSheet.create({
     },
     googleButtonText: {
         color: '#61d588ff',
+        fontSize: 18,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+    },
+    appleButton: {
+        flexDirection: 'row',
+        alignSelf: 'center',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#ffffff',
+        // backgroundColor: '#ffffff',
+        height: 50,
+        width: '80%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#ffffff',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+        marginBottom: 20,
+    },
+    appleIcon: {
+        marginRight: 12,
+        color: '#ffffff',
+    },
+    appleButtonText: {
+        color: '#ffffff',
         fontSize: 18,
         fontWeight: '700',
         letterSpacing: 0.5,

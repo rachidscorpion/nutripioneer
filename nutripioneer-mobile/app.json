@@ -39,7 +39,15 @@
           "locationAlwaysAndWhenInUsePermission": "Allow Nutripioneer to use your location to find nearby grocery stores."
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Nutripioneer to access your photos to scan restaurant menus.",
+          "cameraPermission": "Allow Nutripioneer to use your camera to scan restaurant menus."
+        }
+      ]
     ],
     "web": {
       "favicon": "./assets/favicon.png"

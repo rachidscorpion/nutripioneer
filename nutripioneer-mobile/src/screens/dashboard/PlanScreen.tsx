@@ -10,12 +10,12 @@ import {
     Alert,
     RefreshControl
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 import MealCard from '../../components/cards/MealCard';
 import WorkoutCard from '../../components/cards/WorkoutCard';
 import TimePicker from '../../components/ui/TimePicker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PlanScreen() {
     const [currentDate, setCurrentDate] = useState<Date>(() => {
@@ -161,7 +161,7 @@ export default function PlanScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.headerTitles}>
                     <Text style={styles.title}>Daily Plan</Text>
