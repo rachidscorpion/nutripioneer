@@ -1,19 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function WorkoutCard() {
+    const { theme } = useTheme();
     return (
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={styles.iconContainer}>
                 <Ionicons name="barbell" size={24} color="#8b5cf6" />
             </View>
             <View style={styles.content}>
-                <Text style={styles.title}>Daily Movement</Text>
-                <Text style={styles.description}>Stay active for at least 30 minutes today.</Text>
+                <Text style={[styles.title, { color: theme.text }]}>Daily Movement</Text>
+                <Text style={[styles.description, { color: theme.textMuted }]}>Stay active for at least 30 minutes today.</Text>
             </View>
             <TouchableOpacity style={styles.btnIcon}>
-                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
             </TouchableOpacity>
         </View>
     );

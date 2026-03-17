@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Ale
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 import RecipeDetailsModal from '../modals/RecipeDetailsModal';
+import { useTheme } from '../../context/ThemeContext';
 
 interface MealCardProps {
     meal: any;
@@ -15,6 +16,7 @@ interface MealCardProps {
 
 export default function MealCard({ meal, type, planId, status = 'PENDING', nutritionLimits, onUpdate }: MealCardProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const { theme } = useTheme();
     const isCompleted = status === 'COMPLETED';
 
     const handleToggle = async () => {
@@ -123,13 +125,13 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
 
     if (!meal) {
         return (
-            <View style={[styles.card, styles.emptyCard]}>
-                <Text style={styles.emptyText}>No meal assigned</Text>
-                <TouchableOpacity style={styles.addBtn} onPress={handleAdd} disabled={isLoading}>
-                    {isLoading ? <ActivityIndicator size="small" color="#13ec5b" /> : (
+            <View style={[styles.card, styles.emptyCard, { borderColor: theme.border }]}>
+                <Text style={[styles.emptyText, { color: theme.textMuted }]}>No meal assigned</Text>
+                <TouchableOpacity style={[styles.addBtn, { backgroundColor: theme.primary + '1A', borderColor: theme.primary + '4D' }]} onPress={handleAdd} disabled={isLoading}>
+                    {isLoading ? <ActivityIndicator size="small" color={theme.primary} /> : (
                         <>
-                            <Ionicons name="add-circle-outline" size={18} color="#13ec5b" />
-                            <Text style={styles.addBtnText}>Add Meal</Text>
+                            <Ionicons name="add-circle-outline" size={18} color={theme.primary} />
+                            <Text style={[styles.addBtnText, { color: theme.primary }]}>Add Meal</Text>
                         </>
                     )}
                 </TouchableOpacity>
@@ -146,68 +148,68 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
     const isHeartSafe = tags.includes('DASH') || tags.includes('Low-Sodium');
 
     return (
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Image
                 source={{ uri: imgSrc }}
-                style={styles.image}
+                style={[styles.image, { backgroundColor: theme.card }]}
                 onError={() => setImgSrc('https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80')}
             />
             <View style={styles.content}>
-                <Text style={styles.title} numberOfLines={2}>{meal.name}</Text>
-                <Text style={styles.description} numberOfLines={2}>{meal.description}</Text>
+                <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{meal.name}</Text>
+                <Text style={[styles.description, { color: theme.textMuted }]} numberOfLines={2}>{meal.description}</Text>
 
                 <View style={styles.tagsContainer}>
-                    <View style={styles.badge}><Text style={styles.badgeText}>{meal.calories} kcal</Text></View>
+                    <View style={[styles.badge, { backgroundColor: theme.background }]}><Text style={[styles.badgeText, { color: theme.textMuted }]}>{meal.calories} kcal</Text></View>
                     {meal.prepTime > 0 && (
-                        <View style={styles.badge}>
-                            <Ionicons name="time-outline" size={12} color="#a1a1aa" style={{ marginRight: 4 }} />
-                            <Text style={styles.badgeText}>{meal.prepTime > 999 ? meal.prepTime / 60 : meal.prepTime} min</Text>
+                        <View style={[styles.badge, { backgroundColor: theme.background }]}>
+                            <Ionicons name="time-outline" size={12} color={theme.textMuted} style={{ marginRight: 4 }} />
+                            <Text style={[styles.badgeText, { color: theme.textMuted }]}>{meal.prepTime > 999 ? meal.prepTime / 60 : meal.prepTime} min</Text>
                         </View>
                     )}
-                    <View style={styles.badge}><Text style={styles.badgeText}>{meal.protein}g P</Text></View>
-                    {isDiabeticSafe && <View style={[styles.badge, styles.badgeGreen]}><Text style={styles.badgeGreenText}>Glucose Friendly</Text></View>}
-                    {isHeartSafe && <View style={[styles.badge, styles.badgeGreen]}><Text style={styles.badgeGreenText}>Heart Healthy</Text></View>}
+                    <View style={[styles.badge, { backgroundColor: theme.background }]}><Text style={[styles.badgeText, { color: theme.textMuted }]}>{meal.protein}g P</Text></View>
+                    {isDiabeticSafe && <View style={[styles.badge, styles.badgeGreen, { backgroundColor: theme.primary + '1A', borderColor: theme.primary + '4D' }]}><Text style={[styles.badgeGreenText, { color: theme.primary }]}>Glucose Friendly</Text></View>}
+                    {isHeartSafe && <View style={[styles.badge, styles.badgeGreen, { backgroundColor: theme.primary + '1A', borderColor: theme.primary + '4D' }]}><Text style={[styles.badgeGreenText, { color: theme.primary }]}>Heart Healthy</Text></View>}
                 </View>
 
                 {isLoading && (
-                    <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#13ec5b" />
+                    <View style={[styles.loadingOverlay, { backgroundColor: theme.background + 'B3' }]}>
+                        <ActivityIndicator size="large" color={theme.primary} />
                     </View>
                 )}
             </View>
 
-            <View style={styles.actions}>
-                <TouchableOpacity style={styles.btnPrimary} disabled={isLoading} onPress={() => setIsModalOpen(true)}>
+            <View style={[styles.actions, { borderTopColor: theme.border, backgroundColor: theme.background }]}>
+                <TouchableOpacity style={[styles.btnPrimary, { backgroundColor: theme.primary }]} disabled={isLoading} onPress={() => setIsModalOpen(true)}>
                     <Ionicons name="restaurant" size={16} color="#000" />
                     <Text style={styles.btnPrimaryText}>{isCompleted ? 'View Recipe' : 'Cook'}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    style={[styles.btnGhost, isCompleted && styles.btnCompleted]}
+                    style={[styles.btnGhost, { backgroundColor: theme.card }, isCompleted && [styles.btnCompleted, { backgroundColor: theme.primary + '1A', borderColor: theme.primary + '4D' }]]}
                     onPress={handleToggle}
                     disabled={isLoading}
                 >
-                    <Ionicons name={isCompleted ? "checkbox" : "square-outline"} size={20} color={isCompleted ? "#13ec5b" : "#d1d5db"} />
+                    <Ionicons name={isCompleted ? "checkbox" : "square-outline"} size={20} color={isCompleted ? theme.primary : theme.textMuted} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    style={styles.btnGhost}
+                    style={[styles.btnGhost, { backgroundColor: theme.card }]}
                     onPress={handleSwap}
                     disabled={isLoading || isCompleted}
                 >
-                    <Ionicons name="refresh" size={20} color={isCompleted ? "#4b5563" : "#d1d5db"} />
+                    <Ionicons name="refresh" size={20} color={isCompleted ? theme.textMuted : theme.textMuted} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    style={styles.btnGhost}
+                    style={[styles.btnGhost, { backgroundColor: theme.card }]}
                     onPress={handleDelete}
                     disabled={isLoading}
                 >
-                    <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                    <Ionicons name="trash-outline" size={20} color={theme.danger} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.btnGhost} onPress={handleAddToGrocery} disabled={isLoading}>
-                    <Ionicons name="cart-outline" size={20} color="#d1d5db" />
+                <TouchableOpacity style={[styles.btnGhost, { backgroundColor: theme.card }]} onPress={handleAddToGrocery} disabled={isLoading}>
+                    <Ionicons name="cart-outline" size={20} color={theme.textMuted} />
                 </TouchableOpacity>
             </View>
 

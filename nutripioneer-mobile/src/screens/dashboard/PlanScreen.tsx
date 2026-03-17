@@ -16,6 +16,7 @@ import MealCard from '../../components/cards/MealCard';
 import WorkoutCard from '../../components/cards/WorkoutCard';
 import TimePicker from '../../components/ui/TimePicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function PlanScreen() {
     const [currentDate, setCurrentDate] = useState<Date>(() => {
@@ -28,6 +29,7 @@ export default function PlanScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const { theme } = useTheme();
 
     const [times, setTimes] = useState({
         breakfast: "08:00",
@@ -161,50 +163,50 @@ export default function PlanScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
             <View style={styles.header}>
                 <View style={styles.headerTitles}>
-                    <Text style={styles.title}>Daily Plan</Text>
-                    <Text style={styles.subtitle}>Manage your schedule and meals.</Text>
+                    <Text style={[styles.title, { color: theme.text }]}>Daily Plan</Text>
+                    <Text style={[styles.subtitle, { color: theme.textMuted }]}>Manage your schedule and meals.</Text>
                 </View>
 
                 <View style={styles.headerControls}>
                     {plan && (
                         <TouchableOpacity
-                            style={styles.deleteBtn}
+                            style={[styles.deleteBtn, { backgroundColor: theme.danger + '1A', borderColor: theme.danger + '4D' }]}
                             onPress={handleDelete}
                             disabled={isDeleting || isLoading}
                         >
                             {isDeleting ? (
-                                <ActivityIndicator size="small" color="#ef4444" />
+                                <ActivityIndicator size="small" color={theme.danger} />
                             ) : (
-                                <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                                <Ionicons name="trash-outline" size={20} color={theme.danger} />
                             )}
                         </TouchableOpacity>
                     )}
                 </View>
             </View>
 
-            <View style={styles.dateNavigator}>
+            <View style={[styles.dateNavigator, { backgroundColor: theme.card, borderColor: theme.border }]}>
                 <TouchableOpacity
-                    style={styles.navBtn}
+                    style={[styles.navBtn, { backgroundColor: theme.background }]}
                     onPress={() => handleDateChange(-1)}
                     disabled={isLoading}
                 >
-                    <Ionicons name="chevron-back" size={24} color="#fff" />
+                    <Ionicons name="chevron-back" size={24} color={theme.text} />
                 </TouchableOpacity>
 
                 <View style={styles.dateDisplay}>
-                    <Text style={styles.dayLabel}>{formatDate(currentDate)}</Text>
-                    <Text style={styles.dateValue}>{formatFullDate(currentDate)}</Text>
+                    <Text style={[styles.dayLabel, { color: theme.text }]}>{formatDate(currentDate)}</Text>
+                    <Text style={[styles.dateValue, { color: theme.textMuted }]}>{formatFullDate(currentDate)}</Text>
                 </View>
 
                 <TouchableOpacity
-                    style={styles.navBtn}
+                    style={[styles.navBtn, { backgroundColor: theme.background }]}
                     onPress={() => handleDateChange(1)}
                     disabled={isLoading}
                 >
-                    <Ionicons name="chevron-forward" size={24} color="#fff" />
+                    <Ionicons name="chevron-forward" size={24} color={theme.text} />
                 </TouchableOpacity>
             </View>
 
@@ -220,19 +222,19 @@ export default function PlanScreen() {
             >
                 {!plan && !isLoading ? (
                     <View style={styles.emptyState}>
-                        <View style={styles.emptyIconWrapper}>
-                            <Ionicons name="sparkles" size={40} color="#13ec5b" />
+                        <View style={[styles.emptyIconWrapper, { backgroundColor: theme.primary + '1A', borderColor: theme.primary + '4D' }]}>
+                            <Ionicons name="sparkles" size={40} color={theme.primary} />
                         </View>
-                        <Text style={styles.emptyTitle}>No Plan Found</Text>
+                        <Text style={[styles.emptyTitle, { color: theme.text }]}>No Plan Found</Text>
 
                         {isFutureOrToday() ? (
                             <>
-                                <Text style={styles.emptyText}>
+                                <Text style={[styles.emptyText, { color: theme.textMuted }]}>
                                     You haven't generated a plan for this day yet.{"\n"}
                                     Create one now based on your preferences.
                                 </Text>
                                 <TouchableOpacity
-                                    style={styles.generateBtn}
+                                    style={[styles.generateBtn, { backgroundColor: theme.primary }]}
                                     onPress={handleGenerate}
                                     disabled={isGenerating}
                                 >
@@ -247,20 +249,20 @@ export default function PlanScreen() {
                                 </TouchableOpacity>
                             </>
                         ) : (
-                            <View style={styles.pastDateWarning}>
-                                <Ionicons name="information-circle-outline" size={20} color="#ef4444" />
-                                <Text style={styles.pastDateWarningText}>Cannot generate plans for past dates.</Text>
+                            <View style={[styles.pastDateWarning, { backgroundColor: theme.danger + '1A', borderColor: theme.danger + '4D' }]}>
+                                <Ionicons name="information-circle-outline" size={20} color={theme.danger} />
+                                <Text style={[styles.pastDateWarningText, { color: theme.danger }]}>Cannot generate plans for past dates.</Text>
                             </View>
                         )}
                     </View>
                 ) : plan ? (
                     <View style={styles.timeline}>
                         {/* Timeline Line */}
-                        <View style={styles.timelineLine} />
+                        <View style={[styles.timelineLine, { backgroundColor: theme.border }]} />
 
                         {/* Breakfast */}
                         <View style={styles.timelineItem}>
-                            <View style={[styles.timelineDot, styles.dotBlue]} />
+                            <View style={[styles.timelineDot, styles.dotBlue, { backgroundColor: theme.background }]} />
                             <View style={styles.timelineHeader}>
                                 <Text style={[styles.timelineTitle, styles.textBlue]}>Breakfast</Text>
                                 <TimePicker
@@ -279,7 +281,7 @@ export default function PlanScreen() {
 
                         {/* Workout */}
                         <View style={styles.timelineItem}>
-                            <View style={[styles.timelineDot, styles.dotPurple]} />
+                            <View style={[styles.timelineDot, styles.dotPurple, { backgroundColor: theme.background }]} />
                             <View style={styles.timelineHeader}>
                                 <Text style={[styles.timelineTitle, styles.textPurple]}>Movement</Text>
                                 <TimePicker
@@ -292,7 +294,7 @@ export default function PlanScreen() {
 
                         {/* Lunch */}
                         <View style={styles.timelineItem}>
-                            <View style={[styles.timelineDot, styles.dotEmerald]} />
+                            <View style={[styles.timelineDot, styles.dotEmerald, { backgroundColor: theme.background }]} />
                             <View style={styles.timelineHeader}>
                                 <Text style={[styles.timelineTitle, styles.textEmerald]}>Lunch</Text>
                                 <TimePicker
@@ -311,7 +313,7 @@ export default function PlanScreen() {
 
                         {/* Dinner */}
                         <View style={styles.timelineItem}>
-                            <View style={[styles.timelineDot, styles.dotAmber]} />
+                            <View style={[styles.timelineDot, styles.dotAmber, { backgroundColor: theme.background }]} />
                             <View style={styles.timelineHeader}>
                                 <Text style={[styles.timelineTitle, styles.textAmber]}>Dinner</Text>
                                 <TimePicker

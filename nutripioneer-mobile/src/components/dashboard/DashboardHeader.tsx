@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
 
 interface DashboardHeaderProps {
     onSearchPress?: () => void;
@@ -9,18 +10,19 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ onSearchPress }: DashboardHeaderProps) {
     const insets = useSafeAreaInsets();
+    const { theme } = useTheme();
     const today = new Date();
     const dateString = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
     return (
-        <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top, 20), backgroundColor: theme.background }]}>
             <View>
-                <Text style={styles.dateText}>{dateString}</Text>
-                <Text style={styles.title}>Today's Plan</Text>
+                <Text style={[styles.dateText, { color: theme.primary }]}>{dateString}</Text>
+                <Text style={[styles.title, { color: theme.text }]}>Today's Plan</Text>
             </View>
-            <TouchableOpacity style={styles.searchBtn} onPress={onSearchPress}>
-                <Ionicons name="search" size={20} color="#d1d5db" />
-                <Text style={styles.searchText}>Search Food</Text>
+            <TouchableOpacity style={[styles.searchBtn, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={onSearchPress}>
+                <Ionicons name="search" size={20} color={theme.textMuted} />
+                <Text style={[styles.searchText, { color: theme.textMuted }]}>Search Food</Text>
             </TouchableOpacity>
         </View>
     );

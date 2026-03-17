@@ -13,6 +13,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
+import { useTheme } from '../../context/ThemeContext';
 
 export interface MenuItem {
     name: string;
@@ -32,9 +33,11 @@ export interface MenuAnalysisResult {
 const MenuScannerUI = ({
     onScan,
     isScanning,
+    theme,
 }: {
     onScan: (file: { uri: string; type: string; name: string }) => void;
     isScanning: boolean;
+    theme: any;
 }) => {
     const [preview, setPreview] = useState<string | null>(null);
     const [selectedAsset, setSelectedAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
@@ -103,13 +106,13 @@ const MenuScannerUI = ({
                 </TouchableOpacity>
 
                 <View style={styles.scannerActions}>
-                    <TouchableOpacity style={styles.scanButton} onPress={handleScan} disabled={isScanning}>
+                    <TouchableOpacity style={[styles.scanButton, { backgroundColor: theme.primary }]} onPress={handleScan} disabled={isScanning}>
                         {isScanning ? (
-                            <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
+                            <ActivityIndicator color="#000" style={{ marginRight: 8 }} />
                         ) : (
-                            <Ionicons name="scan" size={24} color="#fff" style={{ marginRight: 8 }} />
+                            <Ionicons name="scan" size={24} color="#000" style={{ marginRight: 8 }} />
                         )}
-                        <Text style={styles.scanButtonText}>{isScanning ? 'Analyzing...' : 'Scan Menu'}</Text>
+                        <Text style={[styles.scanButtonText, { color: '#000' }]}>{isScanning ? 'Analyzing...' : 'Scan Menu'}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -119,28 +122,28 @@ const MenuScannerUI = ({
     return (
         <View style={styles.scannerContainer}>
             <View style={styles.scannerHeader}>
-                <Ionicons name="camera" size={48} color="#3b82f6" />
-                <Text style={styles.scannerTitle}>Restaurant Menu Rescue</Text>
-                <Text style={styles.scannerSubtitle}>
+                <Ionicons name="camera" size={48} color={theme.primary} />
+                <Text style={[styles.scannerTitle, { color: theme.text }]}>Restaurant Menu Rescue</Text>
+                <Text style={[styles.scannerSubtitle, { color: theme.textMuted }]}>
                     Snap a photo of any menu to instantly find dishes that match your dietary needs.
                 </Text>
             </View>
 
             <View style={styles.pickerActions}>
-                <TouchableOpacity style={styles.pickerButtonPrimary} onPress={takePhoto}>
-                    <Ionicons name="camera-outline" size={24} color="#fff" />
-                    <Text style={styles.pickerButtonTextPrimary}>Take Photo</Text>
+                <TouchableOpacity style={[styles.pickerButtonPrimary, { backgroundColor: theme.primary }]} onPress={takePhoto}>
+                    <Ionicons name="camera-outline" size={24} color="#000" />
+                    <Text style={[styles.pickerButtonTextPrimary, { color: '#000' }]}>Take Photo</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.pickerButtonSecondary} onPress={pickImage}>
-                    <Ionicons name="image-outline" size={24} color="#fff" />
-                    <Text style={styles.pickerButtonTextSecondary}>Choose from Library</Text>
+                <TouchableOpacity style={[styles.pickerButtonSecondary, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={pickImage}>
+                    <Ionicons name="image-outline" size={24} color={theme.text} />
+                    <Text style={[styles.pickerButtonTextSecondary, { color: theme.text }]}>Choose from Library</Text>
                 </TouchableOpacity>
             </View>
         </View>
     );
 };
 
-const ResultItemCard = ({ item }: { item: MenuItem }) => {
+const ResultItemCard = ({ item, theme }: { item: MenuItem; theme: any }) => {
     const [expanded, setExpanded] = useState(false);
 
     const isSafe = item.status === 'SAFE';
@@ -154,12 +157,12 @@ const ResultItemCard = ({ item }: { item: MenuItem }) => {
     };
 
     return (
-        <TouchableOpacity style={styles.itemCard} onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
+        <TouchableOpacity style={[styles.itemCard, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
             <View style={styles.itemHeader}>
                 <View style={styles.itemHeaderLeft}>
                     {getIcon()}
                     <View style={styles.itemHeaderText}>
-                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Text style={[styles.itemName, { color: theme.text }]}>{item.name}</Text>
                         <View
                             style={[
                                 styles.statusBadge,
@@ -181,21 +184,21 @@ const ResultItemCard = ({ item }: { item: MenuItem }) => {
                         </View>
                     </View>
                 </View>
-                <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color="#a1a1aa" />
+                <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={theme.textMuted} />
             </View>
 
-            {item.description && <Text style={styles.itemDescription}>{item.description}</Text>}
+            {item.description && <Text style={[styles.itemDescription, { color: theme.textMuted }]}>{item.description}</Text>}
 
             {expanded && (
-                <View style={styles.itemDetails}>
+                <View style={[styles.itemDetails, { borderTopColor: theme.border }]}>
                     <View style={styles.detailSection}>
-                        <Text style={styles.detailLabel}>Nutrition Analysis</Text>
-                        <Text style={styles.detailText}>{item.reasoning}</Text>
+                        <Text style={[styles.detailLabel, { color: theme.textMuted }]}>Nutrition Analysis</Text>
+                        <Text style={[styles.detailText, { color: theme.text }]}>{item.reasoning}</Text>
                     </View>
                     {item.modification && (
-                        <View style={styles.modificationBox}>
-                            <Text style={styles.modificationLabel}>Recommended Modification</Text>
-                            <Text style={styles.modificationText}>{item.modification}</Text>
+                        <View style={[styles.modificationBox, { backgroundColor: theme.primary + '1A' }]}>
+                            <Text style={[styles.modificationLabel, { color: theme.primary }]}>Recommended Modification</Text>
+                            <Text style={[styles.modificationText, { color: theme.text }]}>{item.modification}</Text>
                         </View>
                     )}
                 </View>
@@ -204,7 +207,7 @@ const ResultItemCard = ({ item }: { item: MenuItem }) => {
     );
 };
 
-const MenuResultsUI = ({ result, onReset }: { result: MenuAnalysisResult; onReset: () => void }) => {
+const MenuResultsUI = ({ result, onReset, theme }: { result: MenuAnalysisResult; onReset: () => void; theme: any }) => {
     const safeItems = result.items.filter((i) => i.status === 'SAFE');
     const cautionItems = result.items.filter((i) => i.status === 'CAUTION');
     const avoidItems = result.items.filter((i) => i.status === 'AVOID');
@@ -215,10 +218,10 @@ const MenuResultsUI = ({ result, onReset }: { result: MenuAnalysisResult; onRese
             <View style={styles.resultsSection}>
                 <View style={styles.sectionHeader}>
                     <View style={[styles.sectionIconBg, { backgroundColor: bgColor }]}>{icon}</View>
-                    <Text style={styles.sectionTitle}>{title}</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>{title}</Text>
                 </View>
                 {items.map((item, index) => (
-                    <ResultItemCard key={index} item={item} />
+                    <ResultItemCard key={index} item={item} theme={theme} />
                 ))}
             </View>
         );
@@ -227,11 +230,11 @@ const MenuResultsUI = ({ result, onReset }: { result: MenuAnalysisResult; onRese
     return (
         <ScrollView style={styles.resultsContainer} contentContainerStyle={{ paddingBottom: 40 }}>
             <View style={styles.resultsHero}>
-                <View style={styles.heroIconBg}>
-                    <Ionicons name="checkmark" size={32} color="#2563eb" />
+                <View style={[styles.heroIconBg, { backgroundColor: theme.primary + '1A' }]}>
+                    <Ionicons name="checkmark" size={32} color={theme.primary} />
                 </View>
-                <Text style={styles.resultsHeroTitle}>Menu Analyzed</Text>
-                <Text style={styles.resultsSummary}>{result.summary}</Text>
+                <Text style={[styles.resultsHeroTitle, { color: theme.text }]}>Menu Analyzed</Text>
+                <Text style={[styles.resultsSummary, { color: theme.textMuted }]}>{result.summary}</Text>
             </View>
 
             {renderSection(
@@ -256,9 +259,9 @@ const MenuResultsUI = ({ result, onReset }: { result: MenuAnalysisResult; onRese
                 '#dc2626'
             )}
 
-            <TouchableOpacity style={styles.resetButton} onPress={onReset}>
-                <Ionicons name="refresh" size={20} color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.resetButtonText}>Scan Another Menu</Text>
+            <TouchableOpacity style={[styles.resetButton, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={onReset}>
+                <Ionicons name="refresh" size={20} color={theme.text} style={{ marginRight: 8 }} />
+                <Text style={[styles.resetButtonText, { color: theme.text }]}>Scan Another Menu</Text>
             </TouchableOpacity>
         </ScrollView>
     );
@@ -270,6 +273,7 @@ export default function RestaurantRescueScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
     const [result, setResult] = useState<MenuAnalysisResult | null>(null);
+    const { theme } = useTheme();
 
     const handleScan = async (file: { uri: string; type: string; name: string }) => {
         setIsScanning(true);
@@ -290,20 +294,20 @@ export default function RestaurantRescueScreen() {
 
     if (isLoading) {
         return (
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#3b82f6" />
+                    <ActivityIndicator size="large" color={theme.primary} />
                 </View>
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
             {!result ? (
-                <MenuScannerUI onScan={handleScan} isScanning={isScanning} />
+                <MenuScannerUI onScan={handleScan} isScanning={isScanning} theme={theme} />
             ) : (
-                <MenuResultsUI result={result} onReset={() => setResult(null)} />
+                <MenuResultsUI result={result} onReset={() => setResult(null)} theme={theme} />
             )}
         </SafeAreaView>
     );

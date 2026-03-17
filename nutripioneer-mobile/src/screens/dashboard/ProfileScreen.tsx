@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
+import { useTheme } from '../../context/ThemeContext';
 
 const TABS = [
     { id: 'biometrics', label: 'Body', icon: 'user' },
@@ -17,6 +18,7 @@ const TABS = [
 
 export default function ProfileScreen() {
     const navigation = useNavigation();
+    const { theme, setTheme } = useTheme();
 
     const [user, setUser] = useState<any>(null);
     const [data, setData] = useState({
@@ -157,6 +159,7 @@ export default function ProfileScreen() {
 
     const handleThemeChange = async (newTheme: string) => {
         setSelectedTheme(newTheme);
+        setTheme(newTheme as any);
         try {
             await api.user.updatePreferences({ theme: newTheme });
         } catch (e) {
@@ -247,8 +250,8 @@ export default function ProfileScreen() {
 
     if (loading) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <ActivityIndicator size="large" color="#10b981" />
+            <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}>
+                <ActivityIndicator size="large" color={theme.primary} />
             </View>
         );
     }
@@ -256,11 +259,11 @@ export default function ProfileScreen() {
     const initials = user?.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'U';
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[styles.container, { backgroundColor: theme.background }]}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>My Profile</Text>
-                    <TouchableOpacity onPress={handleSave} disabled={isSaving} style={styles.saveBtn}>
+                    <Text style={[styles.title, { color: theme.text }]}>My Profile</Text>
+                    <TouchableOpacity onPress={handleSave} disabled={isSaving} style={[styles.saveBtn, { backgroundColor: theme.primary }]}>
                         {isSaving ? (
                             <ActivityIndicator size="small" color="#fff" />
                         ) : (
@@ -270,13 +273,13 @@ export default function ProfileScreen() {
                 </View>
 
                 {/* Profile Info */}
-                <View style={styles.profileCard}>
-                    <View style={styles.avatarFallback}>
+                <View style={[styles.profileCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                    <View style={[styles.avatarFallback, { backgroundColor: theme.primary }]}>
                         <Text style={styles.avatarText}>{initials}</Text>
                     </View>
                     <View style={styles.profileInfo}>
-                        <Text style={styles.profileName}>{user?.name || 'User'}</Text>
-                        <Text style={styles.profileEmail}>{user?.email}</Text>
+                        <Text style={[styles.profileName, { color: theme.text }]}>{user?.name || 'User'}</Text>
+                        <Text style={[styles.profileEmail, { color: theme.textMuted }]}>{user?.email}</Text>
                         <View style={styles.badgeRow}>
                             <View style={[styles.badge, user?.subscriptionStatus === 'active' ? styles.badgePro : styles.badgeStandard]}>
                                 <Text style={styles.badgeText}>{user?.subscriptionStatus === 'active' ? 'Pro Member' : 'Standard'}</Text>
@@ -291,11 +294,11 @@ export default function ProfileScreen() {
                         {TABS.map(tab => (
                             <TouchableOpacity
                                 key={tab.id}
-                                style={[styles.tabBtn, activeTab === tab.id && styles.tabBtnActive]}
+                                style={[styles.tabBtn, activeTab === tab.id && { borderBottomColor: theme.primary }]}
                                 onPress={() => setActiveTab(tab.id)}
                             >
-                                <Feather name={tab.icon as any} size={16} color={activeTab === tab.id ? '#10b981' : '#a1a1aa'} />
-                                <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>{tab.label}</Text>
+                                <Feather name={tab.icon as any} size={16} color={activeTab === tab.id ? theme.primary : theme.textMuted} />
+                                <Text style={[styles.tabText, { color: activeTab === tab.id ? theme.primary : theme.textMuted }]}>{tab.label}</Text>
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
@@ -306,18 +309,18 @@ export default function ProfileScreen() {
 
                     {activeTab === 'biometrics' && (
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Biometrics</Text>
-                            <View style={styles.card}>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Biometrics</Text>
+                            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Gender</Text>
+                                    <Text style={[styles.label, { color: theme.text }]}>Gender</Text>
                                     <View style={styles.radioGroup}>
                                         {['male', 'female', 'other'].map(g => (
                                             <TouchableOpacity
                                                 key={g}
-                                                style={[styles.radioBtn, data.biometrics.gender === g && styles.radioBtnActive]}
+                                                style={[styles.radioBtn, { backgroundColor: theme.background, borderColor: theme.border }, data.biometrics.gender === g && { backgroundColor: theme.primary + '33', borderColor: theme.primary }]}
                                                 onPress={() => updateNested('biometrics', 'gender', g)}
                                             >
-                                                <Text style={[styles.radioText, data.biometrics.gender === g && styles.radioTextActive]}>
+                                                <Text style={[styles.radioText, data.biometrics.gender === g ? { color: theme.primary } : { color: theme.textMuted }]}>
                                                     {g.charAt(0).toUpperCase() + g.slice(1)}
                                                 </Text>
                                             </TouchableOpacity>
@@ -327,18 +330,18 @@ export default function ProfileScreen() {
 
                                 <View style={styles.row}>
                                     <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                                        <Text style={styles.label}>Height (cm)</Text>
+                                        <Text style={[styles.label, { color: theme.text }]}>Height (cm)</Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                             keyboardType="numeric"
                                             value={String(data.biometrics.heightCm)}
                                             onChangeText={v => updateNested('biometrics', 'heightCm', parseInt(v) || 0)}
                                         />
                                     </View>
                                     <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                                        <Text style={styles.label}>Weight (kg)</Text>
+                                        <Text style={[styles.label, { color: theme.text }]}>Weight (kg)</Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                             keyboardType="numeric"
                                             value={String(data.biometrics.weightKg)}
                                             onChangeText={v => updateNested('biometrics', 'weightKg', parseInt(v) || 0)}
@@ -347,9 +350,9 @@ export default function ProfileScreen() {
                                 </View>
 
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Waist (cm)</Text>
+                                    <Text style={[styles.label, { color: theme.text }]}>Waist (cm)</Text>
                                     <TextInput
-                                        style={styles.input}
+                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                         keyboardType="numeric"
                                         value={String(data.biometrics.waistCm)}
                                         onChangeText={v => updateNested('biometrics', 'waistCm', parseInt(v) || 0)}
@@ -361,29 +364,29 @@ export default function ProfileScreen() {
 
                     {activeTab === 'conditions' && (
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Known Conditions</Text>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Known Conditions</Text>
 
-                            <View style={styles.card}>
-                                <Text style={styles.label}>Add a new condition</Text>
+                            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                                <Text style={[styles.label, { color: theme.text }]}>Add a new condition</Text>
                                 <View style={styles.searchRow}>
                                     <TextInput
-                                        style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 8 }]}
+                                        style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 8, backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                         placeholder="Search conditions..."
-                                        placeholderTextColor="#666"
+                                        placeholderTextColor={theme.textMuted}
                                         value={conditionQuery}
                                         onChangeText={setConditionQuery}
                                         onSubmitEditing={searchConditions}
                                     />
-                                    <TouchableOpacity style={styles.searchBtn} onPress={searchConditions} disabled={isSearchingCondition}>
+                                    <TouchableOpacity style={[styles.searchBtn, { backgroundColor: theme.primary }]} onPress={searchConditions} disabled={isSearchingCondition}>
                                         {isSearchingCondition ? <ActivityIndicator size="small" color="#fff" /> : <Feather name="search" size={20} color="#fff" />}
                                     </TouchableOpacity>
                                 </View>
 
                                 {conditionResults.length > 0 && (
-                                    <View style={styles.searchResults}>
+                                    <View style={[styles.searchResults, { backgroundColor: theme.background, borderColor: theme.border }]}>
                                         {conditionResults.map(c => (
-                                            <TouchableOpacity key={c.id} style={styles.searchResultItem} onPress={() => toggleCondition(c.slug, c)}>
-                                                <Text style={styles.searchResultText}>{c.label}</Text>
+                                            <TouchableOpacity key={c.id} style={[styles.searchResultItem, { borderBottomColor: theme.border }]} onPress={() => toggleCondition(c.slug, c)}>
+                                                <Text style={[styles.searchResultText, { color: theme.text }]}>{c.label}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
@@ -392,19 +395,19 @@ export default function ProfileScreen() {
 
                             <View style={styles.conditionsGrid}>
                                 {availableConditions.filter(c => selectedConditions.includes(c.slug)).map(c => (
-                                    <View key={c.id} style={styles.conditionCard}>
+                                    <View key={c.id} style={[styles.conditionCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
                                         <TouchableOpacity
                                             style={styles.removeCondBtn}
                                             onPress={() => toggleCondition(c.slug)}
                                         >
-                                            <Feather name="x" size={14} color="#ef4444" />
+                                            <Feather name="x" size={14} color={theme.danger} />
                                         </TouchableOpacity>
-                                        <Feather name="alert-circle" size={24} color={c.color || '#3b82f6'} style={{ marginBottom: 8 }} />
-                                        <Text style={[styles.conditionText, { textAlign: 'center' }]} numberOfLines={2}>{c.label}</Text>
+                                        <Feather name="alert-circle" size={24} color={c.color || theme.primary} style={{ marginBottom: 8 }} />
+                                        <Text style={[styles.conditionText, { color: theme.text, textAlign: 'center' }]} numberOfLines={2}>{c.label}</Text>
                                     </View>
                                 ))}
                                 {selectedConditions.length === 0 && (
-                                    <Text style={styles.emptyText}>No conditions selected.</Text>
+                                    <Text style={[styles.emptyText, { color: theme.textMuted }]}>No conditions selected.</Text>
                                 )}
                             </View>
                         </View>
@@ -412,44 +415,44 @@ export default function ProfileScreen() {
 
                     {activeTab === 'medical' && (
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Medical Profile</Text>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Medical Profile</Text>
 
-                            <View style={styles.card}>
+                            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
                                 <View style={styles.switchRow}>
                                     <View>
-                                        <Text style={styles.label}>Insulin Dependent</Text>
-                                        <Text style={styles.subText}>Do you take exogenous insulin?</Text>
+                                        <Text style={[styles.label, { color: theme.text }]}>Insulin Dependent</Text>
+                                        <Text style={[styles.subText, { color: theme.textMuted }]}>Do you take exogenous insulin?</Text>
                                     </View>
                                     <TouchableOpacity
-                                        style={[styles.toggleBtn, data.medical.insulin ? styles.toggleBtnOn : styles.toggleBtnOff]}
+                                        style={[styles.toggleBtn, data.medical.insulin ? [styles.toggleBtnOn, { backgroundColor: theme.primary }] : [styles.toggleBtnOff, { backgroundColor: theme.textMuted }]]}
                                         onPress={() => updateNested('medical', 'insulin', !data.medical.insulin)}
                                     >
-                                        <View style={[styles.toggleKnob, data.medical.insulin ? styles.toggleKnobOn : styles.toggleKnobOff]} />
+                                        <View style={[styles.toggleKnob, data.medical.insulin ? styles.toggleKnobOn : styles.toggleKnobOff, { backgroundColor: theme.background }]} />
                                     </TouchableOpacity>
                                 </View>
                             </View>
 
-                            <Text style={[styles.sectionTitle, { fontSize: 16, marginTop: 16 }]}>Current Medications</Text>
-                            <View style={styles.card}>
+                            <Text style={[styles.sectionTitle, { fontSize: 16, marginTop: 16, color: theme.text }]}>Current Medications</Text>
+                            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
                                 <View style={styles.searchRow}>
                                     <TextInput
-                                        style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 8 }]}
+                                        style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 8, backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                         placeholder="Search medication..."
-                                        placeholderTextColor="#666"
+                                        placeholderTextColor={theme.textMuted}
                                         value={drugQuery}
                                         onChangeText={setDrugQuery}
                                         onSubmitEditing={searchDrugs}
                                     />
-                                    <TouchableOpacity style={styles.searchBtn} onPress={searchDrugs} disabled={isSearchingDrug}>
-                                        {isSearchingDrug ? <ActivityIndicator size="small" color="#fff" /> : <Feather name="search" size={20} color="#fff" />}
+                                    <TouchableOpacity style={[styles.searchBtn, { backgroundColor: theme.primary }]} onPress={searchDrugs} disabled={isSearchingDrug}>
+                                        {isSearchingDrug ? <ActivityIndicator size="small" color="#000" /> : <Feather name="search" size={20} color="#000" />}
                                     </TouchableOpacity>
                                 </View>
 
                                 {drugResults.length > 0 && (
-                                    <View style={styles.searchResults}>
+                                    <View style={[styles.searchResults, { backgroundColor: theme.background, borderColor: theme.border }]}>
                                         {drugResults.map((drug, i) => (
-                                            <TouchableOpacity key={i} style={styles.searchResultItem} onPress={() => addDrug(drug)}>
-                                                <Text style={styles.searchResultText}>{drug.name}</Text>
+                                            <TouchableOpacity key={i} style={[styles.searchResultItem, { borderBottomColor: theme.border }]} onPress={() => addDrug(drug)}>
+                                                <Text style={[styles.searchResultText, { color: theme.text }]}>{drug.name}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
@@ -457,23 +460,23 @@ export default function ProfileScreen() {
 
                                 <View style={styles.medicationList}>
                                     {data.medical.medications.map((med, i) => (
-                                        <View key={i} style={styles.medicationItem}>
+                                        <View key={i} style={[styles.medicationItem, { backgroundColor: theme.background }]}>
                                             <View style={{ flex: 1 }}>
-                                                <Text style={styles.medName}>{med.name}</Text>
+                                                <Text style={[styles.medName, { color: theme.text }]}>{med.name}</Text>
                                                 {med.ingredients && (
-                                                    <Text style={styles.medDesc}>{Array.isArray(med.ingredients) ? med.ingredients.join(', ') : med.ingredients}</Text>
+                                                    <Text style={[styles.medDesc, { color: theme.textMuted }]}>{Array.isArray(med.ingredients) ? med.ingredients.join(', ') : med.ingredients}</Text>
                                                 )}
                                             </View>
                                             <TouchableOpacity onPress={() => {
                                                 const newMeds = data.medical.medications.filter((_, idx) => idx !== i);
                                                 updateNested('medical', 'medications', newMeds);
                                             }}>
-                                                <Feather name="trash-2" size={20} color="#ef4444" />
+                                                <Feather name="trash-2" size={20} color={theme.danger} />
                                             </TouchableOpacity>
                                         </View>
                                     ))}
                                     {data.medical.medications.length === 0 && (
-                                        <Text style={styles.emptyText}>No medications listed.</Text>
+                                        <Text style={[styles.emptyText, { color: theme.textMuted }]}>No medications listed.</Text>
                                     )}
                                 </View>
                             </View>
@@ -482,26 +485,26 @@ export default function ProfileScreen() {
 
                     {activeTab === 'dietary' && (
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Dietary Preferences</Text>
-                            <View style={styles.card}>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Dietary Preferences</Text>
+                            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Dislikes (comma separated)</Text>
+                                    <Text style={[styles.label, { color: theme.text }]}>Dislikes (comma separated)</Text>
                                     <TextInput
-                                        style={styles.input}
+                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                         value={data.dietary.dislikes.join(', ')}
                                         onChangeText={v => updateNested('dietary', 'dislikes', v.split(',').map(s => s.trim()).filter(Boolean))}
                                         placeholder="e.g. Cilantro, Mushrooms"
-                                        placeholderTextColor="#666"
+                                        placeholderTextColor={theme.textMuted}
                                     />
                                 </View>
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Allergies (comma separated)</Text>
+                                    <Text style={[styles.label, { color: theme.text }]}>Allergies (comma separated)</Text>
                                     <TextInput
-                                        style={styles.input}
+                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                         value={data.dietary.allergies.join(', ')}
                                         onChangeText={v => updateNested('dietary', 'allergies', v.split(',').map(s => s.trim()).filter(Boolean))}
                                         placeholder="e.g. Peanuts, Shellfish"
-                                        placeholderTextColor="#666"
+                                        placeholderTextColor={theme.textMuted}
                                     />
                                 </View>
                             </View>
@@ -510,33 +513,33 @@ export default function ProfileScreen() {
 
                     {activeTab === 'nutrition' && (
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Nutrition Limits</Text>
-                            <View style={[styles.card, { borderColor: 'rgba(59, 130, 246, 0.5)' }]}>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Nutrition Limits</Text>
+                            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
                                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
-                                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(59, 130, 246, 0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                                        <Feather name="shield" size={16} color="#3b82f6" />
+                                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: theme.primary + '33', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                                        <Feather name="shield" size={16} color={theme.primary} />
                                     </View>
                                     <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff', marginBottom: 4 }}>Medical Nutrition Therapy</Text>
-                                        <Text style={{ fontSize: 12, color: '#a1a1aa' }}>
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.text, marginBottom: 4 }}>Medical Nutrition Therapy</Text>
+                                        <Text style={{ fontSize: 12, color: theme.textMuted }}>
                                             Customize your daily calorie and nutrient targets based on your dietitian's recommendations.
                                         </Text>
                                     </View>
                                 </View>
 
                                 {isLoadingLimits ? (
-                                    <ActivityIndicator size="small" color="#3b82f6" />
+                                    <ActivityIndicator size="small" color={theme.primary} />
                                 ) : !nutritionLimits ? (
-                                    <Text style={styles.emptyText}>No nutrition limits generated yet. Complete your profile to generate them.</Text>
+                                    <Text style={[styles.emptyText, { color: theme.textMuted }]}>No nutrition limits generated yet. Complete your profile to generate them.</Text>
                                 ) : (
                                     <View>
                                         <View style={{ marginBottom: 24 }}>
-                                            <Text style={[styles.label, { fontSize: 16, color: '#fff' }]}>Daily Calories</Text>
+                                            <Text style={[styles.label, { fontSize: 16, color: theme.text }]}>Daily Calories</Text>
                                             <View style={styles.row}>
                                                 <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                                                    <Text style={styles.label}>Min (kcal)</Text>
+                                                    <Text style={[styles.label, { color: theme.text }]}>Min (kcal)</Text>
                                                     <TextInput
-                                                        style={styles.input}
+                                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                                         keyboardType="numeric"
                                                         value={String(nutritionLimits.daily_calories.min || '')}
                                                         onChangeText={(v) => setNutritionLimits({
@@ -546,9 +549,9 @@ export default function ProfileScreen() {
                                                     />
                                                 </View>
                                                 <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                                                    <Text style={styles.label}>Max (kcal)</Text>
+                                                    <Text style={[styles.label, { color: theme.text }]}>Max (kcal)</Text>
                                                     <TextInput
-                                                        style={styles.input}
+                                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                                         keyboardType="numeric"
                                                         value={String(nutritionLimits.daily_calories.max || '')}
                                                         onChangeText={(v) => setNutritionLimits({
@@ -565,15 +568,15 @@ export default function ProfileScreen() {
 
                                             return (
                                                 <View key={key} style={{ marginBottom: 16 }}>
-                                                    <Text style={[styles.label, { fontSize: 14, color: '#fff' }]}>
-                                                        {limit.label || key} <Text style={{ color: '#a1a1aa', fontSize: 12 }}>({limit.unit})</Text>
+                                                    <Text style={[styles.label, { fontSize: 14, color: theme.text }]}>
+                                                        {limit.label || key} <Text style={{ color: theme.textMuted, fontSize: 12 }}>({limit.unit})</Text>
                                                     </Text>
                                                     <View style={styles.row}>
                                                         {limit.min !== undefined && (
                                                             <View style={[styles.inputGroup, { flex: 1, marginRight: limit.max !== undefined ? 8 : 0 }]}>
-                                                                <Text style={styles.label}>Min</Text>
+                                                                <Text style={[styles.label, { color: theme.text }]}>Min</Text>
                                                                 <TextInput
-                                                                    style={styles.input}
+                                                                    style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                                                     keyboardType="numeric"
                                                                     value={String(limit.min || '')}
                                                                     onChangeText={(v) => setNutritionLimits({
@@ -588,9 +591,9 @@ export default function ProfileScreen() {
                                                         )}
                                                         {limit.max !== undefined && (
                                                             <View style={[styles.inputGroup, { flex: 1, marginLeft: limit.min !== undefined ? 8 : 0 }]}>
-                                                                <Text style={styles.label}>Max</Text>
+                                                                <Text style={[styles.label, { color: theme.text }]}>Max</Text>
                                                                 <TextInput
-                                                                    style={styles.input}
+                                                                    style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
                                                                     keyboardType="numeric"
                                                                     value={String(limit.max || '')}
                                                                     onChangeText={(v) => setNutritionLimits({
@@ -615,22 +618,22 @@ export default function ProfileScreen() {
 
                     {activeTab === 'settings' && (
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>App Preferences</Text>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>App Preferences</Text>
 
-                            <View style={[styles.card, { marginBottom: 24 }]}>
-                                <Text style={[styles.label, { fontSize: 16, color: '#fff', marginBottom: 12 }]}>Color Theme</Text>
+                            <View style={[styles.card, { marginBottom: 24, backgroundColor: theme.card, borderColor: theme.border }]}>
+                                <Text style={[styles.label, { fontSize: 16, color: theme.text, marginBottom: 12 }]}>Color Theme</Text>
                                 <View style={{ flexDirection: 'row', gap: 12 }}>
                                     {['light', 'dark', 'system'].map(t => (
                                         <TouchableOpacity
                                             key={t}
                                             style={[
                                                 styles.radioBtn,
-                                                selectedTheme === t && styles.radioBtnActive,
-                                                { paddingVertical: 12 }
+                                                { backgroundColor: theme.background, borderColor: theme.border, paddingVertical: 12 },
+                                                selectedTheme === t && { backgroundColor: theme.primary + '33', borderColor: theme.primary }
                                             ]}
                                             onPress={() => handleThemeChange(t)}
                                         >
-                                            <Text style={[styles.radioText, selectedTheme === t && styles.radioTextActive, { textTransform: 'capitalize' }]}>
+                                            <Text style={[styles.radioText, selectedTheme === t ? { color: theme.primary } : { color: theme.textMuted }, { textTransform: 'capitalize' }]}>
                                                 {t}
                                             </Text>
                                         </TouchableOpacity>
@@ -638,16 +641,16 @@ export default function ProfileScreen() {
                                 </View>
                             </View>
 
-                            <Text style={styles.sectionTitle}>Account Management</Text>
-                            
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Account Management</Text>
+
                             <TouchableOpacity style={[styles.logoutBtn, { marginBottom: 16 }]} onPress={handleLogout}>
                                 <Feather name="log-out" size={18} color="#000" />
                                 <Text style={styles.logoutBtnText}>Log Out</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={[styles.logoutBtn, { backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 1, borderColor: '#ef4444' }]} onPress={handleDeleteAccount}>
-                                <Feather name="trash-2" size={18} color="#ef4444" />
-                                <Text style={[styles.logoutBtnText, { color: '#ef4444' }]}>Delete Account</Text>
+                            <TouchableOpacity style={[styles.logoutBtn, { backgroundColor: theme.danger + '1A', borderWidth: 1, borderColor: theme.danger }]} onPress={handleDeleteAccount}>
+                                <Feather name="trash-2" size={18} color={theme.danger} />
+                                <Text style={[styles.logoutBtnText, { color: theme.danger }]}>Delete Account</Text>
                             </TouchableOpacity>
                         </View>
                     )}

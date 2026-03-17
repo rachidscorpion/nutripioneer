@@ -6,9 +6,11 @@ import { api } from '../lib/api-client';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TimelineFeed from '../components/dashboard/TimelineFeed';
 import FoodCheckModal from '../components/modals/FoodCheckModal';
+import { useTheme } from '../context/ThemeContext';
 
 export default function HomeScreen() {
     const insets = useSafeAreaInsets();
+    const { theme } = useTheme();
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [plan, setPlan] = useState<any>(null);
@@ -69,8 +71,8 @@ export default function HomeScreen() {
 
     if (isLoading && !isRefreshing) {
         return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#13ec5b" />
+            <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <ActivityIndicator size="large" color={theme.primary} />
             </View>
         );
     }
@@ -85,23 +87,23 @@ export default function HomeScreen() {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
             <DashboardHeader onSearchPress={() => setIsFoodModalOpen(true)} />
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#13ec5b" />
+                    <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.primary} />
                 }
             >
                 {error ? (
                     <View style={styles.centerContainer}>
-                        <Text style={styles.errorText}>{error}</Text>
+                        <Text style={[styles.errorText, { color: theme.danger }]}>{error}</Text>
                     </View>
                 ) : !plan ? (
                     <View style={styles.centerContainer}>
-                        <Text style={styles.emptyTitle}>No Plan Today</Text>
-                        <Text style={styles.emptyDesc}>Generate a meal plan to stay on track.</Text>
-                        <TouchableOpacity style={styles.generateBtn} onPress={handleGeneratePlan}>
+                        <Text style={[styles.emptyTitle, { color: theme.text }]}>No Plan Today</Text>
+                        <Text style={[styles.emptyDesc, { color: theme.textMuted }]}>Generate a meal plan to stay on track.</Text>
+                        <TouchableOpacity style={[styles.generateBtn, { backgroundColor: theme.primary }]} onPress={handleGeneratePlan}>
                             <Text style={styles.generateBtnText}>Generate Plan</Text>
                         </TouchableOpacity>
                     </View>
