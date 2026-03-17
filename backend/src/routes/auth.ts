@@ -50,6 +50,7 @@ authRoutes.post('/register', async (c) => {
  */
 authRoutes.post('/sign-in/google', async (c) => {
     try {
+        console.log('Google sign-in request received');
         const { idToken } = await c.req.json();
 
         if (!idToken) {
