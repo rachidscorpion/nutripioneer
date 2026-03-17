@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, Text, RefreshControl, TouchableOpacity, Alert } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../lib/api-client';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
@@ -9,6 +9,7 @@ import FoodCheckModal from '../components/modals/FoodCheckModal';
 import { useTheme } from '../context/ThemeContext';
 
 export default function HomeScreen() {
+    const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
     const { theme } = useTheme();
     const [isLoading, setIsLoading] = useState(true);
@@ -110,6 +111,16 @@ export default function HomeScreen() {
                 ) : (
                     <TimelineFeed plan={plan} nutritionLimits={nutritionLimits} onRefresh={fetchData} />
                 )}
+                
+                <View style={[styles.footerLinks, { marginTop: 40, paddingBottom: 40 }]}>
+                    <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
+                        <Text style={[styles.footerText, { color: theme.textMuted }]}>Privacy Policy</Text>
+                    </TouchableOpacity>
+                    <Text style={{ color: theme.textMuted, marginHorizontal: 12 }}>•</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+                        <Text style={[styles.footerText, { color: theme.textMuted }]}>Terms & Conditions</Text>
+                    </TouchableOpacity>
+                </View>
             </ScrollView>
             <FoodCheckModal
                 isOpen={isFoodModalOpen}
@@ -162,6 +173,14 @@ const styles = StyleSheet.create({
         color: '#000',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    footerLinks: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    footerText: {
+        fontSize: 13,
     }
 });
 

@@ -1,0 +1,87 @@
+import Link from 'next/link';
+import Image from 'next/image';
+import styles from './page.module.css';
+
+export default function PrivacyPolicyPage() {
+  return (
+    <div className={styles.container}>
+      <nav className={styles.navbar}>
+        <Link href="/" className={styles.logoWrapper}>
+          <Image src="/logo.png" alt="NutriPioneer Logo" width={36} height={36} />
+          <span className={styles.logo}>NutriPioneer</span>
+        </Link>
+        <div className={styles.navLinks}>
+          <Link href="/" className={styles.navLink}>Home</Link>
+          <Link href="/onboarding" className={styles.navLink}>Login</Link>
+        </div>
+      </nav>
+
+      <main className={styles.contentWrapper}>
+        <h1 className={styles.pageTitle}>Privacy Policy</h1>
+        <span className={styles.lastUpdated}>Last Updated: March 17, 2026</span>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>1. Introduction</h2>
+          <p className={styles.text}>
+            Welcome to NutriPioneer. We are committed to protecting your personal information and your right to privacy. 
+            This Privacy Policy explains what information we collect, how we use it, and your rights concerning your data.
+          </p>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>2. Information We Collect</h2>
+          <p className={styles.text}>
+            We collect personal information that you voluntarily provide to us when you register on exploring our platform, including:
+          </p>
+          <ul className={styles.list}>
+            <li className={styles.listItem}>Account information (name, email address)</li>
+            <li className={styles.listItem}>Health and biometric data (age, weight, height, medical conditions, medications)</li>
+            <li className={styles.listItem}>Dietary preferences and restrictions</li>
+            <li className={styles.listItem}>Usage data and meal planning choices</li>
+          </ul>
+          <p className={styles.text}>
+            Given the sensitive nature of health information, we apply industry-standard encryption to protect this data at rest and in transit.
+          </p>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>3. How We Use Your Information</h2>
+          <p className={styles.text}>
+            Your information is specifically utilized to provide context-aware, medically safe nutrition advice. We use your data to:
+          </p>
+          <ul className={styles.list}>
+            <li className={styles.listItem}>Generate personalized meal plans through AI and API integrations</li>
+            <li className={styles.listItem}>Identify potential nutrient-drug interactions and conflicting dietary requirements</li>
+            <li className={styles.listItem}>Improve our algorithms and conflict engine accuracy</li>
+            <li className={styles.listItem}>Communicate with you regarding account updates and service enhancements</li>
+          </ul>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>4. Data Sharing and Third Parties</h2>
+          <p className={styles.text}>
+            We may share anonymous, aggregate data with our nutrition APIs (e.g., FatSecret, Edamam) for recipe retrieval. 
+            However, your personally identifiable medical profiles remain strictly contained within our secure database and 
+            are processed through our secure AI agents without retaining specific PII links to your identity externally.
+          </p>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>5. Your Rights</h2>
+          <p className={styles.text}>
+            You have the right to access, update, or delete your personal information at any time. You can manage these settings 
+            directly from your Profile Dashboard or contact our support team to request complete data erasure.
+          </p>
+        </section>
+      </main>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerLinks}>
+          <Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link>
+          <Link href="/terms" className={styles.footerLink}>Terms & Conditions</Link>
+        </div>
+        <p className={styles.footerCopyright}>&copy; {new Date().getFullYear()} NutriPioneer. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+}

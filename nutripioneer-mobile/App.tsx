@@ -9,6 +9,8 @@ import BiometricsScreen from './src/screens/onboarding/BiometricsScreen';
 import MedicalScreen from './src/screens/onboarding/MedicalScreen';
 import DietaryScreen from './src/screens/onboarding/DietaryScreen';
 import SynthesizingScreen from './src/screens/onboarding/SynthesizingScreen';
+import PrivacyScreen from './src/screens/PrivacyScreen';
+import TermsScreen from './src/screens/TermsScreen';
 import { ThemeProvider } from './src/context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
@@ -30,6 +32,8 @@ export default function App() {
           <Stack.Screen name="OnboardingMedical" component={MedicalScreen} />
           <Stack.Screen name="OnboardingDietary" component={DietaryScreen} />
           <Stack.Screen name="OnboardingSynthesizing" component={SynthesizingScreen} />
+          <Stack.Screen name="Privacy" component={PrivacyScreen} />
+          <Stack.Screen name="Terms" component={TermsScreen} />
         </Stack.Navigator>
         <StatusBar style="auto" />
       </NavigationContainer>

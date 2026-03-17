@@ -50,11 +50,11 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
             if (targetUrl && !scrapedInstructions) {
                 setLoadingInstructions(true);
                 try {
-                    const res = await fetch(`/api/recipe?url=${encodeURIComponent(targetUrl)}`);
-                    const data = await res.json();
-                    if (data.instructions && Array.isArray(data.instructions) && data.instructions.length > 0) {
+                    const res = await api.recipes.getInstructions(targetUrl);
+                    const data = res.data;
+                    if (data?.instructions && Array.isArray(data.instructions) && data.instructions.length > 0) {
                         setScrapedInstructions(data.instructions);
-                    } else if (data.directions && Array.isArray(data.directions) && data.directions.length > 0) {
+                    } else if (data?.directions && Array.isArray(data.directions) && data.directions.length > 0) {
                         setScrapedInstructions(data.directions);
                     } else {
                         setScrapedInstructions([]);

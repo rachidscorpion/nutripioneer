@@ -247,7 +247,21 @@ export default function LoginScreen() {
                                 )}
 
                                 <Text style={styles.disclaimerText}>
-                                    By continuing, you agree to our Terms of Service and Privacy Policy.
+                                    By continuing, you agree to our{' '}
+                                    <Text 
+                                        style={styles.linkText} 
+                                        onPress={() => navigation.navigate('Terms' as never)}
+                                    >
+                                        Terms of Service
+                                    </Text>
+                                    {' '}and{' '}
+                                    <Text 
+                                        style={styles.linkText} 
+                                        onPress={() => navigation.navigate('Privacy' as never)}
+                                    >
+                                        Privacy Policy
+                                    </Text>
+                                    .
                                 </Text>
                             </View>
 
@@ -377,5 +391,9 @@ const styles = StyleSheet.create({
         marginTop: 16,
         paddingHorizontal: 20,
         lineHeight: 18,
+    },
+    linkText: {
+        color: '#61d588ff',
+        textDecorationLine: 'underline',
     },
 });
