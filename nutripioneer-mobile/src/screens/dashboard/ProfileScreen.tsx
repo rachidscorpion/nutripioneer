@@ -28,6 +28,7 @@ export default function ProfileScreen() {
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [activeTab, setActiveTab] = useState('biometrics');
+    const [selectedTheme, setSelectedTheme] = useState('dark');
 
     const [availableConditions, setAvailableConditions] = useState<any[]>([]);
     const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -58,6 +59,10 @@ export default function ProfileScreen() {
             if (res.data) {
                 const u = res.data.data ? res.data.data : res.data;
                 setUser(u);
+
+                if (u.preferences?.theme) {
+                    setSelectedTheme(u.preferences.theme);
+                }
 
                 // Parse OnboardingData
                 const raw = typeof u.onboardingData === 'string'
@@ -148,6 +153,39 @@ export default function ProfileScreen() {
     const handleLogout = async () => {
         await AsyncStorage.removeItem('auth_token');
         navigation.navigate('Login' as never);
+    };
+
+    const handleThemeChange = async (newTheme: string) => {
+        setSelectedTheme(newTheme);
+        try {
+            await api.user.updatePreferences({ theme: newTheme });
+        } catch (e) {
+            console.error('Failed to update theme', e);
+            Alert.alert('Error', 'Failed to save theme preference');
+        }
+    };
+
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            'Delete Account',
+            'Are you sure you want to delete your account? This action cannot be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await api.user.deleteAccount();
+                            await AsyncStorage.removeItem('auth_token');
+                            navigation.navigate('Login' as never);
+                        } catch (e) {
+                            Alert.alert('Error', 'Failed to delete account. Please try again.');
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const searchDrugs = async () => {
@@ -579,9 +617,37 @@ export default function ProfileScreen() {
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>App Preferences</Text>
 
-                            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                            <View style={[styles.card, { marginBottom: 24 }]}>
+                                <Text style={[styles.label, { fontSize: 16, color: '#fff', marginBottom: 12 }]}>Color Theme</Text>
+                                <View style={{ flexDirection: 'row', gap: 12 }}>
+                                    {['light', 'dark', 'system'].map(t => (
+                                        <TouchableOpacity
+                                            key={t}
+                                            style={[
+                                                styles.radioBtn,
+                                                selectedTheme === t && styles.radioBtnActive,
+                                                { paddingVertical: 12 }
+                                            ]}
+                                            onPress={() => handleThemeChange(t)}
+                                        >
+                                            <Text style={[styles.radioText, selectedTheme === t && styles.radioTextActive, { textTransform: 'capitalize' }]}>
+                                                {t}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+
+                            <Text style={styles.sectionTitle}>Account Management</Text>
+                            
+                            <TouchableOpacity style={[styles.logoutBtn, { marginBottom: 16 }]} onPress={handleLogout}>
                                 <Feather name="log-out" size={18} color="#000" />
                                 <Text style={styles.logoutBtnText}>Log Out</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={[styles.logoutBtn, { backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 1, borderColor: '#ef4444' }]} onPress={handleDeleteAccount}>
+                                <Feather name="trash-2" size={18} color="#ef4444" />
+                                <Text style={[styles.logoutBtnText, { color: '#ef4444' }]}>Delete Account</Text>
                             </TouchableOpacity>
                         </View>
                     )}
