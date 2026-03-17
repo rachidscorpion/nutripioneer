@@ -2,10 +2,10 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 // Server-side backend URL for internal API calls
-const BACKEND_URL = process.env.BACKEND_URL;
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-if (!BACKEND_URL) {
-    throw new Error('❌ BACKEND_URL environment variable is not set. Please check your .env file.');
+if (!NEXT_PUBLIC_API_URL) {
+    throw new Error('❌ NEXT_PUBLIC_API_URL environment variable is not set. Please check your .env file.');
 }
 
 export async function getSession() {
@@ -13,9 +13,12 @@ export async function getSession() {
         const headersList = await headers();
         const cookie = headersList.get('cookie') || '';
 
-        const res = await fetch(`${BACKEND_URL}/api/auth/get-session`, {
+        const host = headersList.get('host') || '';
+
+        const res = await fetch(`${NEXT_PUBLIC_API_URL}/api/auth/get-session`, {
             headers: {
                 cookie: cookie,
+                'x-forwarded-host': host,
             },
             cache: 'no-store',
         });
@@ -47,11 +50,12 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}) {
     // Ensure path starts with /
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
-    const res = await fetch(`${BACKEND_URL}/api${normalizedPath}`, {
+    const res = await fetch(`${NEXT_PUBLIC_API_URL}/api${normalizedPath}`, {
         ...options,
         headers: {
             'Content-Type': 'application/json',
             'Cookie': cookie,
+            'x-forwarded-host': headersList.get('host') || '',
             ...options.headers,
         },
         cache: 'no-store',

@@ -9,6 +9,8 @@ nutripioneer/.DS_Store
 backend/.DS_Store
 .DS_Store
 
+nutripioneer-mobile/node_modules
+
 # Centralized environment file
 .env
 .env.local

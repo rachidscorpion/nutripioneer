@@ -5,9 +5,7 @@ import { getAdminToken } from './admin-auth';
 
 const isServer = typeof window === 'undefined';
 
-const API_URL = isServer
-    ? process.env.BACKEND_URL
-    : process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_URL) {
     throw new Error('API_URL is not set');

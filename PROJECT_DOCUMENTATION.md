@@ -28,6 +28,11 @@ NutriPioneer is a personalized nutrition and meal planning platform designed for
 - **Styling:** CSS Modules with custom components
 - **Icons:** Lucide React
 
+#### Mobile (`/nutripioneer-mobile`)
+- **Framework:** React Native (Expo)
+- **Language:** TypeScript
+- **Template:** blank-typescript
+
 ---
 
 ## Directory Structure
@@ -173,6 +178,11 @@ nutripioneer/
     │       └── user.ts
     ├── public/
     ├── Dockerfile
+    ├── package.json
+    └── tsconfig.json
+└── nutripioneer-mobile/                # Mobile App (React Native)
+    ├── App.tsx                         # Main app component
+    ├── app.json                        # Expo app configuration
     ├── package.json
     └── tsconfig.json
 ```

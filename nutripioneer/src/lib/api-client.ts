@@ -5,18 +5,13 @@ import axios from 'axios';
 
 const isServer = typeof window === 'undefined';
 
-// Server-side: Use internal backend URL (for Docker networking or localhost)
-// Client-side: Use public API URL from environment or current origin
-const API_URL = isServer
-    ? process.env.BACKEND_URL
-    : process.env.NEXT_PUBLIC_API_URL;
+// Server-side: Use absolute backend URL
+// Client-side: Use relative URL to force Next.js proxy (preserves x-forwarded-host)
+const API_URL = isServer ? process.env.NEXT_PUBLIC_API_URL : '';
 
-// Validate that API_URL is set
-if (!API_URL) {
-    const errorMsg = isServer
-        ? '❌ BACKEND_URL environment variable is not set. Please check your .env file.'
-        : '❌ NEXT_PUBLIC_API_URL environment variable is not set. Please check your .env file.';
-    throw new Error(errorMsg);
+// Validate that API_URL is set on the server
+if (isServer && !API_URL) {
+    throw new Error('❌ NEXT_PUBLIC_API_URL environment variable is not set. Please check your .env file.');
 }
 
 
@@ -25,8 +20,17 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true // Send cookies (Better Auth session)
+    withCredentials: true, // Send cookies (Better Auth session)
 });
+
+// For OAuth, we need to use the current origin (or ngrok URL) for callbacks
+const getAppURL = () => {
+    if (typeof window !== 'undefined') {
+        // Use current window location for OAuth callbacks
+        return window.location.origin;
+    }
+    return process.env.NEXT_PUBLIC_APP_URL;
+};
 
 // Auth uses httpOnly cookies automatically for requests
 
@@ -36,10 +40,14 @@ export const api = {
         login: (credentials: any) => apiClient.post('/auth/login', credentials),
         register: (data: any) => apiClient.post('/auth/register', data),
         logout: () => apiClient.post('/auth/sign-out'),
-        signInSocial: (provider: string, callbackURL?: string) => apiClient.post('/auth/sign-in/social', {
-            provider,
-            callbackURL,
-        }),
+        signInSocial: (provider: string, callbackURL?: string) => {
+            // For OAuth, use current origin (or ngrok URL) as callback to avoid state_mismatch
+            const url = callbackURL || `${getAppURL()}/home`;
+            return apiClient.post('/auth/sign-in/social', {
+                provider,
+                callbackURL: url,
+            });
+        },
     },
     user: {
         getProfile: () => apiClient.get('/users/profile'),
