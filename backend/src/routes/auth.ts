@@ -187,9 +187,14 @@ authRoutes.post('/sign-in/apple', async (c) => {
             new URL('https://appleid.apple.com/auth/keys')
         );
 
+        const allowedAudiences = [
+            process.env.APPLE_CLIENT_ID,
+            process.env.APPLE_MOBILE_CLIENT_ID || 'com.nutripioneer.mobile',
+        ].filter(Boolean) as string[];
+
         const { payload } = await jwtVerify(idToken, jwtMatch, {
             issuer: 'https://appleid.apple.com',
-            audience: process.env.APPLE_CLIENT_ID,
+            audience: allowedAudiences,
         });
 
         if (!payload.sub) {
