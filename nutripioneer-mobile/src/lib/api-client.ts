@@ -68,6 +68,8 @@ export const api = {
         generateNutritionLimits: () => apiClient.post('/users/profile/generate-limits', {}, {
             timeout: 60000,
         }),
+        validateReceipt: (data: { platform: string; receipt: string; productId: string }) =>
+            apiClient.post('/users/validate-receipt', data),
     },
     plans: {
         getDaily: (date: string) => apiClient.get(`/plans/daily?date=${date}`),

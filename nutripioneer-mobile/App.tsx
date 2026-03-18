@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -13,10 +13,18 @@ import VerifyEmailScreen from './src/screens/VerifyEmailScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
 import TermsScreen from './src/screens/TermsScreen';
 import { ThemeProvider } from './src/context/ThemeContext';
+import { initIAP, destroyIAP } from './src/lib/iap';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  useEffect(() => {
+    initIAP();
+    return () => {
+      destroyIAP();
+    };
+  }, []);
+
   return (
     <ThemeProvider>
       <NavigationContainer>
