@@ -115,12 +115,33 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
         }
     };
 
-    const [imgSrc, setImgSrc] = useState(meal?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
+    const FALLBACK_IMAGES = [
+        'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80',
+        'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80',
+        'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=500&q=80',
+        'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=500&q=80',
+        'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=500&q=80',
+        'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=500&q=80',
+        'https://images.unsplash.com/photo-1543353071-087092ec393a?auto=format&fit=crop&w=500&q=80',
+        'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80'
+    ];
+
+    const getFallbackImage = () => {
+        const key = meal?.name || meal?.id || 'meal';
+        let hash = 0;
+        for (let i = 0; i < key.length; i++) {
+            hash = key.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return FALLBACK_IMAGES[Math.abs(hash) % FALLBACK_IMAGES.length];
+    };
+
+    const fallbackUrl = getFallbackImage();
+    const [imgSrc, setImgSrc] = useState(meal?.image || fallbackUrl);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Update image when meal changes
     useEffect(() => {
-        setImgSrc(meal?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
+        setImgSrc(meal?.image || fallbackUrl);
     }, [meal]);
 
     if (!meal) {
@@ -152,7 +173,7 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
             <Image
                 source={{ uri: imgSrc }}
                 style={[styles.image, { backgroundColor: theme.card }]}
-                onError={() => setImgSrc('https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80')}
+                onError={() => setImgSrc(fallbackUrl)}
             />
             <View style={styles.content}>
                 <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{meal.name}</Text>

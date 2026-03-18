@@ -16,11 +16,13 @@ import apiClient, { api, setAuthToken } from '../lib/api-client';
 import { useNavigation } from '@react-navigation/native';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { useTheme } from '../context/ThemeContext';
 
 export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
     const updateData = useOnboardingStore(state => state.updateData);
+    const { setTheme } = useTheme();
 
     const player = useVideoPlayer(require('../../assets/background-video-1.mp4'), player => {
         player.loop = true;
@@ -78,6 +80,10 @@ export default function LoginScreen() {
                 if (user) {
                     userName = user.name || '';
                     userEmail = user.email || '';
+
+                    if (user.preferences?.theme) {
+                        setTheme(user.preferences.theme);
+                    }
                 }
 
                 if (user?.conditions) {
@@ -165,6 +171,10 @@ export default function LoginScreen() {
                 if (user) {
                     userName = user.name || '';
                     userEmail = user.email || '';
+
+                    if (user.preferences?.theme) {
+                        setTheme(user.preferences.theme);
+                    }
                 }
 
                 if (user?.conditions) {

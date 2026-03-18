@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -18,7 +18,7 @@ const TABS = [
 
 export default function ProfileScreen() {
     const navigation = useNavigation();
-    const { theme, setTheme } = useTheme();
+    const { theme, setTheme, selectedTheme: themeContextSelectedTheme } = useTheme();
 
     const [user, setUser] = useState<any>(null);
     const [data, setData] = useState({
@@ -64,6 +64,11 @@ export default function ProfileScreen() {
 
                 if (u.preferences?.theme) {
                     setSelectedTheme(u.preferences.theme);
+                    // Sync the backend theme preference into our global ThemeContext
+                    // so the rest of the app immediately adopts it.
+                    if (themeContextSelectedTheme !== u.preferences.theme) {
+                        setTheme(u.preferences.theme);
+                    }
                 }
 
                 // Parse OnboardingData
@@ -274,9 +279,13 @@ export default function ProfileScreen() {
 
                 {/* Profile Info */}
                 <View style={[styles.profileCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                    <View style={[styles.avatarFallback, { backgroundColor: theme.primary }]}>
-                        <Text style={styles.avatarText}>{initials}</Text>
-                    </View>
+                    {user?.image ? (
+                        <Image source={{ uri: user.image }} style={styles.avatarImage} />
+                    ) : (
+                        <View style={[styles.avatarFallback, { backgroundColor: theme.primary }]}>
+                            <Text style={styles.avatarText}>{initials}</Text>
+                        </View>
+                    )}
                     <View style={styles.profileInfo}>
                         <Text style={[styles.profileName, { color: theme.text }]}>{user?.name || 'User'}</Text>
                         <Text style={[styles.profileEmail, { color: theme.textMuted }]}>{user?.email}</Text>
@@ -718,6 +727,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#10b981',
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: 16,
+    },
+    avatarImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         marginRight: 16,
     },
     avatarText: {
