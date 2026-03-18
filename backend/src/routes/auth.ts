@@ -44,6 +44,34 @@ authRoutes.post('/register', async (c) => {
     return auth.handler(request);
 });
 
+// Send OTP for email verification
+authRoutes.post('/send-otp', async (c) => {
+    const body = await c.req.json();
+
+    const url = new URL('/api/auth/email-otp/send-verification-otp', c.req.url);
+    const request = new Request(url.toString(), {
+        method: 'POST',
+        headers: c.req.raw.headers,
+        body: JSON.stringify(body),
+    });
+
+    return auth.handler(request);
+});
+
+// Verify email with OTP
+authRoutes.post('/verify-otp', async (c) => {
+    const body = await c.req.json();
+
+    const url = new URL('/api/auth/email-otp/verify-email', c.req.url);
+    const request = new Request(url.toString(), {
+        method: 'POST',
+        headers: c.req.raw.headers,
+        body: JSON.stringify(body),
+    });
+
+    return auth.handler(request);
+});
+
 /**
  * Google Sign-In for React Native (uses ID token directly)
  * This endpoint accepts a Google ID token and creates a session

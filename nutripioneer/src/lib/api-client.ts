@@ -40,6 +40,10 @@ export const api = {
         login: (credentials: any) => apiClient.post('/auth/login', credentials),
         register: (data: any) => apiClient.post('/auth/register', data),
         logout: () => apiClient.post('/auth/sign-out'),
+        sendOtp: (email: string, type: string) =>
+            apiClient.post('/auth/send-otp', { email, type }),
+        verifyOtp: (email: string, otp: string) =>
+            apiClient.post('/auth/verify-otp', { email, otp }),
         signInSocial: (provider: string, callbackURL?: string) => {
             // For OAuth, use current origin (or ngrok URL) as callback to avoid state_mismatch
             const url = callbackURL || `${getAppURL()}/home`;

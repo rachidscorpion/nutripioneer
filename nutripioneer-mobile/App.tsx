@@ -9,6 +9,7 @@ import BiometricsScreen from './src/screens/onboarding/BiometricsScreen';
 import MedicalScreen from './src/screens/onboarding/MedicalScreen';
 import DietaryScreen from './src/screens/onboarding/DietaryScreen';
 import SynthesizingScreen from './src/screens/onboarding/SynthesizingScreen';
+import VerifyEmailScreen from './src/screens/VerifyEmailScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
 import TermsScreen from './src/screens/TermsScreen';
 import { ThemeProvider } from './src/context/ThemeContext';
@@ -26,6 +27,7 @@ export default function App() {
           }}
         >
           <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
           <Stack.Screen name="Dashboard" component={DashboardTabs} />
           <Stack.Screen name="OnboardingConditions" component={ConditionsScreen} />
           <Stack.Screen name="OnboardingBiometrics" component={BiometricsScreen} />
