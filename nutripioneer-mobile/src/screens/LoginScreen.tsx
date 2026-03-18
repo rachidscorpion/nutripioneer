@@ -136,6 +136,7 @@ export default function LoginScreen() {
         }
 
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
+        const trimmedEmail = email.trim().toLowerCase();
 
         try {
             setLoading(true);
@@ -143,13 +144,31 @@ export default function LoginScreen() {
             let sessionToken;
 
             if (isSignUp) {
-                await api.auth.register({ email, password, name: fullName });
-                // Attempt login after register
-                const loginRes = await api.auth.login({ email, password });
-                sessionToken = loginRes.data?.session?.token;
+                try {
+                    await api.auth.register({ email: trimmedEmail, password, name: fullName });
+                } catch (regErr: any) {
+                    const msg = regErr.response?.data?.message || regErr.message || '';
+                    if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('exist') || regErr.response?.status === 422 || regErr.response?.status === 409) {
+                        Alert.alert('Error', 'An account with this email already exists. Please sign in instead.');
+                        setLoading(false);
+                        return;
+                    }
+                    throw regErr;
+                }
+                // Navigate to OTP verification screen
+                setLoading(false);
+                navigation.navigate('VerifyEmail' as never, { email: trimmedEmail, password } as never);
+                return;
             } else {
-                const loginRes = await api.auth.login({ email, password });
-                sessionToken = loginRes.data?.session?.token;
+                const loginRes = await api.auth.login({ email: trimmedEmail, password });
+                // Better Auth may return token at different paths
+                sessionToken = loginRes.data?.session?.token 
+                    || loginRes.data?.token 
+                    || loginRes.data?.data?.session?.token;
+                
+                if (!sessionToken) {
+                    console.log('Login response structure:', JSON.stringify(loginRes.data, null, 2));
+                }
             }
 
             if (sessionToken) {
@@ -157,6 +176,9 @@ export default function LoginScreen() {
                 apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
             } else {
                 console.error("No session token received from backend");
+                Alert.alert('Error', 'Login succeeded but no session token was returned. Please try again.');
+                setLoading(false);
+                return;
             }
 
             // Check if user is onboarded
@@ -296,10 +318,10 @@ export default function LoginScreen() {
                 player={player}
                 style={StyleSheet.absoluteFill}
                 contentFit="cover"
-                                    nativeControls={false}
+                nativeControls={false}
             />
             <StatusBar barStyle="light-content" />
-            
+
             {/* Added a KeyboardAvoidingView to ensure the keyboard doesn't cover inputs and they don't grow upwards into the logo */}
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -346,7 +368,7 @@ export default function LoginScreen() {
                                             </View>
                                         </View>
                                     )}
-                                    
+
                                     <View style={[styles.inputContainer, styles.fullInput]}>
                                         <Ionicons name="mail-outline" size={20} color="#64748b" style={styles.inputIcon} />
                                         <TextInput
@@ -428,15 +450,15 @@ export default function LoginScreen() {
 
                                     <Text style={styles.disclaimerText}>
                                         By continuing, you agree to our{' '}
-                                        <Text 
-                                            style={styles.linkText} 
+                                        <Text
+                                            style={styles.linkText}
                                             onPress={() => navigation.navigate('Terms' as never)}
                                         >
                                             Terms of Service
                                         </Text>
                                         {' '}and{' '}
-                                        <Text 
-                                            style={styles.linkText} 
+                                        <Text
+                                            style={styles.linkText}
                                             onPress={() => navigation.navigate('Privacy' as never)}
                                         >
                                             Privacy Policy

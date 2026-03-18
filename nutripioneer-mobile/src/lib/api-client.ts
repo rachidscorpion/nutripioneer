@@ -46,6 +46,10 @@ export const api = {
             apiClient.post('/auth/register', data),
         logout: () =>
             apiClient.post('/auth/sign-out'),
+        sendOtp: (email: string, type: string) =>
+            apiClient.post('/auth/send-otp', { email, type }),
+        verifyOtp: (email: string, otp: string) =>
+            apiClient.post('/auth/verify-otp', { email, otp }),
         signInSocial: (provider: string, callbackURL?: string) =>
             apiClient.post('/auth/sign-in/social', { provider, callbackURL }),
         signInWithGoogle: (idToken: string) =>

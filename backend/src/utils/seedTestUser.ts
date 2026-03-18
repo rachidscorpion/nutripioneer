@@ -22,7 +22,19 @@ export async function seedTestUser() {
                     name: testName,
                 },
             });
-            console.log(`・✿ Test account created successfully!`);
+            // Mark email as verified so test account can login without OTP
+            await prisma.user.update({
+                where: { email: testEmail },
+                data: { emailVerified: true },
+            });
+            console.log(`・✿ Test account created and verified!`);
+        } else if (!existingUser.emailVerified) {
+            // If test user exists but not verified, verify them
+            await prisma.user.update({
+                where: { email: testEmail },
+                data: { emailVerified: true },
+            });
+            console.log(`・✿ Test account verified.`);
         } else {
             console.log(`・✿ Test account already exists.`);
         }

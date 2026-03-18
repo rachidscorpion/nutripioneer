@@ -23,6 +23,9 @@ export default function WelcomeStep() {
     const [loading, setLoading] = useState(false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [error, setError] = useState<string | null>(null);
+    const [pendingVerification, setPendingVerification] = useState(false);
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [resendCooldown, setResendCooldown] = useState(0);
 
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -119,6 +122,8 @@ export default function WelcomeStep() {
         setError(null);
         setLoading(true);
 
+        const trimmedEmail = email.trim().toLowerCase();
+
         try {
             if (isSignUp) {
                 if (!firstName || !lastName) {
@@ -127,26 +132,34 @@ export default function WelcomeStep() {
                     return;
                 }
                 const fullName = `${firstName.trim()} ${lastName.trim()}`;
-                await api.auth.register({
-                    email,
-                    password,
-                    name: fullName,
-                });
+                try {
+                    await api.auth.register({
+                        email: trimmedEmail,
+                        password,
+                        name: fullName,
+                    });
+                } catch (regErr: any) {
+                    // Handle "user already exists" gracefully
+                    const msg = regErr.response?.data?.message || regErr.message || '';
+                    if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('exist') || regErr.response?.status === 422 || regErr.response?.status === 409) {
+                        setError('An account with this email already exists. Please sign in instead.');
+                        setLoading(false);
+                        return;
+                    }
+                    throw regErr;
+                }
 
-                // After register, auto-login
-                await api.auth.login({ email, password });
-
-                // Trigger navigation check
-                await checkUserAndNavigate();
+                // Show OTP verification screen instead of auto-login
+                setPendingVerification(true);
+                startResendCooldown();
 
             } else {
                 await api.auth.login({
-                    email,
+                    email: trimmedEmail,
                     password,
                 });
 
                 // Login successful (cookie set)
-                // Check where to go
                 await checkUserAndNavigate();
             }
         } catch (err: any) {
@@ -157,9 +170,145 @@ export default function WelcomeStep() {
         }
     };
 
+    const startResendCooldown = () => {
+        setResendCooldown(60);
+        const interval = setInterval(() => {
+            setResendCooldown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    const handleVerifyOtp = async () => {
+        const otpString = otp.join('');
+        if (otpString.length !== 6) {
+            setError('Please enter the full 6-digit code.');
+            return;
+        }
+        setError(null);
+        setLoading(true);
+        try {
+            await api.auth.verifyOtp(email, otpString);
+            // After verification, auto-login
+            await api.auth.login({ email, password });
+            await checkUserAndNavigate();
+        } catch (err: any) {
+            console.error('OTP verify error', err);
+            setError(err.response?.data?.message || 'Invalid or expired code. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResendOtp = async () => {
+        if (resendCooldown > 0) return;
+        setError(null);
+        try {
+            await api.auth.sendOtp(email, 'email-verification');
+            startResendCooldown();
+        } catch (err: any) {
+            setError('Failed to resend code. Please try again.');
+        }
+    };
+
+    const handleOtpChange = (index: number, value: string) => {
+        if (value.length > 1) value = value.slice(-1);
+        if (value && !/^\d$/.test(value)) return;
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+        // Auto-focus next input
+        if (value && index < 5) {
+            const next = document.getElementById(`otp-${index + 1}`);
+            next?.focus();
+        }
+    };
+
+    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+            const prev = document.getElementById(`otp-${index - 1}`);
+            prev?.focus();
+        }
+    };
+
     return (
         <div style={{ padding: '0 0.5rem', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
-            {loading ? <NPLoader2 size={40} /> :
+            {loading && !pendingVerification ? <NPLoader2 size={40} /> :
+            pendingVerification ? (
+                <div style={{ padding: '0 0.5rem', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
+                    <h1 className={styles.welcomeHeading}>Verify Your Email</h1>
+                    <p className={styles.welcomeSub}>
+                        We sent a 6-digit code to <strong style={{ color: '#61d588' }}>{email}</strong>
+                    </p>
+
+                    {error && (
+                        <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', textAlign: 'left' }}>
+                            <AlertCircle size={16} />
+                            <span>{error}</span>
+                        </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', margin: '2rem 0' }}>
+                        {otp.map((digit, i) => (
+                            <input
+                                key={i}
+                                id={`otp-${i}`}
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={1}
+                                value={digit}
+                                onChange={(e) => handleOtpChange(i, e.target.value)}
+                                onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                                style={{
+                                    width: '48px', height: '56px', textAlign: 'center',
+                                    fontSize: '1.5rem', fontWeight: 700,
+                                    borderRadius: '0.5rem', border: digit ? '2px solid #61d588' : '1px solid #cbd5e1',
+                                    backgroundColor: '#ffffff', color: '#1e293b',
+                                    outline: 'none', transition: 'border-color 0.2s',
+                                }}
+                                autoFocus={i === 0}
+                            />
+                        ))}
+                    </div>
+
+                    <LoginButton
+                        variant="primary"
+                        onClick={handleVerifyOtp}
+                        disabled={loading || otp.join('').length !== 6}
+                        isLoading={loading}
+                    >
+                        Verify Email
+                    </LoginButton>
+
+                    <div style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                        {resendCooldown > 0 ? (
+                            <span>Resend code in {resendCooldown}s</span>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleResendOtp}
+                                style={{ background: 'none', border: 'none', color: '#61d588', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
+                            >
+                                Resend Code
+                            </button>
+                        )}
+                    </div>
+
+                    <div style={{ marginTop: '1rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => { setPendingVerification(false); setOtp(['', '', '', '', '', '']); setError(null); }}
+                            style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '0.85rem' }}
+                        >
+                            ← Back to registration
+                        </button>
+                    </div>
+                </div>
+            ) :
                 <div style={{ padding: '0 0.5rem', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
                     <h1 className={styles.welcomeHeading}>
                         {isSignUp ? 'Create Account' : 'Welcome Back'}

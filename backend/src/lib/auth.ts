@@ -1,8 +1,10 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { emailOTP } from 'better-auth/plugins';
 import { polar, checkout, webhooks } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
 import { importPKCS8, SignJWT } from 'jose';
+import { resend } from '@/lib/resend';
 import prisma from '@/db/client';
 
 // Generate Apple client secret JWT dynamically
@@ -61,7 +63,57 @@ export const auth = betterAuth({
                     secret: process.env.POLAR_ENV === 'production' ? process.env.POLAR_WEBHOOK_SECRET! : process.env.POLAR_SANDBOX_WEBHOOK_SECRET!,
                 })
             ]
-        })
+        }),
+        emailOTP({
+            otpLength: 6,
+            expiresIn: 300, // 5 minutes
+            sendVerificationOnSignUp: true,
+            async sendVerificationOTP({ email, otp, type }) {
+                // Always log OTP in development for testing convenience
+                console.log(`\n🔐 OTP for ${email} (${type}): ${otp}\n`);
+
+                const subject = type === 'email-verification'
+                    ? 'Verify your NutriPioneer email'
+                    : type === 'sign-in'
+                        ? 'Your NutriPioneer sign-in code'
+                        : 'Reset your NutriPioneer password';
+
+                try {
+                    const result = await resend.emails.send({
+                        from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+                        to: email,
+                        subject,
+                        html: `
+                            <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 12px;">
+                                <div style="text-align: center; margin-bottom: 24px;">
+                                    <h1 style="color: #1e293b; font-size: 24px; margin: 0;">NutriPioneer</h1>
+                                </div>
+                                <p style="color: #475569; font-size: 16px; line-height: 1.5;">
+                                    ${type === 'email-verification' ? 'Welcome! Please verify your email address.' : type === 'sign-in' ? 'Use this code to sign in.' : 'Use this code to reset your password.'}
+                                </p>
+                                <div style="text-align: center; margin: 32px 0;">
+                                    <span style="display: inline-block; background: #f1f5f9; color: #0f172a; font-size: 36px; font-weight: 700; letter-spacing: 8px; padding: 16px 32px; border-radius: 12px; border: 2px dashed #61d588;">
+                                        ${otp}
+                                    </span>
+                                </div>
+                                <p style="color: #94a3b8; font-size: 14px; text-align: center;">
+                                    This code expires in 5 minutes. If you didn't request this, you can safely ignore this email.
+                                </p>
+                            </div>
+                        `,
+                    });
+                    if (result.error) {
+                        console.warn('Resend email warning:', result.error.message);
+                        console.log('📋 Use the OTP from the console log above to verify.');
+                    } else {
+                        console.log(`OTP email sent to ${email} (type: ${type})`);
+                    }
+                } catch (err) {
+                    console.error('Failed to send OTP email:', err);
+                    console.log('📋 Use the OTP from the console log above to verify.');
+                }
+            },
+        }),
     ],
 
     // Email & Password authentication
