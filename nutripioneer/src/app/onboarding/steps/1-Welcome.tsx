@@ -14,11 +14,12 @@ import NPLoader2 from '@/components/loader/Loader2';
 export default function WelcomeStep() {
     const router = useRouter();
     const { updateData, nextStep, reset } = useOnboardingStore();
-    const [isSignUp] = useState(false);
-    // const [email, setEmail] = useState('');
-    // const [password, setPassword] = useState('');
-    // const [name, setName] = useState(''); // Only for Sign Up
-    // const [showPassword, setShowPassword] = useState(false);
+    const [isSignUp, setIsSignUp] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [error, setError] = useState<string | null>(null);
@@ -113,7 +114,6 @@ export default function WelcomeStep() {
         }
     };
 
-    /*
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -121,19 +121,19 @@ export default function WelcomeStep() {
 
         try {
             if (isSignUp) {
-                if (!name) {
-                    setError('Name is required');
+                if (!firstName || !lastName) {
+                    setError('First name and last name are required');
                     setLoading(false);
                     return;
                 }
+                const fullName = `${firstName.trim()} ${lastName.trim()}`;
                 await api.auth.register({
                     email,
                     password,
-                    name,
+                    name: fullName,
                 });
 
-                // After register, usually auto-login or ask to login
-                // Assuming auto-login or we just try logging in:
+                // After register, auto-login
                 await api.auth.login({ email, password });
 
                 // Trigger navigation check
@@ -156,7 +156,6 @@ export default function WelcomeStep() {
             setLoading(false);
         }
     };
-    */
 
     return (
         <div style={{ padding: '0 0.5rem', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
@@ -170,6 +169,96 @@ export default function WelcomeStep() {
                             ? 'Start building your personalized health plan.'
                             : 'Sign in to continue your journey.'}
                     </p>
+
+                    {error && (
+                        <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', textAlign: 'left' }}>
+                            <AlertCircle size={16} />
+                            <span>{error}</span>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                        {isSignUp && (
+                            <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+                                <div style={{ position: 'relative', flex: 1 }}>
+                                    <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                                        <User size={18} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="First Name"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                        style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#1e293b', fontSize: '1rem', outline: 'none' }}
+                                        required={isSignUp}
+                                    />
+                                </div>
+                                <div style={{ position: 'relative', flex: 1 }}>
+                                    <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                                        <User size={18} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Last Name"
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
+                                        style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#1e293b', fontSize: '1rem', outline: 'none' }}
+                                        required={isSignUp}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                                <Mail size={18} />
+                            </div>
+                            <input
+                                type="email"
+                                placeholder="Email Address"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#1e293b', fontSize: '1rem', outline: 'none' }}
+                                required
+                            />
+                        </div>
+
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                                <Lock size={18} />
+                            </div>
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={{ width: '100%', padding: '0.75rem 2.5rem 0.75rem 2.5rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#1e293b', fontSize: '1rem', outline: 'none' }}
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+
+                        <LoginButton
+                            variant="primary"
+                            onClick={() => {}} // form handles this
+                            disabled={loading || !email || !password || (isSignUp && (!firstName || !lastName))}
+                            isLoading={loading}
+                        >
+                            {isSignUp ? 'Create Account' : 'Sign In'}
+                        </LoginButton>
+                    </form>
+
+                    <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0' }}>
+                        <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }}></div>
+                        <span style={{ padding: '0 0.75rem', color: '#94a3b8', fontSize: '0.875rem' }}>or</span>
+                        <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }}></div>
+                    </div>
 
                     {/* Social Buttons  */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
@@ -203,6 +292,18 @@ export default function WelcomeStep() {
                             Continue with Apple
                         </LoginButton>
                     </div>
+
+                    <div style={{ marginTop: '1.5rem', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                        {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+                        <button 
+                            type="button" 
+                            onClick={() => { setIsSignUp(!isSignUp); setError(null); }} 
+                            style={{ background: 'none', border: 'none', color: '#61d588', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
+                        >
+                            {isSignUp ? 'Sign In' : 'Create Account'}
+                        </button>
+                    </div>
+
                     <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.8rem', lineHeight: '1.4', marginTop: '2rem' }}>
                         By continuing, you agree to our{' '}
                         <Link href="/terms" style={{ color: '#61d588', textDecoration: 'underline' }}>

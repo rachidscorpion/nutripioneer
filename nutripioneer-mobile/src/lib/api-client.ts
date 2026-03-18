@@ -11,6 +11,8 @@ const apiClient: AxiosInstance = axios.create({
     baseURL: `${API_URL}/api`,
     headers: {
         'Content-Type': 'application/json',
+        // React Native fetch handles origins poorly, Better Auth requires an origin for CSRF
+        'Origin': API_URL.includes('localhost') || API_URL.includes('127.0.0.1') ? API_URL : 'https://nutripioneer.com',
     },
     withCredentials: true,
 });

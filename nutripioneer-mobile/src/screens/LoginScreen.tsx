@@ -8,6 +8,8 @@ import {
     Image,
     StatusBar,
     Alert,
+    TextInput,
+    KeyboardAvoidingView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -20,6 +22,12 @@ import { useTheme } from '../context/ThemeContext';
 
 export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [isSignUp, setIsSignUp] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const navigation = useNavigation();
     const updateData = useOnboardingStore(state => state.updateData);
     const { setTheme } = useTheme();
@@ -121,6 +129,80 @@ export default function LoginScreen() {
         }
     };
 
+    const handleEmailAuth = async () => {
+        if (!email || !password || (isSignUp && (!firstName || !lastName))) {
+            Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+
+        const fullName = `${firstName.trim()} ${lastName.trim()}`;
+
+        try {
+            setLoading(true);
+
+            let sessionToken;
+
+            if (isSignUp) {
+                await api.auth.register({ email, password, name: fullName });
+                // Attempt login after register
+                const loginRes = await api.auth.login({ email, password });
+                sessionToken = loginRes.data?.session?.token;
+            } else {
+                const loginRes = await api.auth.login({ email, password });
+                sessionToken = loginRes.data?.session?.token;
+            }
+
+            if (sessionToken) {
+                await setAuthToken(sessionToken);
+                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+            } else {
+                console.error("No session token received from backend");
+            }
+
+            // Check if user is onboarded
+            let isOnboarded = false;
+            let userName = '';
+            let userEmail = '';
+            try {
+                const profileRes = await api.user.getProfile();
+                const user = profileRes.data?.data;
+
+                if (user) {
+                    userName = user.name || '';
+                    userEmail = user.email || '';
+
+                    if (user.preferences?.theme) {
+                        setTheme(user.preferences.theme);
+                    }
+                }
+
+                if (user?.conditions) {
+                    const parsedConditions = typeof user.conditions === 'string'
+                        ? JSON.parse(user.conditions)
+                        : user.conditions;
+                    if (parsedConditions && parsedConditions.length > 0) {
+                        isOnboarded = true;
+                    }
+                }
+            } catch (e: any) {
+                console.error('Error fetching profile to check onboarding', e.response?.status, e.message);
+            }
+
+            if (isOnboarded) {
+                navigation.navigate('Dashboard' as never);
+            } else {
+                updateData('name', userName);
+                updateData('email', userEmail);
+                navigation.navigate('OnboardingConditions' as never);
+            }
+        } catch (error: any) {
+            console.error('Email Auth Error:', error);
+            Alert.alert('Error', error.response?.data?.message || 'Authentication failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleAppleSignIn = async () => {
         try {
             setLoading(true);
@@ -214,73 +296,159 @@ export default function LoginScreen() {
                 player={player}
                 style={StyleSheet.absoluteFill}
                 contentFit="cover"
-                nativeControls={false}
+                                    nativeControls={false}
             />
             <StatusBar barStyle="light-content" />
-            <View style={styles.overlay}>
-                <View style={styles.safeArea}>
-                    <View style={styles.container}>
-                        <View style={styles.content}>
-                            <View style={styles.header}>
-                                <Image
-                                    source={require('../../assets/icon.png')}
-                                    style={styles.logoImage}
-                                    resizeMode="contain"
-                                />
-                                <Text style={styles.title}>NutriPioneer</Text>
-                                <Text style={styles.subtitle}>Your personalized nutrition app</Text>
-                            </View>
+            
+            {/* Added a KeyboardAvoidingView to ensure the keyboard doesn't cover inputs and they don't grow upwards into the logo */}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.keyboardAvoidingView}
+            >
+                <View style={styles.overlay}>
+                    <View style={styles.safeArea}>
+                        <View style={styles.container}>
+                            <View style={styles.content}>
+                                <View style={styles.header}>
+                                    <Image
+                                        source={require('../../assets/icon.png')}
+                                        style={styles.logoImage}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={styles.title}>NutriPioneer</Text>
+                                    <Text style={styles.subtitle}>Your personalized nutrition app</Text>
+                                </View>
 
-                            <View style={styles.formContainer}>
-                                <TouchableOpacity
-                                    style={[styles.googleButton, loading && styles.buttonDisabled]}
-                                    onPress={handleGoogleSignIn}
-                                    disabled={loading}
-                                >
-                                    <Ionicons name="logo-google" size={24} color="#000" style={styles.googleIcon} />
-                                    <Text style={styles.googleButtonText}>
-                                        {loading ? 'Continuing...' : 'Continue with Google'}
-                                    </Text>
-                                </TouchableOpacity>
+                                <View style={styles.formContainer}>
+                                    {isSignUp && (
+                                        <View style={styles.nameRow}>
+                                            <View style={[styles.inputContainer, styles.halfInput]}>
+                                                <Ionicons name="person-outline" size={20} color="#64748b" style={styles.inputIcon} />
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder="First Name"
+                                                    placeholderTextColor="#94a3b8"
+                                                    value={firstName}
+                                                    onChangeText={setFirstName}
+                                                    autoCapitalize="words"
+                                                />
+                                            </View>
+                                            <View style={[styles.inputContainer, styles.halfInput]}>
+                                                <Ionicons name="person-outline" size={20} color="#64748b" style={styles.inputIcon} />
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder="Last Name"
+                                                    placeholderTextColor="#94a3b8"
+                                                    value={lastName}
+                                                    onChangeText={setLastName}
+                                                    autoCapitalize="words"
+                                                />
+                                            </View>
+                                        </View>
+                                    )}
+                                    
+                                    <View style={[styles.inputContainer, styles.fullInput]}>
+                                        <Ionicons name="mail-outline" size={20} color="#64748b" style={styles.inputIcon} />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Email Address"
+                                            placeholderTextColor="#94a3b8"
+                                            value={email}
+                                            onChangeText={setEmail}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                        />
+                                    </View>
 
-                                {Platform.OS === 'ios' && (
+                                    <View style={[styles.inputContainer, styles.fullInput]}>
+                                        <Ionicons name="lock-closed-outline" size={20} color="#64748b" style={styles.inputIcon} />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Password"
+                                            placeholderTextColor="#94a3b8"
+                                            value={password}
+                                            onChangeText={setPassword}
+                                            secureTextEntry={!showPassword}
+                                        />
+                                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                            <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#64748b" />
+                                        </TouchableOpacity>
+                                    </View>
+
                                     <TouchableOpacity
-                                        style={[styles.appleButton, loading && styles.buttonDisabled]}
-                                        onPress={handleAppleSignIn}
-                                        disabled={loading}
+                                        style={[styles.primaryButton, (loading || !email || !password || (isSignUp && (!firstName || !lastName))) && styles.buttonDisabled]}
+                                        onPress={handleEmailAuth}
+                                        disabled={loading || !email || !password || (isSignUp && (!firstName || !lastName))}
                                     >
-                                        <Ionicons name="logo-apple" size={24} color="#000" style={styles.appleIcon} />
-                                        <Text style={styles.appleButtonText}>
-                                            {loading ? 'Continuing...' : 'Continue with Apple'}
+                                        <Text style={styles.primaryButtonText}>
+                                            {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
                                         </Text>
                                     </TouchableOpacity>
-                                )}
 
-                                <Text style={styles.disclaimerText}>
-                                    By continuing, you agree to our{' '}
-                                    <Text 
-                                        style={styles.linkText} 
-                                        onPress={() => navigation.navigate('Terms' as never)}
+                                    <View style={styles.dividerContainer}>
+                                        <View style={styles.divider} />
+                                        <Text style={styles.dividerText}>or</Text>
+                                        <View style={styles.divider} />
+                                    </View>
+
+                                    <TouchableOpacity
+                                        style={[styles.googleButton, loading && styles.buttonDisabled]}
+                                        onPress={handleGoogleSignIn}
+                                        disabled={loading}
                                     >
-                                        Terms of Service
+                                        <Ionicons name="logo-google" size={24} color="#000" style={styles.googleIcon} />
+                                        <Text style={styles.googleButtonText}>
+                                            {loading ? 'Continuing...' : 'Continue with Google'}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    {Platform.OS === 'ios' && (
+                                        <TouchableOpacity
+                                            style={[styles.appleButton, loading && styles.buttonDisabled]}
+                                            onPress={handleAppleSignIn}
+                                            disabled={loading}
+                                        >
+                                            <Ionicons name="logo-apple" size={24} color="#000" style={styles.appleIcon} />
+                                            <Text style={styles.appleButtonText}>
+                                                {loading ? 'Continuing...' : 'Continue with Apple'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    <View style={styles.toggleContainer}>
+                                        <Text style={styles.toggleText}>
+                                            {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+                                        </Text>
+                                        <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+                                            <Text style={styles.toggleButtonText}>
+                                                {isSignUp ? 'Sign In' : 'Create Account'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    <Text style={styles.disclaimerText}>
+                                        By continuing, you agree to our{' '}
+                                        <Text 
+                                            style={styles.linkText} 
+                                            onPress={() => navigation.navigate('Terms' as never)}
+                                        >
+                                            Terms of Service
+                                        </Text>
+                                        {' '}and{' '}
+                                        <Text 
+                                            style={styles.linkText} 
+                                            onPress={() => navigation.navigate('Privacy' as never)}
+                                        >
+                                            Privacy Policy
+                                        </Text>
+                                        .
                                     </Text>
-                                    {' '}and{' '}
-                                    <Text 
-                                        style={styles.linkText} 
-                                        onPress={() => navigation.navigate('Privacy' as never)}
-                                    >
-                                        Privacy Policy
-                                    </Text>
-                                    .
-                                </Text>
+                                </View>
                             </View>
-
-                            {/* Empty view for spacing */}
-                            <View style={{ flex: 1 }} />
                         </View>
                     </View>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </View>
     );
 }
@@ -290,6 +458,9 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
+    },
+    keyboardAvoidingView: {
+        flex: 1,
     },
     overlay: {
         flex: 1,
@@ -334,6 +505,98 @@ const styles = StyleSheet.create({
     formContainer: {
         flex: 1,
         justifyContent: 'flex-end',
+        paddingBottom: 20, // Add bottom padding for better spacing
+    },
+    nameRow: {
+        flexDirection: 'row',
+        width: '80%',
+        alignSelf: 'center',
+        justifyContent: 'space-between',
+    },
+    halfInput: {
+        width: '48%',
+    },
+    fullInput: {
+        width: '80%',
+        alignSelf: 'center',
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ffffff', // White
+        borderWidth: 1,
+        borderColor: '#e2e8f0', // Light slate border
+        borderRadius: 12,
+        height: 50,
+        marginBottom: 16,
+        paddingHorizontal: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    inputIcon: {
+        marginRight: 10,
+    },
+    input: {
+        flex: 1,
+        color: '#1e293b', // Dark slate text color for contrast
+        fontSize: 16,
+    },
+    primaryButton: {
+        backgroundColor: '#61d588',
+        borderRadius: 12,
+        height: 50,
+        width: '80%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
+        marginBottom: 20,
+        shadowColor: '#13ec5b',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    primaryButtonText: {
+        color: '#000000',
+        fontSize: 18,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+    },
+    dividerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '80%',
+        alignSelf: 'center',
+        marginBottom: 20,
+    },
+    divider: {
+        flex: 1,
+        height: 1,
+        backgroundColor: '#334155',
+    },
+    dividerText: {
+        color: '#94a3b8',
+        paddingHorizontal: 10,
+        fontSize: 14,
+    },
+    toggleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    toggleText: {
+        color: '#cbd5e1',
+        fontSize: 14,
+    },
+    toggleButtonText: {
+        color: '#61d588',
+        fontSize: 14,
+        fontWeight: '700',
+        marginLeft: 4,
     },
     googleButton: {
         flexDirection: 'row',
@@ -341,7 +604,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#61d588ff',
-        backgroundColor: 'transparent', // add blur effect
+        backgroundColor: 'transparent',
         height: 50,
         width: '80%',
         justifyContent: 'center',
