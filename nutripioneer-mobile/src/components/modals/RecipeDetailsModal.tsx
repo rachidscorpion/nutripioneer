@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, Image, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, Modal, Image, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { WebView } from 'react-native-webview';
 import { api } from '../../lib/api-client';
 
 interface RecipeDetailsModalProps {
@@ -17,6 +18,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
     const [isAdding, setIsAdding] = useState(false);
     const [scrapedInstructions, setScrapedInstructions] = useState<string[] | null>(null);
     const [loadingInstructions, setLoadingInstructions] = useState(false);
+    const [webviewUrl, setWebviewUrl] = useState<string | null>(null);
     const [imgSrc, setImgSrc] = useState(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
 
     useEffect(() => {
@@ -250,14 +252,31 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                 ) : (
                                     <>
                                         {instructionsSteps.length > 0 ? (
-                                            instructionsSteps.map((step, idx) => (
-                                                <View key={idx} style={styles.instructionStep}>
-                                                    <View style={styles.stepNumberContainer}>
-                                                        <Text style={styles.stepNumber}>{idx + 1}</Text>
+                                            instructionsSteps.map((step, idx) => {
+                                                const isStepUrl = typeof step === 'string' && step.startsWith('http');
+                                                return (
+                                                    <View key={idx} style={styles.instructionStep}>
+                                                        {isStepUrl ? null : (
+                                                            <View style={styles.stepNumberContainer}>
+                                                                <Text style={styles.stepNumber}>{idx + 1}</Text>
+                                                            </View>
+                                                        )}
+                                                        {isStepUrl ? (
+                                                            <TouchableOpacity 
+                                                                onPress={() => setWebviewUrl(step)} 
+                                                                style={styles.webviewPlaceholderBtn}
+                                                            >
+                                                                <Ionicons name="link" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
+                                                                <Text style={[styles.stepText, { color: '#3b82f6', textDecorationLine: 'underline', flex: 1 }]} numberOfLines={2}>
+                                                                    View Full Recipe on Web
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        ) : (
+                                                            <Text style={styles.stepText}>{step}</Text>
+                                                        )}
                                                     </View>
-                                                    <Text style={styles.stepText}>{step}</Text>
-                                                </View>
-                                            ))
+                                                );
+                                            })
                                         ) : (
                                             <Text style={styles.emptyContentText}>No detailed instructions found.</Text>
                                         )}
@@ -324,6 +343,35 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
 
                 </View>
             </View>
+
+            {/* WebView Full Screen Modal */}
+            <Modal
+                visible={!!webviewUrl}
+                animationType="slide"
+                onRequestClose={() => setWebviewUrl(null)}
+            >
+                <View style={styles.webviewHeader}>
+                    <TouchableOpacity onPress={() => setWebviewUrl(null)} style={styles.webviewCloseBtn}>
+                        <Ionicons name="close" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={styles.webviewTitle} numberOfLines={1}>{recipe.name}</Text>
+                    <TouchableOpacity onPress={() => { if (webviewUrl) Linking.openURL(webviewUrl); }} style={styles.webviewCloseBtn}>
+                        <Ionicons name="open-outline" size={20} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+                {webviewUrl && (
+                    <WebView
+                        source={{ uri: webviewUrl }}
+                        style={{ flex: 1 }}
+                        startInLoadingState={true}
+                        renderLoading={() => (
+                            <View style={[StyleSheet.absoluteFillObject, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#1c1c1e' }]}>
+                                <ActivityIndicator size="large" color="#13ec5b" />
+                            </View>
+                        )}
+                    />
+                )}
+            </Modal>
         </Modal>
     );
 }
@@ -589,5 +637,42 @@ const styles = StyleSheet.create({
         color: '#000',
         fontWeight: 'bold',
         fontSize: 14,
+    },
+    webviewPlaceholderBtn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(59, 130, 246, 0.2)',
+    },
+    webviewHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: 50,
+        paddingBottom: 16,
+        backgroundColor: '#1c1c1e',
+        borderBottomWidth: 1,
+        borderBottomColor: '#2a2a2a',
+    },
+    webviewCloseBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    webviewTitle: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+        flex: 1,
+        textAlign: 'center',
+        marginHorizontal: 16,
     },
 });

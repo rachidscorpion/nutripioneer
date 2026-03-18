@@ -5,6 +5,7 @@ import styles from '@/styles/Onboarding.module.css';
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '@/lib/api-client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Eye, EyeOff, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
 import { getServerSessionAction } from '@/lib/auth-actions';
 import LoginButton from '@/components/buttons/LoginButton';
@@ -203,7 +204,15 @@ export default function WelcomeStep() {
                         </LoginButton>
                     </div>
                     <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.8rem', lineHeight: '1.4', marginTop: '2rem' }}>
-                        By continuing, you agree to our Terms of Service and Privacy Policy.
+                        By continuing, you agree to our{' '}
+                        <Link href="/terms" style={{ color: '#61d588', textDecoration: 'underline' }}>
+                            Terms of Service
+                        </Link>
+                        {' '}and{' '}
+                        <Link href="/privacy" style={{ color: '#61d588', textDecoration: 'underline' }}>
+                            Privacy Policy
+                        </Link>
+                        .
                     </div>
                 </div>
             }

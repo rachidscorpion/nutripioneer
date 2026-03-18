@@ -9,27 +9,34 @@ import BiometricsScreen from './src/screens/onboarding/BiometricsScreen';
 import MedicalScreen from './src/screens/onboarding/MedicalScreen';
 import DietaryScreen from './src/screens/onboarding/DietaryScreen';
 import SynthesizingScreen from './src/screens/onboarding/SynthesizingScreen';
+import PrivacyScreen from './src/screens/PrivacyScreen';
+import TermsScreen from './src/screens/TermsScreen';
+import { ThemeProvider } from './src/context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Dashboard" component={DashboardTabs} />
-        <Stack.Screen name="OnboardingConditions" component={ConditionsScreen} />
-        <Stack.Screen name="OnboardingBiometrics" component={BiometricsScreen} />
-        <Stack.Screen name="OnboardingMedical" component={MedicalScreen} />
-        <Stack.Screen name="OnboardingDietary" component={DietaryScreen} />
-        <Stack.Screen name="OnboardingSynthesizing" component={SynthesizingScreen} />
-      </Stack.Navigator>
-      <StatusBar style="light" />
-    </NavigationContainer>
+    <ThemeProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Login"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Dashboard" component={DashboardTabs} />
+          <Stack.Screen name="OnboardingConditions" component={ConditionsScreen} />
+          <Stack.Screen name="OnboardingBiometrics" component={BiometricsScreen} />
+          <Stack.Screen name="OnboardingMedical" component={MedicalScreen} />
+          <Stack.Screen name="OnboardingDietary" component={DietaryScreen} />
+          <Stack.Screen name="OnboardingSynthesizing" component={SynthesizingScreen} />
+          <Stack.Screen name="Privacy" component={PrivacyScreen} />
+          <Stack.Screen name="Terms" component={TermsScreen} />
+        </Stack.Navigator>
+        <StatusBar style="auto" />
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }

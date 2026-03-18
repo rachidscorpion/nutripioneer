@@ -3,13 +3,15 @@ import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     const insets = useSafeAreaInsets();
+    const { theme } = useTheme();
 
     return (
         <View style={[styles.tabBarContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-            <View style={styles.tabBar}>
+            <View style={[styles.tabBar, { backgroundColor: theme.card }]}>
                 {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
                     const label = options.tabBarLabel !== undefined
@@ -54,6 +56,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
                             isFocused={isFocused}
                             onPress={onPress}
                             onLongPress={onLongPress}
+                            theme={theme}
                         />
                     );
                 })}
@@ -67,13 +70,15 @@ function TabItem({
     iconName,
     isFocused,
     onPress,
-    onLongPress
+    onLongPress,
+    theme
 }: {
     label: string,
     iconName: keyof typeof Ionicons.glyphMap,
     isFocused: boolean,
     onPress: () => void,
-    onLongPress: () => void
+    onLongPress: () => void,
+    theme: any
 }) {
     const animation = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
@@ -92,12 +97,12 @@ function TabItem({
 
     const circleColor = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: ['#1c1c1e', '#13ec5b']
+        outputRange: [theme.card, theme.primary]
     });
 
     const iconColor = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: ['#8E8E93', '#000000']
+        outputRange: [theme.textMuted, '#000000']
     });
 
     const textOpacity = animation.interpolate({
@@ -121,16 +126,18 @@ function TabItem({
         >
             <Animated.View style={[
                 styles.itemContainer,
-                { width: containerWidth, backgroundColor: isFocused ? '#1c1c1e' : 'transparent' }
+                { width: containerWidth, backgroundColor: isFocused ? theme.card : 'transparent' }
             ]}>
                 <Animated.View style={[styles.iconCircle, { backgroundColor: circleColor }]}>
-                    <Ionicons name={iconName} size={22} color={isFocused ? '#000000' : '#8E8E93'} />
+                    <Animated.Text style={{ color: iconColor, fontFamily: 'Ionicons', fontSize: 22 }}>
+                        {String.fromCharCode(Ionicons.glyphMap[iconName] as unknown as number)}
+                    </Animated.Text>
                 </Animated.View>
 
                 {isFocused && (
                     <Animated.Text
                         numberOfLines={1}
-                        style={[styles.label, { opacity: textOpacity, width: labelWidth }]}
+                        style={[styles.label, { opacity: textOpacity, width: labelWidth, color: theme.text }]}
                     >
                         {label}
                     </Animated.Text>

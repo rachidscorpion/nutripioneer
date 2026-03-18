@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import MealCard from '../cards/MealCard';
 import WorkoutCard from '../cards/WorkoutCard';
+import { useTheme } from '../../context/ThemeContext';
 
 interface TimelineFeedProps {
     plan: any;
@@ -19,12 +20,14 @@ function formatTime(time24: string) {
 }
 
 export default function TimelineFeed({ plan, nutritionLimits, onRefresh }: TimelineFeedProps) {
+    const { theme } = useTheme();
+    
     return (
         <View style={styles.container}>
             {/* Breakfast */}
             <View style={styles.feedItem}>
-                <View style={[styles.timelineDot, styles.dotBlue]} />
-                <Text style={styles.timeLabel}>{formatTime(plan.breakfastTime || "08:00")}</Text>
+                <View style={[styles.timelineDot, styles.dotBlue, { borderColor: theme.background }]} />
+                <Text style={[styles.timeLabel, { color: theme.textMuted }]}>{formatTime(plan.breakfastTime || "08:00")}</Text>
                 <MealCard
                     meal={plan.breakfast}
                     type="breakfast"
@@ -37,15 +40,15 @@ export default function TimelineFeed({ plan, nutritionLimits, onRefresh }: Timel
 
             {/* Workout */}
             <View style={styles.feedItem}>
-                <View style={[styles.timelineDot, styles.dotPurple]} />
-                <Text style={styles.timeLabel}>{formatTime(plan.workoutTime || "10:00")}</Text>
+                <View style={[styles.timelineDot, styles.dotPurple, { borderColor: theme.background }]} />
+                <Text style={[styles.timeLabel, { color: theme.textMuted }]}>{formatTime(plan.workoutTime || "10:00")}</Text>
                 <WorkoutCard />
             </View>
 
             {/* Lunch */}
             <View style={styles.feedItem}>
-                <View style={[styles.timelineDot, styles.dotEmerald]} />
-                <Text style={styles.timeLabel}>{formatTime(plan.lunchTime || "13:00")}</Text>
+                <View style={[styles.timelineDot, styles.dotEmerald, { borderColor: theme.background }]} />
+                <Text style={[styles.timeLabel, { color: theme.textMuted }]}>{formatTime(plan.lunchTime || "13:00")}</Text>
                 <MealCard
                     meal={plan.lunch}
                     type="lunch"
@@ -58,8 +61,8 @@ export default function TimelineFeed({ plan, nutritionLimits, onRefresh }: Timel
 
             {/* Dinner */}
             <View style={styles.feedItem}>
-                <View style={[styles.timelineDot, styles.dotAmber]} />
-                <Text style={styles.timeLabel}>{formatTime(plan.dinnerTime || "18:00")}</Text>
+                <View style={[styles.timelineDot, styles.dotAmber, { borderColor: theme.background }]} />
+                <Text style={[styles.timeLabel, { color: theme.textMuted }]}>{formatTime(plan.dinnerTime || "18:00")}</Text>
                 <MealCard
                     meal={plan.dinner}
                     type="dinner"

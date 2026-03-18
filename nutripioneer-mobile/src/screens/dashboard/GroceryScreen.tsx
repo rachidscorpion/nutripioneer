@@ -7,6 +7,7 @@ import * as Location from 'expo-location';
 import { api } from '../../lib/api-client';
 import { getFreeGroceryStores } from '../../lib/overpass';
 import StoreListModal from '../../components/modals/StoreListModal';
+import { useTheme } from '../../context/ThemeContext';
 
 interface GroceryItem {
     id: string;
@@ -16,6 +17,7 @@ interface GroceryItem {
 
 export default function GroceryScreen() {
     const insets = useSafeAreaInsets();
+    const { theme } = useTheme();
 
     // Core List State
     const [items, setItems] = useState<GroceryItem[]>([]);
@@ -183,25 +185,25 @@ export default function GroceryScreen() {
 
     if (isLoading) {
         return (
-            <View style={[styles.container, styles.centerBox]}>
-                <ActivityIndicator size="large" color="#13ec5b" />
+            <View style={[styles.container, styles.centerBox, { backgroundColor: theme.background }]}>
+                <ActivityIndicator size="large" color={theme.primary} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
             {/* Header */}
-            <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
+            <View style={[styles.header, { paddingTop: Math.max(insets.top, 20), borderBottomColor: theme.border }]}>
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.title}>Grocery List</Text>
-                    <Text style={styles.subtitle}>{items.length} items • {completedCount} checked</Text>
+                    <Text style={[styles.title, { color: theme.text }]}>Grocery List</Text>
+                    <Text style={[styles.subtitle, { color: theme.textMuted }]}>{items.length} items • {completedCount} checked</Text>
                 </View>
                 <View style={styles.headerActions}>
-                    <TouchableOpacity style={styles.iconBtn} onPress={handleClear} disabled={items.length === 0}>
-                        <Ionicons name="trash-outline" size={20} color={items.length === 0 ? "#4b5563" : "#ef4444"} />
+                    <TouchableOpacity style={[styles.iconBtn, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={handleClear} disabled={items.length === 0}>
+                        <Ionicons name="trash-outline" size={20} color={items.length === 0 ? theme.textMuted : theme.danger} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.storeBtn} onPress={() => handleFindStores()}>
+                    <TouchableOpacity style={[styles.storeBtn, { backgroundColor: theme.primary }]} onPress={() => handleFindStores()}>
                         <Ionicons name="location-outline" size={16} color="#000" />
                         <Text style={styles.storeBtnText}>Nearby</Text>
                     </TouchableOpacity>
@@ -222,19 +224,19 @@ export default function GroceryScreen() {
 
             {/* Input form */}
             <View style={styles.formContainer}>
-                <View style={styles.inputWrapper}>
-                    <Ionicons name="add" size={20} color="#64748b" style={styles.inputIcon} />
+                <View style={[styles.inputWrapper, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                    <Ionicons name="add" size={20} color={theme.textMuted} style={styles.inputIcon} />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: theme.text }]}
                         placeholder="Add item (e.g., Almond Milk)..."
-                        placeholderTextColor="#64748b"
+                        placeholderTextColor={theme.textMuted}
                         value={newItemName}
                         onChangeText={setNewItemName}
                         onSubmitEditing={handleAdd}
                         returnKeyType="done"
                     />
                     {newItemName.trim() ? (
-                        <TouchableOpacity style={styles.addBtn} onPress={handleAdd} disabled={isActionPending}>
+                        <TouchableOpacity style={[styles.addBtn, { backgroundColor: theme.primary }]} onPress={handleAdd} disabled={isActionPending}>
                             <Text style={styles.addBtnText}>Add</Text>
                         </TouchableOpacity>
                     ) : null}
@@ -246,30 +248,30 @@ export default function GroceryScreen() {
                 style={styles.list}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
-                refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#13ec5b" />}
+                refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.primary} />}
             >
                 {items.length === 0 ? (
                     <View style={styles.emptyState}>
-                        <View style={styles.emptyIconCircle}>
-                            <Ionicons name="search" size={28} color="#64748b" />
+                        <View style={[styles.emptyIconCircle, { backgroundColor: theme.card }]}>
+                            <Ionicons name="search" size={28} color={theme.textMuted} />
                         </View>
-                        <Text style={styles.emptyText}>Your list is empty.</Text>
-                        <Text style={styles.emptySubText}>Add items manually or from your meal plan.</Text>
-                        <TouchableOpacity style={styles.seedBtn} onPress={handleSeed} disabled={isActionPending}>
-                            <Text style={styles.seedBtnText}>Load Sample List</Text>
+                        <Text style={[styles.emptyText, { color: theme.text }]}>Your list is empty.</Text>
+                        <Text style={[styles.emptySubText, { color: theme.textMuted }]}>Add items manually or from your meal plan.</Text>
+                        <TouchableOpacity style={[styles.seedBtn, { backgroundColor: theme.card }]} onPress={handleSeed} disabled={isActionPending}>
+                            <Text style={[styles.seedBtnText, { color: theme.text }]}>Load Sample List</Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
                     items.map((item) => (
-                        <View key={item.id} style={[styles.itemRow, item.isChecked && styles.itemRowChecked]}>
+                        <View key={item.id} style={[styles.itemRow, { backgroundColor: theme.card, borderColor: theme.border }, item.isChecked && { opacity: 0.6, borderColor: 'transparent' }]}>
                             <TouchableOpacity style={styles.checkboxTouch} onPress={() => handleToggle(item.id, item.isChecked)}>
-                                <View style={[styles.checkbox, item.isChecked && styles.checkboxActive]}>
+                                <View style={[styles.checkbox, { borderColor: theme.textMuted }, item.isChecked && { backgroundColor: theme.primary, borderColor: theme.primary }]}>
                                     {item.isChecked && <Ionicons name="checkmark" size={14} color="#000" />}
                                 </View>
                             </TouchableOpacity>
-                            <Text style={[styles.itemName, item.isChecked && styles.itemNameChecked]}>{item.name}</Text>
-                            <TouchableOpacity style={styles.deleteBtn} onPress={() => handleRemove(item.id)}>
-                                <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                            <Text style={[styles.itemName, { color: theme.text }, item.isChecked && { color: theme.textMuted, textDecorationLine: 'line-through' }]}>{item.name}</Text>
+                            <TouchableOpacity style={[styles.deleteBtn, { backgroundColor: theme.danger + '1A' }]} onPress={() => handleRemove(item.id)}>
+                                <Ionicons name="trash-outline" size={18} color={theme.danger} />
                             </TouchableOpacity>
                         </View>
                     ))

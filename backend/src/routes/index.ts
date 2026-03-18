@@ -11,6 +11,7 @@ import products from './products';
 import webhooks from './webhooks';
 
 import drugs from './drugs';
+import recipe from './recipe';
 
 const api = new Hono();
 
@@ -25,6 +26,7 @@ api.route('/food', food);
 api.route('/drugs', drugs);
 api.route('/products', products);
 api.route('/webhooks', webhooks);
+api.route('/recipe', recipe);
 
 export default api;
 

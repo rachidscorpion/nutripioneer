@@ -77,6 +77,7 @@ export const api = {
     recipes: {
         regenerateAll: () => apiClient.post('/recipes/regenerate-all'),
         deleteAll: () => apiClient.delete('/recipes/storage/all'),
+        getInstructions: (url: string) => apiClient.get(`/recipe?url=${encodeURIComponent(url)}`),
     },
     items: {
         // Placeholder if needed for specific item actions
