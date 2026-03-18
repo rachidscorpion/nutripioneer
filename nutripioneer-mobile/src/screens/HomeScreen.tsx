@@ -126,6 +126,7 @@ export default function HomeScreen() {
                 isOpen={isFoodModalOpen}
                 onClose={() => setIsFoodModalOpen(false)}
                 planId={plan?.id}
+                isPro={userProfile?.subscriptionStatus === 'active'}
             />
         </View>
     );

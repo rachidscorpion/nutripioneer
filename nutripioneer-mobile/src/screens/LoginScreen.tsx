@@ -10,7 +10,10 @@ import {
     Alert,
     TextInput,
     KeyboardAvoidingView,
+    ScrollView,
+    Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
@@ -157,15 +160,15 @@ export default function LoginScreen() {
                 }
                 // Navigate to OTP verification screen
                 setLoading(false);
-                navigation.navigate('VerifyEmail' as never, { email: trimmedEmail, password } as never);
+                (navigation as any).navigate('VerifyEmail', { email: trimmedEmail, password });
                 return;
             } else {
                 const loginRes = await api.auth.login({ email: trimmedEmail, password });
                 // Better Auth may return token at different paths
-                sessionToken = loginRes.data?.session?.token 
-                    || loginRes.data?.token 
+                sessionToken = loginRes.data?.session?.token
+                    || loginRes.data?.token
                     || loginRes.data?.data?.session?.token;
-                
+
                 if (!sessionToken) {
                     console.log('Login response structure:', JSON.stringify(loginRes.data, null, 2));
                 }
@@ -312,6 +315,9 @@ export default function LoginScreen() {
         }
     };
 
+    const screenWidth = Dimensions.get('window').width;
+    const cardWidth = Math.min(420, screenWidth - 48);
+
     return (
         <View style={styles.backgroundImage}>
             <VideoView
@@ -322,153 +328,153 @@ export default function LoginScreen() {
             />
             <StatusBar barStyle="light-content" />
 
-            {/* Added a KeyboardAvoidingView to ensure the keyboard doesn't cover inputs and they don't grow upwards into the logo */}
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.keyboardAvoidingView}
             >
                 <View style={styles.overlay}>
-                    <View style={styles.safeArea}>
-                        <View style={styles.container}>
-                            <View style={styles.content}>
-                                <View style={styles.header}>
-                                    <Image
-                                        source={require('../../assets/icon.png')}
-                                        style={styles.logoImage}
-                                        resizeMode="contain"
-                                    />
-                                    <Text style={styles.title}>NutriPioneer</Text>
-                                    <Text style={styles.subtitle}>Your personalized nutrition app</Text>
-                                </View>
+                    <SafeAreaView style={styles.safeArea}>
+                        <ScrollView
+                            contentContainerStyle={styles.scrollContent}
+                            keyboardShouldPersistTaps="handled"
+                            showsVerticalScrollIndicator={false}
+                        >
+                            <View style={[styles.cardWrapper, { width: cardWidth }]}>
+                                <View style={styles.card}>
+                                    {/* Header */}
+                                    <View style={styles.header}>
+                                        <Image
+                                            source={require('../../assets/icon.png')}
+                                            style={styles.logoImage}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={styles.title}>NutriPioneer</Text>
+                                        <Text style={styles.subtitle}>Your personalized nutrition app</Text>
+                                    </View>
 
-                                <View style={styles.formContainer}>
-                                    {isSignUp && (
-                                        <View style={styles.nameRow}>
-                                            <View style={[styles.inputContainer, styles.halfInput]}>
-                                                <Ionicons name="person-outline" size={20} color="#64748b" style={styles.inputIcon} />
-                                                <TextInput
-                                                    style={styles.input}
-                                                    placeholder="First Name"
-                                                    placeholderTextColor="#94a3b8"
-                                                    value={firstName}
-                                                    onChangeText={setFirstName}
-                                                    autoCapitalize="words"
-                                                />
+                                    {/* Form */}
+                                    <View style={styles.formContainer}>
+                                        {isSignUp && (
+                                            <View style={styles.nameRow}>
+                                                <View style={styles.inputContainer}>
+                                                    <Ionicons name="person-outline" size={20} color="rgba(255,255,255,0.6)" style={styles.inputIcon} />
+                                                    <TextInput
+                                                        style={styles.input}
+                                                        placeholder="First Name"
+                                                        placeholderTextColor="rgba(255,255,255,0.4)"
+                                                        value={firstName}
+                                                        onChangeText={setFirstName}
+                                                        autoCapitalize="words"
+                                                    />
+                                                </View>
+                                                <View style={styles.inputContainer}>
+                                                    <Ionicons name="person-outline" size={20} color="rgba(255,255,255,0.6)" style={styles.inputIcon} />
+                                                    <TextInput
+                                                        style={styles.input}
+                                                        placeholder="Last Name"
+                                                        placeholderTextColor="rgba(255,255,255,0.4)"
+                                                        value={lastName}
+                                                        onChangeText={setLastName}
+                                                        autoCapitalize="words"
+                                                    />
+                                                </View>
                                             </View>
-                                            <View style={[styles.inputContainer, styles.halfInput]}>
-                                                <Ionicons name="person-outline" size={20} color="#64748b" style={styles.inputIcon} />
-                                                <TextInput
-                                                    style={styles.input}
-                                                    placeholder="Last Name"
-                                                    placeholderTextColor="#94a3b8"
-                                                    value={lastName}
-                                                    onChangeText={setLastName}
-                                                    autoCapitalize="words"
-                                                />
-                                            </View>
+                                        )}
+
+                                        <View style={styles.inputContainer}>
+                                            <Ionicons name="mail-outline" size={20} color="rgba(255,255,255,0.6)" style={styles.inputIcon} />
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Email Address"
+                                                placeholderTextColor="rgba(255,255,255,0.4)"
+                                                value={email}
+                                                onChangeText={setEmail}
+                                                keyboardType="email-address"
+                                                autoCapitalize="none"
+                                            />
                                         </View>
-                                    )}
 
-                                    <View style={[styles.inputContainer, styles.fullInput]}>
-                                        <Ionicons name="mail-outline" size={20} color="#64748b" style={styles.inputIcon} />
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Email Address"
-                                            placeholderTextColor="#94a3b8"
-                                            value={email}
-                                            onChangeText={setEmail}
-                                            keyboardType="email-address"
-                                            autoCapitalize="none"
-                                        />
-                                    </View>
+                                        <View style={styles.inputContainer}>
+                                            <Ionicons name="lock-closed-outline" size={20} color="rgba(255,255,255,0.6)" style={styles.inputIcon} />
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Password"
+                                                placeholderTextColor="rgba(255,255,255,0.4)"
+                                                value={password}
+                                                onChangeText={setPassword}
+                                                secureTextEntry={!showPassword}
+                                            />
+                                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                                <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="rgba(255,255,255,0.6)" />
+                                            </TouchableOpacity>
+                                        </View>
 
-                                    <View style={[styles.inputContainer, styles.fullInput]}>
-                                        <Ionicons name="lock-closed-outline" size={20} color="#64748b" style={styles.inputIcon} />
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Password"
-                                            placeholderTextColor="#94a3b8"
-                                            value={password}
-                                            onChangeText={setPassword}
-                                            secureTextEntry={!showPassword}
-                                        />
-                                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                            <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#64748b" />
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    <TouchableOpacity
-                                        style={[styles.primaryButton, (loading || !email || !password || (isSignUp && (!firstName || !lastName))) && styles.buttonDisabled]}
-                                        onPress={handleEmailAuth}
-                                        disabled={loading || !email || !password || (isSignUp && (!firstName || !lastName))}
-                                    >
-                                        <Text style={styles.primaryButtonText}>
-                                            {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                    <View style={styles.dividerContainer}>
-                                        <View style={styles.divider} />
-                                        <Text style={styles.dividerText}>or</Text>
-                                        <View style={styles.divider} />
-                                    </View>
-
-                                    <TouchableOpacity
-                                        style={[styles.googleButton, loading && styles.buttonDisabled]}
-                                        onPress={handleGoogleSignIn}
-                                        disabled={loading}
-                                    >
-                                        <Ionicons name="logo-google" size={24} color="#000" style={styles.googleIcon} />
-                                        <Text style={styles.googleButtonText}>
-                                            {loading ? 'Continuing...' : 'Continue with Google'}
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                    {Platform.OS === 'ios' && (
                                         <TouchableOpacity
-                                            style={[styles.appleButton, loading && styles.buttonDisabled]}
-                                            onPress={handleAppleSignIn}
+                                            style={[styles.primaryButton, (!email || !password || (isSignUp && (!firstName || !lastName))) && styles.buttonDisabled]}
+                                            onPress={handleEmailAuth}
+                                            disabled={loading || !email || !password || (isSignUp && (!firstName || !lastName))}
+                                        >
+                                            {loading ? (
+                                                <Text style={styles.primaryButtonText}>Processing...</Text>
+                                            ) : (
+                                                <Text style={styles.primaryButtonText}>{isSignUp ? 'Create Account' : 'Sign In'}</Text>
+                                            )}
+                                        </TouchableOpacity>
+
+                                        <View style={styles.dividerContainer}>
+                                            <View style={styles.divider} />
+                                            <Text style={styles.dividerText}>or</Text>
+                                            <View style={styles.divider} />
+                                        </View>
+
+                                        <TouchableOpacity
+                                            style={[styles.socialButton, loading && styles.buttonDisabled]}
+                                            onPress={handleGoogleSignIn}
                                             disabled={loading}
                                         >
-                                            <Ionicons name="logo-apple" size={24} color="#000" style={styles.appleIcon} />
-                                            <Text style={styles.appleButtonText}>
-                                                {loading ? 'Continuing...' : 'Continue with Apple'}
-                                            </Text>
+                                            <Ionicons name="logo-google" size={20} color="#fff" style={styles.socialIcon} />
+                                            <Text style={styles.socialButtonText}>Continue with Google</Text>
                                         </TouchableOpacity>
-                                    )}
 
-                                    <View style={styles.toggleContainer}>
-                                        <Text style={styles.toggleText}>
-                                            {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-                                        </Text>
-                                        <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
-                                            <Text style={styles.toggleButtonText}>
-                                                {isSignUp ? 'Sign In' : 'Create Account'}
+                                        {Platform.OS === 'ios' && (
+                                            <TouchableOpacity
+                                                style={[styles.socialButton, loading && styles.buttonDisabled]}
+                                                onPress={handleAppleSignIn}
+                                                disabled={loading}
+                                            >
+                                                <Ionicons name="logo-apple" size={20} color="#fff" style={styles.socialIcon} />
+                                                <Text style={styles.socialButtonText}>Continue with Apple</Text>
+                                            </TouchableOpacity>
+                                        )}
+
+                                        <View style={styles.toggleContainer}>
+                                            <Text style={styles.toggleText}>
+                                                {isSignUp ? 'Already have an account?' : "Don't have an account?"}
                                             </Text>
-                                        </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
+                                                <Text style={styles.toggleButtonText}>
+                                                    {isSignUp ? 'Sign In' : 'Create Account'}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
                                     </View>
 
-                                    <Text style={styles.disclaimerText}>
+                                    {/* Legal */}
+                                    <Text style={styles.legalText}>
                                         By continuing, you agree to our{' '}
-                                        <Text
-                                            style={styles.linkText}
-                                            onPress={() => navigation.navigate('Terms' as never)}
-                                        >
+                                        <Text style={styles.legalLink} onPress={() => navigation.navigate('Terms' as never)}>
                                             Terms of Service
                                         </Text>
                                         {' '}and{' '}
-                                        <Text
-                                            style={styles.linkText}
-                                            onPress={() => navigation.navigate('Privacy' as never)}
-                                        >
+                                        <Text style={styles.legalLink} onPress={() => navigation.navigate('Privacy' as never)}>
                                             Privacy Policy
                                         </Text>
                                         .
                                     </Text>
                                 </View>
                             </View>
-                        </View>
-                    </View>
+                        </ScrollView>
+                    </SafeAreaView>
                 </View>
             </KeyboardAvoidingView>
         </View>
@@ -486,209 +492,170 @@ const styles = StyleSheet.create({
     },
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.65)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
     safeArea: {
         flex: 1,
     },
-    container: {
-        flex: 1,
-    },
-    content: {
-        flex: 1,
-        justifyContent: 'space-between',
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
         paddingHorizontal: 24,
-        paddingVertical: 32,
+        paddingVertical: 40,
+    },
+    cardWrapper: {
+        alignSelf: 'center',
+    },
+    card: {
+        backgroundColor: 'rgba(18, 18, 18, 0.85)',
+        borderRadius: 24,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.08)',
+        padding: 32,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 24,
+        elevation: 12,
     },
     header: {
         alignItems: 'center',
-        marginTop: Platform.OS === 'ios' ? 80 : 60,
-        flex: 2,
-        justifyContent: 'center',
+        marginBottom: 32,
     },
     logoImage: {
-        width: 100,
-        height: 100,
-        marginBottom: 24,
-        borderRadius: 25,
+        width: 64,
+        height: 64,
+        marginBottom: 16,
+        borderRadius: 16,
     },
     title: {
-        fontSize: 36,
+        fontSize: 26,
         fontWeight: '700',
         color: '#fff',
-        marginBottom: 12,
-        letterSpacing: 0.5,
+        marginBottom: 8,
+        letterSpacing: -0.5,
     },
     subtitle: {
-        fontSize: 18,
-        color: '#d1d5db',
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.6)',
         fontWeight: '400',
     },
     formContainer: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        paddingBottom: 20, // Add bottom padding for better spacing
+        gap: 14,
     },
     nameRow: {
         flexDirection: 'row',
-        width: '80%',
-        alignSelf: 'center',
-        justifyContent: 'space-between',
-    },
-    halfInput: {
-        width: '48%',
-    },
-    fullInput: {
-        width: '80%',
-        alignSelf: 'center',
+        gap: 12,
     },
     inputContainer: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#ffffff', // White
+        backgroundColor: 'rgba(255,255,255,0.06)',
         borderWidth: 1,
-        borderColor: '#e2e8f0', // Light slate border
-        borderRadius: 12,
-        height: 50,
-        marginBottom: 16,
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 14,
+        height: 52,
         paddingHorizontal: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
     },
     inputIcon: {
-        marginRight: 10,
+        marginRight: 12,
     },
     input: {
         flex: 1,
-        color: '#1e293b', // Dark slate text color for contrast
+        color: '#fff',
         fontSize: 16,
+        fontWeight: '500',
     },
     primaryButton: {
-        backgroundColor: '#61d588',
-        borderRadius: 12,
-        height: 50,
-        width: '80%',
+        backgroundColor: '#10b981',
+        borderRadius: 14,
+        height: 52,
         justifyContent: 'center',
         alignItems: 'center',
-        alignSelf: 'center',
-        marginBottom: 20,
-        shadowColor: '#13ec5b',
+        marginTop: 6,
+        shadowColor: '#10b981',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
+        shadowRadius: 12,
+        elevation: 6,
     },
     primaryButtonText: {
-        color: '#000000',
-        fontSize: 18,
+        color: '#000',
+        fontSize: 16,
         fontWeight: '700',
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
+    },
+    buttonDisabled: {
+        opacity: 0.5,
+        shadowOpacity: 0.1,
     },
     dividerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        width: '80%',
-        alignSelf: 'center',
-        marginBottom: 20,
+        marginTop: 6,
     },
     divider: {
         flex: 1,
         height: 1,
-        backgroundColor: '#334155',
+        backgroundColor: 'rgba(255,255,255,0.15)',
     },
     dividerText: {
-        color: '#94a3b8',
-        paddingHorizontal: 10,
+        color: 'rgba(255,255,255,0.5)',
+        paddingHorizontal: 12,
         fontSize: 14,
+        fontWeight: '500',
+    },
+    socialButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 14,
+        height: 52,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    socialIcon: {
+        marginRight: 10,
+    },
+    socialButtonText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '600',
+        letterSpacing: 0.2,
     },
     toggleContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 20,
+        marginTop: 4,
     },
     toggleText: {
-        color: '#cbd5e1',
+        color: 'rgba(255,255,255,0.6)',
         fontSize: 14,
+        fontWeight: '500',
     },
     toggleButtonText: {
-        color: '#61d588',
+        color: '#10b981',
         fontSize: 14,
         fontWeight: '700',
-        marginLeft: 4,
+        marginLeft: 6,
     },
-    googleButton: {
-        flexDirection: 'row',
-        alignSelf: 'center',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#61d588ff',
-        backgroundColor: 'transparent',
-        height: 50,
-        width: '80%',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#13ec5b',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
-        marginBottom: 20,
-    },
-    buttonDisabled: {
-        opacity: 0.7,
-    },
-    googleIcon: {
-        marginRight: 12,
-        color: '#61d588ff',
-    },
-    googleButtonText: {
-        color: '#61d588ff',
-        fontSize: 18,
-        fontWeight: '700',
-        letterSpacing: 0.5,
-    },
-    appleButton: {
-        flexDirection: 'row',
-        alignSelf: 'center',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#ffffff',
-        // backgroundColor: '#ffffff',
-        height: 50,
-        width: '80%',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#ffffff',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
-        marginBottom: 20,
-    },
-    appleIcon: {
-        marginRight: 12,
-        color: '#ffffff',
-    },
-    appleButtonText: {
-        color: '#ffffff',
-        fontSize: 18,
-        fontWeight: '700',
-        letterSpacing: 0.5,
-    },
-    disclaimerText: {
-        color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 12,
+    legalText: {
+        color: 'rgba(255,255,255,0.5)',
+        fontSize: 11,
         textAlign: 'center',
-        marginTop: 16,
-        paddingHorizontal: 20,
-        lineHeight: 18,
+        marginTop: 24,
+        lineHeight: 16,
     },
-    linkText: {
-        color: '#61d588ff',
-        textDecorationLine: 'underline',
+    legalLink: {
+        color: '#10b981',
+        fontWeight: '600',
     },
 });

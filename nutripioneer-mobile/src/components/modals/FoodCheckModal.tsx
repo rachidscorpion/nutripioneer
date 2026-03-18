@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../lib/api-client';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import ProGate from '../pro/ProGate';
 
 const { width } = Dimensions.get('window');
 
@@ -11,6 +12,7 @@ interface FoodCheckModalProps {
     isOpen: boolean;
     onClose: () => void;
     planId?: string;
+    isPro?: boolean;
 }
 
 type SearchMode = 'Generic' | 'Brand';
@@ -59,7 +61,7 @@ const BarcodeScanner = ({ onResult, onCancel }: { onResult: (result: string) => 
     );
 };
 
-export default function FoodCheckModal({ isOpen, onClose, planId }: FoodCheckModalProps) {
+export default function FoodCheckModal({ isOpen, onClose, planId, isPro = false }: FoodCheckModalProps) {
     const insets = useSafeAreaInsets();
     const [query, setQuery] = useState('');
     const [result, setResult] = useState<any>(null);
@@ -187,6 +189,19 @@ export default function FoodCheckModal({ isOpen, onClose, planId }: FoodCheckMod
                             <Ionicons name="close" size={20} color="#9ca3af" />
                         </TouchableOpacity>
                     </View>
+
+                    <ProGate
+                        isPro={isPro}
+                        feature="On-Demand Food Check"
+                        description="Search any food, scan barcodes, and get instant bioavailability analysis personalized to your conditions"
+                        benefits={[
+                            "AI-powered food safety analysis",
+                            "Barcode scanning",
+                            "Brand & restaurant search",
+                            "Add checked foods to your meal plan"
+                        ]}
+                        mode="block"
+                    >
 
                     {/* Tabs */}
                     <View style={styles.tabContainer}>
@@ -386,6 +401,7 @@ export default function FoodCheckModal({ isOpen, onClose, planId }: FoodCheckMod
                             </View>
                         )}
                     </ScrollView>
+                    </ProGate>
                 </View>
             </View>
         </Modal>

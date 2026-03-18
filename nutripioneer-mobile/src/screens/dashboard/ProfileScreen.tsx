@@ -6,6 +6,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 import { useTheme } from '../../context/ThemeContext';
+import ProGate from '../../components/pro/ProGate';
 
 const TABS = [
     { id: 'biometrics', label: 'Body', icon: 'user' },
@@ -521,6 +522,17 @@ export default function ProfileScreen() {
                     )}
 
                     {activeTab === 'nutrition' && (
+                        <ProGate
+                            isPro={user?.subscriptionStatus === 'active'}
+                            feature="Nutrition Limits"
+                            description="Customize your daily calorie and nutrient targets based on your dietitian's recommendations"
+                            benefits={[
+                                "Override AI-generated limits",
+                                "Set custom min/max values for all nutrients",
+                                "Adjust targets based on medical advice"
+                            ]}
+                            mode="readonly"
+                        >
                         <View style={styles.section}>
                             <Text style={[styles.sectionTitle, { color: theme.text }]}>Nutrition Limits</Text>
                             <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -623,6 +635,7 @@ export default function ProfileScreen() {
                                 )}
                             </View>
                         </View>
+                        </ProGate>
                     )}
 
                     {activeTab === 'settings' && (

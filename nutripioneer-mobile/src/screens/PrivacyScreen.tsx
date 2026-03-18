@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,16 +21,16 @@ export default function PrivacyScreen() {
                 <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
             >
                 <Text style={[styles.lastUpdated, { color: theme.textMuted }]}>Last Updated: March 17, 2026</Text>
 
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: theme.text }]}>1. Introduction</Text>
                     <Text style={[styles.text, { color: theme.textMuted }]}>
-                        Welcome to NutriPioneer. We are committed to protecting your personal information and your right to privacy. 
+                        Welcome to NutriPioneer. We are committed to protecting your personal information and your right to privacy.
                         This Privacy Policy explains what information we collect, how we use it, and your rights concerning your data.
                     </Text>
                 </View>
@@ -62,7 +63,7 @@ export default function PrivacyScreen() {
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: theme.text }]}>4. Data Sharing and Third Parties</Text>
                     <Text style={[styles.text, { color: theme.textMuted }]}>
-                        We may share anonymous, aggregate data with our nutrition APIs for recipe retrieval. 
+                        We may share anonymous, aggregate data with our nutrition APIs for recipe retrieval.
                         However, your personally identifiable medical profiles remain strictly contained within our secure database.
                     </Text>
                 </View>
@@ -70,7 +71,7 @@ export default function PrivacyScreen() {
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: theme.text }]}>5. Your Rights</Text>
                     <Text style={[styles.text, { color: theme.textMuted }]}>
-                        You have the right to access, update, or delete your personal information at any time. You can manage these settings 
+                        You have the right to access, update, or delete your personal information at any time. You can manage these settings
                         directly from your Profile or contact our support team.
                     </Text>
                 </View>

@@ -14,6 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 import { useTheme } from '../../context/ThemeContext';
+import ProGate from '../../components/pro/ProGate';
 
 export interface MenuItem {
     name: string;
@@ -270,10 +271,25 @@ const MenuResultsUI = ({ result, onReset, theme }: { result: MenuAnalysisResult;
 // --- Main Screen ---
 
 export default function RestaurantRescueScreen() {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [isScanning, setIsScanning] = useState(false);
     const [result, setResult] = useState<MenuAnalysisResult | null>(null);
+    const [isPro, setIsPro] = useState(false);
     const { theme } = useTheme();
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const response = await api.user.getProfile();
+                const u = response.data?.data || response.data;
+                setIsPro(u?.subscriptionStatus === 'active');
+            } catch (e) {
+                console.error('Failed to check subscription', e);
+            } finally {
+                setIsLoading(false);
+            }
+        })();
+    }, []);
 
     const handleScan = async (file: { uri: string; type: string; name: string }) => {
         setIsScanning(true);
@@ -304,11 +320,24 @@ export default function RestaurantRescueScreen() {
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-            {!result ? (
-                <MenuScannerUI onScan={handleScan} isScanning={isScanning} theme={theme} />
-            ) : (
-                <MenuResultsUI result={result} onReset={() => setResult(null)} theme={theme} />
-            )}
+            <ProGate
+                isPro={isPro}
+                feature="Restaurant Menu Scanner"
+                description="Scan any restaurant menu and get instant SAFE/CAUTION/AVOID analysis based on your health conditions"
+                benefits={[
+                    "AI-powered menu analysis",
+                    "Condition-specific recommendations",
+                    "Modification suggestions for each dish",
+                    "Works with any restaurant"
+                ]}
+                mode="block"
+            >
+                {!result ? (
+                    <MenuScannerUI onScan={handleScan} isScanning={isScanning} theme={theme} />
+                ) : (
+                    <MenuResultsUI result={result} onReset={() => setResult(null)} theme={theme} />
+                )}
+            </ProGate>
         </SafeAreaView>
     );
 }
