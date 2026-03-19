@@ -12,13 +12,15 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../lib/api-client';
-import apiClient, { setAuthToken } from '../lib/api-client';
+import apiClient from '../lib/api-client';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function VerifyEmailScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const { setTheme } = useTheme();
+    const authContext = useAuth();
     const { email, password } = route.params as { email: string; password: string };
 
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -65,16 +67,15 @@ export default function VerifyEmailScreen() {
             const sessionToken = loginRes.data?.session?.token;
 
             if (sessionToken) {
-                await setAuthToken(sessionToken);
-                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
-            }
-
-            // Check if user is onboarded
-            let isOnboarded = false;
-            try {
+                // Fetch user profile
                 const profileRes = await api.user.getProfile();
                 const user = profileRes.data?.data;
+
                 if (user) {
+                    await authContext.login(sessionToken, user);
+
+                    // Check if user is onboarded
+                    let isOnboarded = false;
                     if (user.preferences?.theme) {
                         setTheme(user.preferences.theme);
                     }
@@ -86,15 +87,18 @@ export default function VerifyEmailScreen() {
                             isOnboarded = true;
                         }
                     }
-                }
-            } catch (e) {
-                // User profile not found — go to onboarding
-            }
 
-            if (isOnboarded) {
-                navigation.reset({ index: 0, routes: [{ name: 'Dashboard' as never }] });
+                    if (isOnboarded) {
+                        navigation.reset({ index: 0, routes: [{ name: 'Dashboard' as never }] });
+                    } else {
+                        navigation.reset({ index: 0, routes: [{ name: 'OnboardingConditions' as never }] });
+                    }
+                } else {
+                    // No user data, go to onboarding
+                    navigation.reset({ index: 0, routes: [{ name: 'OnboardingConditions' as never }] });
+                }
             } else {
-                navigation.reset({ index: 0, routes: [{ name: 'OnboardingConditions' as never }] });
+                throw new Error('No session token received');
             }
         } catch (err: any) {
             console.error('OTP verify error:', err);

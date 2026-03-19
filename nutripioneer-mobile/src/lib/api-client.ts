@@ -3,6 +3,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.nutripioneer.com';
 
+// Global reference to auth logout function
+// This will be set by AuthContext to allow API client to trigger logout on 401
+let authLogoutCallback: (() => Promise<void>) | null = null;
+
+export const setAuthLogoutCallback = (callback: () => Promise<void>) => {
+    authLogoutCallback = callback;
+};
+
 if (!API_URL) {
     throw new Error('❌ EXPO_PUBLIC_API_URL environment variable is not set. Please check your .env file.');
 }
@@ -32,7 +40,21 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
+            // Clear token from storage
             await AsyncStorage.removeItem('auth_token');
+            await AsyncStorage.removeItem('user');
+
+            // Clear Authorization header
+            delete apiClient.defaults.headers.common['Authorization'];
+
+            // Trigger auth logout if callback is registered
+            if (authLogoutCallback) {
+                try {
+                    await authLogoutCallback();
+                } catch (logoutError) {
+                    console.error('Error during auth logout:', logoutError);
+                }
+            }
         }
         return Promise.reject(error);
     }
@@ -154,6 +176,7 @@ export const api = {
 
 export default apiClient;
 
+// Note: These functions are kept for backward compatibility but should be replaced with AuthContext
 export const setAuthToken = async (token: string) => {
     await AsyncStorage.setItem('auth_token', token);
 };

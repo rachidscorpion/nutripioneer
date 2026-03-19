@@ -6,6 +6,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import ProGate from '../../components/pro/ProGate';
 
 const TABS = [
@@ -20,6 +21,7 @@ const TABS = [
 export default function ProfileScreen() {
     const navigation = useNavigation();
     const { theme, setTheme, selectedTheme: themeContextSelectedTheme } = useTheme();
+    const { logout: authLogout } = useAuth();
 
     const [user, setUser] = useState<any>(null);
     const [data, setData] = useState({
@@ -159,7 +161,7 @@ export default function ProfileScreen() {
     };
 
     const handleLogout = async () => {
-        await AsyncStorage.removeItem('auth_token');
+        await authLogout();
         navigation.navigate('Login' as never);
     };
 

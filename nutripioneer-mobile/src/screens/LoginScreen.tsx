@@ -17,11 +17,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import apiClient, { api, setAuthToken } from '../lib/api-client';
+import apiClient, { api } from '../lib/api-client';
 import { useNavigation } from '@react-navigation/native';
 import { useOnboardingStore } from '../store/useOnboardingStore';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen() {
     const [loading, setLoading] = useState(false);
@@ -34,6 +35,7 @@ export default function LoginScreen() {
     const navigation = useNavigation();
     const updateData = useOnboardingStore(state => state.updateData);
     const { setTheme } = useTheme();
+    const authContext = useAuth();
 
     const player = useVideoPlayer(require('../../assets/background-video-1.mp4'), player => {
         player.loop = true;
@@ -69,44 +71,33 @@ export default function LoginScreen() {
 
             // The backend returns { success: true, user: {...}, session: { token: '...', expiresAt: '...' } }
             const sessionToken = response.data?.session?.token;
+            const user = response.data?.user;
 
-            if (sessionToken) {
-                // Must await this to ensure AsyncStorage has it
-                await setAuthToken(sessionToken);
-                // ALSO we need to manually set it on the axios instance for the very next request
-                // Because interceptors read from AsyncStorage which can be slow
-                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+            if (sessionToken && user) {
+                await authContext.login(sessionToken, user);
             } else {
-                console.error("No session token received from backend:", response.data);
+                console.error("No session token or user received from backend:", response.data);
+                Alert.alert('Error', 'Login succeeded but session data was incomplete. Please try again.');
+                setLoading(false);
+                return;
             }
 
             // Check if user is onboarded
             let isOnboarded = false;
-            let userName = '';
-            let userEmail = '';
-            try {
-                const profileRes = await api.user.getProfile();
-                const user = profileRes.data?.data;
+            let userName = user.name || '';
+            let userEmail = user.email || '';
 
-                if (user) {
-                    userName = user.name || '';
-                    userEmail = user.email || '';
+            if (user.preferences?.theme) {
+                setTheme(user.preferences.theme);
+            }
 
-                    if (user.preferences?.theme) {
-                        setTheme(user.preferences.theme);
-                    }
+            if (user.conditions) {
+                const parsedConditions = typeof user.conditions === 'string'
+                    ? JSON.parse(user.conditions)
+                    : user.conditions;
+                if (parsedConditions && parsedConditions.length > 0) {
+                    isOnboarded = true;
                 }
-
-                if (user?.conditions) {
-                    const parsedConditions = typeof user.conditions === 'string'
-                        ? JSON.parse(user.conditions)
-                        : user.conditions;
-                    if (parsedConditions && parsedConditions.length > 0) {
-                        isOnboarded = true;
-                    }
-                }
-            } catch (e: any) {
-                console.error('Error fetching profile to check onboarding', e.response?.status, e.message);
             }
 
             if (isOnboarded) {
@@ -175,8 +166,18 @@ export default function LoginScreen() {
             }
 
             if (sessionToken) {
-                await setAuthToken(sessionToken);
-                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+                // For email/password login, we need to fetch user profile first
+                const profileRes = await api.user.getProfile();
+                const user = profileRes.data?.data;
+
+                if (!user) {
+                    console.error("No user data received from backend");
+                    Alert.alert('Error', 'Login succeeded but user data was incomplete. Please try again.');
+                    setLoading(false);
+                    return;
+                }
+
+                await authContext.login(sessionToken, user);
             } else {
                 console.error("No session token received from backend");
                 Alert.alert('Error', 'Login succeeded but no session token was returned. Please try again.');
@@ -259,41 +260,33 @@ export default function LoginScreen() {
             const response = await api.auth.signInWithApple(payload.idToken, payload.user);
 
             const sessionToken = response.data?.session?.token;
+            const user = response.data?.user;
 
-            if (sessionToken) {
-                await setAuthToken(sessionToken);
-                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+            if (sessionToken && user) {
+                await authContext.login(sessionToken, user);
             } else {
-                console.error("No session token received from backend:", response.data);
+                console.error("No session token or user received from backend:", response.data);
+                Alert.alert('Error', 'Login succeeded but session data was incomplete. Please try again.');
+                setLoading(false);
+                return;
             }
 
             // Check if user is onboarded
             let isOnboarded = false;
-            let userName = '';
-            let userEmail = '';
-            try {
-                const profileRes = await api.user.getProfile();
-                const user = profileRes.data?.data;
+            let userName = user.name || '';
+            let userEmail = user.email || '';
 
-                if (user) {
-                    userName = user.name || '';
-                    userEmail = user.email || '';
+            if (user.preferences?.theme) {
+                setTheme(user.preferences.theme);
+            }
 
-                    if (user.preferences?.theme) {
-                        setTheme(user.preferences.theme);
-                    }
+            if (user.conditions) {
+                const parsedConditions = typeof user.conditions === 'string'
+                    ? JSON.parse(user.conditions)
+                    : user.conditions;
+                if (parsedConditions && parsedConditions.length > 0) {
+                    isOnboarded = true;
                 }
-
-                if (user?.conditions) {
-                    const parsedConditions = typeof user.conditions === 'string'
-                        ? JSON.parse(user.conditions)
-                        : user.conditions;
-                    if (parsedConditions && parsedConditions.length > 0) {
-                        isOnboarded = true;
-                    }
-                }
-            } catch (e: any) {
-                console.error('Error fetching profile to check onboarding', e.response?.status, e.message);
             }
 
             if (isOnboarded) {
