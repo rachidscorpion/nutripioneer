@@ -74,38 +74,48 @@ export default function LoginScreen() {
             const user = response.data?.user;
 
             if (sessionToken && user) {
-                await authContext.login(sessionToken, user);
+                // Fetch full profile BEFORE setting auth state (to avoid SplashScreen race condition)
+                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+                let fullUser = user;
+                try {
+                    const profileRes = await api.user.getProfile();
+                    if (profileRes.data?.data) {
+                        fullUser = profileRes.data.data;
+                    }
+                } catch (e: any) {
+                    console.error('Error fetching profile after Google sign-in', e.message);
+                }
+
+                // Now login with the full user data (including conditions)
+                await authContext.login(sessionToken, fullUser);
+
+                if (fullUser.preferences?.theme) {
+                    setTheme(fullUser.preferences.theme);
+                }
+
+                // Check if user is onboarded
+                let isOnboarded = false;
+                if (fullUser.conditions) {
+                    const parsedConditions = typeof fullUser.conditions === 'string'
+                        ? JSON.parse(fullUser.conditions)
+                        : fullUser.conditions;
+                    if (parsedConditions && parsedConditions.length > 0) {
+                        isOnboarded = true;
+                    }
+                }
+
+                if (isOnboarded) {
+                    (navigation as any).reset({ index: 0, routes: [{ name: 'Dashboard' }] });
+                } else {
+                    updateData('name', fullUser.name || '');
+                    updateData('email', fullUser.email || '');
+                    (navigation as any).reset({ index: 0, routes: [{ name: 'OnboardingConditions' }] });
+                }
             } else {
                 console.error("No session token or user received from backend:", response.data);
                 Alert.alert('Error', 'Login succeeded but session data was incomplete. Please try again.');
                 setLoading(false);
                 return;
-            }
-
-            // Check if user is onboarded
-            let isOnboarded = false;
-            let userName = user.name || '';
-            let userEmail = user.email || '';
-
-            if (user.preferences?.theme) {
-                setTheme(user.preferences.theme);
-            }
-
-            if (user.conditions) {
-                const parsedConditions = typeof user.conditions === 'string'
-                    ? JSON.parse(user.conditions)
-                    : user.conditions;
-                if (parsedConditions && parsedConditions.length > 0) {
-                    isOnboarded = true;
-                }
-            }
-
-            if (isOnboarded) {
-                navigation.navigate('Dashboard' as never);
-            } else {
-                updateData('name', userName);
-                updateData('email', userEmail);
-                navigation.navigate('OnboardingConditions' as never);
             }
         } catch (error: any) {
             if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -165,10 +175,11 @@ export default function LoginScreen() {
                 }
             }
 
+            let user: any = null;
             if (sessionToken) {
                 // For email/password login, we need to fetch user profile first
                 const profileRes = await api.user.getProfile();
-                const user = profileRes.data?.data;
+                user = profileRes.data?.data;
 
                 if (!user) {
                     console.error("No user data received from backend");
@@ -185,24 +196,15 @@ export default function LoginScreen() {
                 return;
             }
 
-            // Check if user is onboarded
+            // User profile was already fetched above — check if user is onboarded
             let isOnboarded = false;
-            let userName = '';
-            let userEmail = '';
-            try {
-                const profileRes = await api.user.getProfile();
-                const user = profileRes.data?.data;
 
-                if (user) {
-                    userName = user.name || '';
-                    userEmail = user.email || '';
-
-                    if (user.preferences?.theme) {
-                        setTheme(user.preferences.theme);
-                    }
+            if (user) {
+                if (user.preferences?.theme) {
+                    setTheme(user.preferences.theme);
                 }
 
-                if (user?.conditions) {
+                if (user.conditions) {
                     const parsedConditions = typeof user.conditions === 'string'
                         ? JSON.parse(user.conditions)
                         : user.conditions;
@@ -210,16 +212,14 @@ export default function LoginScreen() {
                         isOnboarded = true;
                     }
                 }
-            } catch (e: any) {
-                console.error('Error fetching profile to check onboarding', e.response?.status, e.message);
             }
 
             if (isOnboarded) {
-                navigation.navigate('Dashboard' as never);
+                (navigation as any).reset({ index: 0, routes: [{ name: 'Dashboard' }] });
             } else {
-                updateData('name', userName);
-                updateData('email', userEmail);
-                navigation.navigate('OnboardingConditions' as never);
+                updateData('name', user?.name || '');
+                updateData('email', user?.email || '');
+                (navigation as any).reset({ index: 0, routes: [{ name: 'OnboardingConditions' }] });
             }
         } catch (error: any) {
             console.error('Email Auth Error:', error);
@@ -263,38 +263,48 @@ export default function LoginScreen() {
             const user = response.data?.user;
 
             if (sessionToken && user) {
-                await authContext.login(sessionToken, user);
+                // Fetch full profile BEFORE setting auth state (to avoid SplashScreen race condition)
+                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+                let fullUser = user;
+                try {
+                    const profileRes = await api.user.getProfile();
+                    if (profileRes.data?.data) {
+                        fullUser = profileRes.data.data;
+                    }
+                } catch (e: any) {
+                    console.error('Error fetching profile after Apple sign-in', e.message);
+                }
+
+                // Now login with the full user data (including conditions)
+                await authContext.login(sessionToken, fullUser);
+
+                if (fullUser.preferences?.theme) {
+                    setTheme(fullUser.preferences.theme);
+                }
+
+                // Check if user is onboarded
+                let isOnboarded = false;
+                if (fullUser.conditions) {
+                    const parsedConditions = typeof fullUser.conditions === 'string'
+                        ? JSON.parse(fullUser.conditions)
+                        : fullUser.conditions;
+                    if (parsedConditions && parsedConditions.length > 0) {
+                        isOnboarded = true;
+                    }
+                }
+
+                if (isOnboarded) {
+                    (navigation as any).reset({ index: 0, routes: [{ name: 'Dashboard' }] });
+                } else {
+                    updateData('name', fullUser.name || '');
+                    updateData('email', fullUser.email || '');
+                    (navigation as any).reset({ index: 0, routes: [{ name: 'OnboardingConditions' }] });
+                }
             } else {
                 console.error("No session token or user received from backend:", response.data);
                 Alert.alert('Error', 'Login succeeded but session data was incomplete. Please try again.');
                 setLoading(false);
                 return;
-            }
-
-            // Check if user is onboarded
-            let isOnboarded = false;
-            let userName = user.name || '';
-            let userEmail = user.email || '';
-
-            if (user.preferences?.theme) {
-                setTheme(user.preferences.theme);
-            }
-
-            if (user.conditions) {
-                const parsedConditions = typeof user.conditions === 'string'
-                    ? JSON.parse(user.conditions)
-                    : user.conditions;
-                if (parsedConditions && parsedConditions.length > 0) {
-                    isOnboarded = true;
-                }
-            }
-
-            if (isOnboarded) {
-                navigation.navigate('Dashboard' as never);
-            } else {
-                updateData('name', userName);
-                updateData('email', userEmail);
-                navigation.navigate('OnboardingConditions' as never);
             }
         } catch (error: any) {
             if (error.code === 'ERR_REQUEST_CANCELED') {
@@ -479,6 +489,7 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
+        backgroundColor: '#000',
     },
     keyboardAvoidingView: {
         flex: 1,

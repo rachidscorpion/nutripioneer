@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -22,6 +22,7 @@ export default function ProfileScreen() {
     const navigation = useNavigation();
     const { theme, setTheme, selectedTheme: themeContextSelectedTheme } = useTheme();
     const { logout: authLogout } = useAuth();
+    const insets = useSafeAreaInsets();
 
     const [user, setUser] = useState<any>(null);
     const [data, setData] = useState({
@@ -258,9 +259,11 @@ export default function ProfileScreen() {
 
     if (loading) {
         return (
-            <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}>
-                <ActivityIndicator size="large" color={theme.primary} />
-            </View>
+            <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+                <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+            </SafeAreaView>
         );
     }
 
@@ -269,7 +272,7 @@ export default function ProfileScreen() {
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[styles.container, { backgroundColor: theme.background }]}>
-                <View style={styles.header}>
+                <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
                     <Text style={[styles.title, { color: theme.text }]}>My Profile</Text>
                     <TouchableOpacity onPress={handleSave} disabled={isSaving} style={[styles.saveBtn, { backgroundColor: theme.primary }]}>
                         {isSaving ? (

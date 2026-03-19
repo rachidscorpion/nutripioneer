@@ -15,7 +15,7 @@ import { api } from './api-client';
 
 // Replace with your actual App Store Connect product IDs
 const SUBSCRIPTION_SKUS = Platform.select({
-    ios: ['com.nutripioneer.pro.monthly', 'com.nutripioneer.pro.yearly'],
+    ios: ['PRO_1'],
     default: [] as string[],
 }) as string[];
 
@@ -67,6 +67,7 @@ export function destroyIAP(): void {
  */
 export async function fetchSubscriptionProducts(): Promise<Product[]> {
     const connected = await ensureConnection();
+
     if (!connected) {
         console.log('[IAP] skipping fetchProducts — no store connection');
         return [];

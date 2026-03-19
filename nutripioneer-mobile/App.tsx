@@ -13,11 +13,16 @@ import SynthesizingScreen from './src/screens/onboarding/SynthesizingScreen';
 import VerifyEmailScreen from './src/screens/VerifyEmailScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
 import TermsScreen from './src/screens/TermsScreen';
-import { ThemeProvider } from './src/context/ThemeContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 import { initIAP, destroyIAP } from './src/lib/iap';
 
 const Stack = createNativeStackNavigator();
+
+const ThemedStatusBar = () => {
+  const { isDark } = useTheme();
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
+};
 
 export default function App() {
   useEffect(() => {
@@ -49,7 +54,7 @@ export default function App() {
             <Stack.Screen name="Privacy" component={PrivacyScreen} />
             <Stack.Screen name="Terms" component={TermsScreen} />
           </Stack.Navigator>
-          <StatusBar style="auto" />
+          <ThemedStatusBar />
         </NavigationContainer>
       </ThemeProvider>
     </AuthProvider>

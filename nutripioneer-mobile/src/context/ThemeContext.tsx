@@ -46,7 +46,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const systemColorScheme = useColorScheme();
-  const [selectedTheme, setSelectedThemeState] = useState<ThemeType>('system');
+  const [selectedTheme, setSelectedThemeState] = useState<ThemeType>('dark');
 
   // Load initial theme preference from AsyncStorage
   useEffect(() => {
