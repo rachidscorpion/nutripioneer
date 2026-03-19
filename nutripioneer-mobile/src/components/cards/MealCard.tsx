@@ -91,7 +91,6 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
                     ? JSON.parse(meal.ingredients)
                     : meal.ingredients || [];
             } catch (e) {
-                console.log("Failed to parse ingredients", e);
                 Alert.alert('Info', 'No ingredients found');
                 setIsLoading(false);
                 return;

@@ -29,14 +29,13 @@ let isConnected = false;
  * Stores the promise so other functions can await it.
  */
 export async function initIAP(): Promise<void> {
+    console.log('[IAP] initIAP() called, Platform:', Platform.OS);
     connectionPromise = (async () => {
         try {
             const result = await initConnection();
             isConnected = true;
-            console.log('[IAP] connection initialised:', result);
-        } catch (err) {
+        } catch (err: any) {
             isConnected = false;
-            console.warn('[IAP] initConnection failed (expected on simulator without StoreKit config):', err);
         }
     })();
     return connectionPromise;
@@ -66,17 +65,22 @@ export function destroyIAP(): void {
  * Fetch available subscription products from the store.
  */
 export async function fetchSubscriptionProducts(): Promise<Product[]> {
+    console.log('[IAP] fetchSubscriptionProducts() called');
     const connected = await ensureConnection();
+    console.log('[IAP] ensureConnection returned:', connected);
 
     if (!connected) {
         console.log('[IAP] skipping fetchProducts — no store connection');
         return [];
     }
     try {
+        console.log('[IAP] calling react-native-iap fetchProducts with SKUs:', SUBSCRIPTION_SKUS);
         const products = await fetchProducts({ skus: SUBSCRIPTION_SKUS, type: 'subs' });
+        console.log('[IAP] fetchProducts returned:', JSON.stringify(products, null, 2));
         return (products || []) as Product[];
-    } catch (err) {
-        console.error('[IAP] fetchProducts error:', err);
+    } catch (err: any) {
+        console.error('[IAP] fetchProducts error:', err?.message || err);
+        console.error('[IAP] fetchProducts error details:', JSON.stringify(err, null, 2));
         return [];
     }
 }
