@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import styles from './LoginButton.module.css';
 
 interface LoginButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'outline' | 'ghost';
+    variant?: 'primary' | 'outline' | 'ghost' | 'success';
     isLoading?: boolean;
     icon?: React.ReactNode;
 }

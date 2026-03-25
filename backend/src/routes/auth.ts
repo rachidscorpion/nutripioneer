@@ -216,8 +216,7 @@ authRoutes.post('/sign-in/apple', async (c) => {
         );
 
         const allowedAudiences = [
-            process.env.APPLE_CLIENT_ID,
-            process.env.APPLE_MOBILE_CLIENT_ID || 'com.nutripioneer.mobile',
+            process.env.APPLE_CLIENT_ID, 'com.nutripioneer.mobile',
         ].filter(Boolean) as string[];
 
         const { payload } = await jwtVerify(idToken, jwtMatch, {

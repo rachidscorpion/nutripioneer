@@ -100,11 +100,6 @@ function TabItem({
         outputRange: [theme.card, theme.primary]
     });
 
-    const iconColor = animation.interpolate({
-        inputRange: [0, 1],
-        outputRange: [theme.textMuted, '#000000']
-    });
-
     const textOpacity = animation.interpolate({
         inputRange: [0, 0.7, 1],
         outputRange: [0, 0, 1]
@@ -129,9 +124,11 @@ function TabItem({
                 { width: containerWidth, backgroundColor: isFocused ? theme.card : 'transparent' }
             ]}>
                 <Animated.View style={[styles.iconCircle, { backgroundColor: circleColor }]}>
-                    <Animated.Text style={{ color: iconColor, fontFamily: 'Ionicons', fontSize: 22 }}>
-                        {String.fromCharCode(Ionicons.glyphMap[iconName] as unknown as number)}
-                    </Animated.Text>
+                    <Ionicons 
+                        name={iconName} 
+                        size={22} 
+                        color={isFocused ? '#000000' : theme.textMuted} 
+                    />
                 </Animated.View>
 
                 {isFocused && (

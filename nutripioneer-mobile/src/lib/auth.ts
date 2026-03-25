@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, AuthResponse } from '../types/api';
 
-const AUTH_TOKEN_KEY = '@nutripioneer_auth_token';
-const USER_KEY = '@nutripioneer_user';
+const AUTH_TOKEN_KEY = 'auth_token';
+const USER_KEY = 'user';
 
 export const authService = {
     async setAuth(token: string, user: User) {

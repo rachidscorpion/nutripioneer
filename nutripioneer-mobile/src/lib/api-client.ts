@@ -3,6 +3,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.nutripioneer.com';
 
+// Global reference to auth logout function
+// This will be set by AuthContext to allow API client to trigger logout on 401
+let authLogoutCallback: (() => Promise<void>) | null = null;
+
+export const setAuthLogoutCallback = (callback: () => Promise<void>) => {
+    authLogoutCallback = callback;
+};
+
 if (!API_URL) {
     throw new Error('❌ EXPO_PUBLIC_API_URL environment variable is not set. Please check your .env file.');
 }
@@ -23,6 +31,12 @@ apiClient.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        // Prevent aggressive caching on iOS for GET requests
+        if (config.method?.toLowerCase() === 'get') {
+            config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+            config.headers['Pragma'] = 'no-cache';
+            config.headers['Expires'] = '0';
+        }
         return config;
     },
     (error) => Promise.reject(error)
@@ -32,7 +46,21 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
+            // Clear token from storage
             await AsyncStorage.removeItem('auth_token');
+            await AsyncStorage.removeItem('user');
+
+            // Clear Authorization header
+            delete apiClient.defaults.headers.common['Authorization'];
+
+            // Trigger auth logout if callback is registered
+            if (authLogoutCallback) {
+                try {
+                    await authLogoutCallback();
+                } catch (logoutError) {
+                    console.error('Error during auth logout:', logoutError);
+                }
+            }
         }
         return Promise.reject(error);
     }
@@ -68,7 +96,7 @@ export const api = {
         generateNutritionLimits: () => apiClient.post('/users/profile/generate-limits', {}, {
             timeout: 60000,
         }),
-        validateReceipt: (data: { platform: string; receipt: string; productId: string }) =>
+        validateReceipt: (data: { platform: string; receipt: string; productId: string; originalTransactionId?: string }) =>
             apiClient.post('/users/validate-receipt', data),
     },
     plans: {
@@ -154,6 +182,7 @@ export const api = {
 
 export default apiClient;
 
+// Note: These functions are kept for backward compatibility but should be replaced with AuthContext
 export const setAuthToken = async (token: string) => {
     await AsyncStorage.setItem('auth_token', token);
 };

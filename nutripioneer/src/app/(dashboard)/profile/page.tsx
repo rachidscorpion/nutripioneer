@@ -7,7 +7,7 @@ import ProfileActions from '@/components/profile/ProfileActions';
 import LogoutButton from '@/components/profile/LogoutButton';
 import ManageSubscriptionButton from '@/components/profile/ManageSubscriptionButton';
 import { OnboardingData } from '@/types/user';
-import { ArrowRight, Send } from 'lucide-react';
+import { ArrowRight, Send, Mail } from 'lucide-react';
 import styles from '@/styles/Profile.module.css';
 
 export default async function ProfilePage(props: { searchParams: Promise<{ success?: string }> }) {
@@ -107,6 +107,12 @@ export default async function ProfilePage(props: { searchParams: Promise<{ succe
                 <Link href="/feedback" className={styles.feedbackBtn}>
                     <Send size={16} /> Submit Feedback
                 </Link>
+            </div>
+
+            <div className={styles.feedbackContainer} style={{ marginTop: '0.5rem' }}>
+                <a href="mailto:support@nutripioneer.com" className={styles.feedbackBtn}>
+                    <Mail size={16} /> Contact Support
+                </a>
             </div>
 
             <LogoutButton />

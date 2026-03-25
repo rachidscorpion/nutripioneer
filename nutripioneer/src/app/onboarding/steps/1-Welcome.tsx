@@ -276,7 +276,7 @@ export default function WelcomeStep() {
                     </div>
 
                     <LoginButton
-                        variant="primary"
+                        variant="success"
                         onClick={handleVerifyOtp}
                         disabled={loading || otp.join('').length !== 6}
                         isLoading={loading}
@@ -394,7 +394,7 @@ export default function WelcomeStep() {
                         </div>
 
                         <LoginButton
-                            variant="primary"
+                            variant="success"
                             onClick={() => {}} // form handles this
                             disabled={loading || !email || !password || (isSignUp && (!firstName || !lastName))}
                             isLoading={loading}

@@ -7,11 +7,13 @@ import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TimelineFeed from '../components/dashboard/TimelineFeed';
 import FoodCheckModal from '../components/modals/FoodCheckModal';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen() {
     const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
     const { theme } = useTheme();
+    const { user, refreshUser } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [plan, setPlan] = useState<any>(null);
@@ -22,6 +24,7 @@ export default function HomeScreen() {
     const fetchData = async () => {
         try {
             setError(null);
+            await refreshUser();
             const profileRes = await api.user.getProfile();
             setUserProfile(profileRes.data.data);
 
@@ -126,7 +129,7 @@ export default function HomeScreen() {
                 isOpen={isFoodModalOpen}
                 onClose={() => setIsFoodModalOpen(false)}
                 planId={plan?.id}
-                isPro={userProfile?.subscriptionStatus === 'active'}
+                isPro={user?.subscriptionStatus === 'active'}
             />
         </View>
     );

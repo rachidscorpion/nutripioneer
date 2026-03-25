@@ -7,6 +7,8 @@ import {
     getAvailablePurchases,
     finishTransaction,
     restorePurchases as restorePurchasesIAP,
+    purchaseUpdatedListener,
+    purchaseErrorListener,
     type Product,
     type Purchase,
     type PurchaseError,
@@ -15,13 +17,16 @@ import { api } from './api-client';
 
 // Replace with your actual App Store Connect product IDs
 const SUBSCRIPTION_SKUS = Platform.select({
-    ios: ['com.nutripioneer.pro.monthly', 'com.nutripioneer.pro.yearly'],
+    ios: ['PRO_1'],
     default: [] as string[],
 }) as string[];
 
 // Module-level state for IAP connection
 let connectionPromise: Promise<void> | null = null;
 let isConnected = false;
+let purchaseUpdateSubscription: any = null;
+let purchaseErrorSubscription: any = null;
+let currentPurchaseResolve: ((success: boolean) => void) | null = null;
 
 /**
  * Initialize the IAP connection.
@@ -33,10 +38,35 @@ export async function initIAP(): Promise<void> {
         try {
             const result = await initConnection();
             isConnected = true;
-            console.log('[IAP] connection initialised:', result);
-        } catch (err) {
+
+            // Set up listeners
+            purchaseUpdateSubscription = purchaseUpdatedListener(async (purchase: Purchase) => {
+                console.log('[IAP] purchaseUpdatedListener', purchase);
+                try {
+                    await validateAndFinishPurchase(purchase);
+                    if (currentPurchaseResolve) {
+                        currentPurchaseResolve(true);
+                        currentPurchaseResolve = null;
+                    }
+                } catch (err) {
+                    console.error('[IAP] validation error:', err);
+                    if (currentPurchaseResolve) {
+                        currentPurchaseResolve(false);
+                        currentPurchaseResolve = null;
+                    }
+                }
+            });
+
+            purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
+                console.warn('[IAP] purchaseErrorListener', error);
+                if (currentPurchaseResolve) {
+                    currentPurchaseResolve(false);
+                    currentPurchaseResolve = null;
+                }
+            });
+        } catch (err: any) {
             isConnected = false;
-            console.warn('[IAP] initConnection failed (expected on simulator without StoreKit config):', err);
+            console.error('[IAP] init error:', err);
         }
     })();
     return connectionPromise;
@@ -57,6 +87,14 @@ async function ensureConnection(): Promise<boolean> {
  * Tear down IAP connection. Call on app unmount / logout.
  */
 export function destroyIAP(): void {
+    if (purchaseUpdateSubscription) {
+        purchaseUpdateSubscription.remove();
+        purchaseUpdateSubscription = null;
+    }
+    if (purchaseErrorSubscription) {
+        purchaseErrorSubscription.remove();
+        purchaseErrorSubscription = null;
+    }
     connectionPromise = null;
     isConnected = false;
     endConnection();
@@ -66,16 +104,22 @@ export function destroyIAP(): void {
  * Fetch available subscription products from the store.
  */
 export async function fetchSubscriptionProducts(): Promise<Product[]> {
+    console.log('[IAP] fetchSubscriptionProducts() called');
     const connected = await ensureConnection();
+    console.log('[IAP] ensureConnection returned:', connected);
+
     if (!connected) {
         console.log('[IAP] skipping fetchProducts — no store connection');
         return [];
     }
     try {
+        console.log('[IAP] calling react-native-iap fetchProducts with SKUs:', SUBSCRIPTION_SKUS);
         const products = await fetchProducts({ skus: SUBSCRIPTION_SKUS, type: 'subs' });
+        console.log('[IAP] fetchProducts returned:', JSON.stringify(products, null, 2));
         return (products || []) as Product[];
-    } catch (err) {
-        console.error('[IAP] fetchProducts error:', err);
+    } catch (err: any) {
+        console.error('[IAP] fetchProducts error:', err?.message || err);
+        console.error('[IAP] fetchProducts error details:', JSON.stringify(err, null, 2));
         return [];
     }
 }
@@ -83,31 +127,39 @@ export async function fetchSubscriptionProducts(): Promise<Product[]> {
 /**
  * Initiate a subscription purchase for the given product ID.
  */
-export async function purchaseSubscription(productId: string): Promise<void> {
+export async function purchaseSubscription(productId: string): Promise<boolean> {
     const connected = await ensureConnection();
     if (!connected) {
         Alert.alert(
             'Store Unavailable',
             'In-app purchases are not available in this environment. Please test on a real device or configure StoreKit in Xcode.'
         );
-        return;
+        return false;
     }
-    try {
-        await requestPurchase({
-            type: 'subs',
-            request: {
-                apple: { sku: productId },
-            },
-        });
-    } catch (err: any) {
-        const code = err?.code || err?.responseCode;
-        if (code === 'E_USER_CANCELLED' || String(code) === '1') {
-            console.log('[IAP] user cancelled');
-        } else {
-            console.error('[IAP] requestPurchase error:', err);
-            Alert.alert('Purchase Failed', err.message || 'Could not complete purchase.');
+
+    return new Promise(async (resolve) => {
+        currentPurchaseResolve = resolve;
+        try {
+            await requestPurchase({
+                type: 'subs',
+                request: {
+                    apple: { sku: productId },
+                },
+            });
+        } catch (err: any) {
+            const code = err?.code || err?.responseCode;
+            if (code === 'E_USER_CANCELLED' || String(code) === '1') {
+                console.log('[IAP] user cancelled');
+            } else {
+                console.error('[IAP] requestPurchase error:', err);
+                Alert.alert('Purchase Failed', err.message || 'Could not complete purchase.');
+            }
+            if (currentPurchaseResolve) {
+                currentPurchaseResolve(false);
+                currentPurchaseResolve = null;
+            }
         }
-    }
+    });
 }
 
 /**
@@ -117,10 +169,12 @@ export async function validateAndFinishPurchase(purchase: Purchase): Promise<voi
     try {
         const token = purchase.purchaseToken || purchase.transactionId;
         if (token) {
+            const p = purchase as any;
             await api.user.validateReceipt({
-                platform: 'ios',
-                receipt: token,
+                platform: Platform.OS === 'ios' ? 'ios' : 'android',
+                receipt: p.transactionReceipt || token,
                 productId: purchase.productId,
+                originalTransactionId: p.originalTransactionIdentifierIOS || purchase.transactionId,
             });
             console.log('[IAP] receipt validated on backend');
         }
@@ -152,6 +206,7 @@ export async function restorePurchases(): Promise<boolean> {
                 platform: 'ios',
                 receipt: token || '',
                 productId: latest.productId,
+                originalTransactionId: (latest as any).originalTransactionIdentifierIOS || latest.transactionId,
             });
             return true;
         }

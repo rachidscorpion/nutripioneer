@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
     View,
@@ -14,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import ProGate from '../../components/pro/ProGate';
 
 export interface MenuItem {
@@ -271,26 +273,19 @@ const MenuResultsUI = ({ result, onReset, theme }: { result: MenuAnalysisResult;
 // --- Main Screen ---
 
 export default function RestaurantRescueScreen() {
-    const [isLoading, setIsLoading] = useState(true);
     const [isScanning, setIsScanning] = useState(false);
     const [result, setResult] = useState<MenuAnalysisResult | null>(null);
-    const [isPro, setIsPro] = useState(false);
     const { theme } = useTheme();
+    const { user, refreshUser } = useAuth();
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const response = await api.user.getProfile();
-                const u = response.data?.data || response.data;
-                setIsPro(u?.subscriptionStatus === 'active');
-            } catch (e) {
-                console.error('Failed to check subscription', e);
-            } finally {
-                setIsLoading(false);
-            }
-        })();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            refreshUser();
+        }, [refreshUser])
+    );
 
+    // Auth context stays instantly in sync when user subscribes
+    const isPro = user?.subscriptionStatus === 'active';
     const handleScan = async (file: { uri: string; type: string; name: string }) => {
         setIsScanning(true);
         try {
@@ -307,16 +302,6 @@ export default function RestaurantRescueScreen() {
             setIsScanning(false);
         }
     };
-
-    if (isLoading) {
-        return (
-            <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-                <View style={styles.center}>
-                    <ActivityIndicator size="large" color={theme.primary} />
-                </View>
-            </SafeAreaView>
-        );
-    }
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

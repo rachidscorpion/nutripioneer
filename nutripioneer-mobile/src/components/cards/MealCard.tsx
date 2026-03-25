@@ -91,7 +91,6 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
                     ? JSON.parse(meal.ingredients)
                     : meal.ingredients || [];
             } catch (e) {
-                console.log("Failed to parse ingredients", e);
                 Alert.alert('Info', 'No ingredients found');
                 setIsLoading(false);
                 return;
@@ -136,12 +135,12 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
     };
 
     const fallbackUrl = getFallbackImage();
-    const [imgSrc, setImgSrc] = useState(meal?.image || fallbackUrl);
+    const [imgSrc, setImgSrc] = useState(meal?.image);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Update image when meal changes
     useEffect(() => {
-        setImgSrc(meal?.image || fallbackUrl);
+        setImgSrc(meal?.image);
     }, [meal]);
 
     if (!meal) {

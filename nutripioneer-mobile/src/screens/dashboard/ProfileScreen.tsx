@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image, Linking } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import ProGate from '../../components/pro/ProGate';
 
 const TABS = [
@@ -20,6 +21,8 @@ const TABS = [
 export default function ProfileScreen() {
     const navigation = useNavigation();
     const { theme, setTheme, selectedTheme: themeContextSelectedTheme } = useTheme();
+    const { logout: authLogout, user: authUser, refreshUser } = useAuth();
+    const insets = useSafeAreaInsets();
 
     const [user, setUser] = useState<any>(null);
     const [data, setData] = useState({
@@ -58,6 +61,7 @@ export default function ProfileScreen() {
     const loadProfile = async () => {
         setLoading(true);
         try {
+            await refreshUser();
             const res = await api.user.getProfile();
             if (res.data) {
                 const u = res.data.data ? res.data.data : res.data;
@@ -159,7 +163,7 @@ export default function ProfileScreen() {
     };
 
     const handleLogout = async () => {
-        await AsyncStorage.removeItem('auth_token');
+        await authLogout();
         navigation.navigate('Login' as never);
     };
 
@@ -256,9 +260,11 @@ export default function ProfileScreen() {
 
     if (loading) {
         return (
-            <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}>
-                <ActivityIndicator size="large" color={theme.primary} />
-            </View>
+            <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+                <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+            </SafeAreaView>
         );
     }
 
@@ -267,7 +273,7 @@ export default function ProfileScreen() {
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[styles.container, { backgroundColor: theme.background }]}>
-                <View style={styles.header}>
+                <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
                     <Text style={[styles.title, { color: theme.text }]}>My Profile</Text>
                     <TouchableOpacity onPress={handleSave} disabled={isSaving} style={[styles.saveBtn, { backgroundColor: theme.primary }]}>
                         {isSaving ? (
@@ -291,8 +297,8 @@ export default function ProfileScreen() {
                         <Text style={[styles.profileName, { color: theme.text }]}>{user?.name || 'User'}</Text>
                         <Text style={[styles.profileEmail, { color: theme.textMuted }]}>{user?.email}</Text>
                         <View style={styles.badgeRow}>
-                            <View style={[styles.badge, user?.subscriptionStatus === 'active' ? styles.badgePro : styles.badgeStandard]}>
-                                <Text style={styles.badgeText}>{user?.subscriptionStatus === 'active' ? 'Pro Member' : 'Standard'}</Text>
+                            <View style={[styles.badge, authUser?.subscriptionStatus === 'active' ? styles.badgePro : styles.badgeStandard]}>
+                                <Text style={styles.badgeText}>{authUser?.subscriptionStatus === 'active' ? 'Pro Member' : 'Standard'}</Text>
                             </View>
                         </View>
                     </View>
@@ -523,7 +529,7 @@ export default function ProfileScreen() {
 
                     {activeTab === 'nutrition' && (
                         <ProGate
-                            isPro={user?.subscriptionStatus === 'active'}
+                            isPro={authUser?.subscriptionStatus === 'active'}
                             feature="Nutrition Limits"
                             description="Customize your daily calorie and nutrient targets based on your dietitian's recommendations"
                             benefits={[
@@ -533,108 +539,108 @@ export default function ProfileScreen() {
                             ]}
                             mode="readonly"
                         >
-                        <View style={styles.section}>
-                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Nutrition Limits</Text>
-                            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                                <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
-                                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: theme.primary + '33', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                                        <Feather name="shield" size={16} color={theme.primary} />
-                                    </View>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.text, marginBottom: 4 }}>Medical Nutrition Therapy</Text>
-                                        <Text style={{ fontSize: 12, color: theme.textMuted }}>
-                                            Customize your daily calorie and nutrient targets based on your dietitian's recommendations.
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                {isLoadingLimits ? (
-                                    <ActivityIndicator size="small" color={theme.primary} />
-                                ) : !nutritionLimits ? (
-                                    <Text style={[styles.emptyText, { color: theme.textMuted }]}>No nutrition limits generated yet. Complete your profile to generate them.</Text>
-                                ) : (
-                                    <View>
-                                        <View style={{ marginBottom: 24 }}>
-                                            <Text style={[styles.label, { fontSize: 16, color: theme.text }]}>Daily Calories</Text>
-                                            <View style={styles.row}>
-                                                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                                                    <Text style={[styles.label, { color: theme.text }]}>Min (kcal)</Text>
-                                                    <TextInput
-                                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
-                                                        keyboardType="numeric"
-                                                        value={String(nutritionLimits.daily_calories.min || '')}
-                                                        onChangeText={(v) => setNutritionLimits({
-                                                            ...nutritionLimits,
-                                                            daily_calories: { ...nutritionLimits.daily_calories, min: parseInt(v) || 0 }
-                                                        })}
-                                                    />
-                                                </View>
-                                                <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                                                    <Text style={[styles.label, { color: theme.text }]}>Max (kcal)</Text>
-                                                    <TextInput
-                                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
-                                                        keyboardType="numeric"
-                                                        value={String(nutritionLimits.daily_calories.max || '')}
-                                                        onChangeText={(v) => setNutritionLimits({
-                                                            ...nutritionLimits,
-                                                            daily_calories: { ...nutritionLimits.daily_calories, max: parseInt(v) || 0 }
-                                                        })}
-                                                    />
-                                                </View>
-                                            </View>
+                            <View style={styles.section}>
+                                <Text style={[styles.sectionTitle, { color: theme.text }]}>Nutrition Limits</Text>
+                                <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+                                        <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: theme.primary + '33', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                                            <Feather name="shield" size={16} color={theme.primary} />
                                         </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.text, marginBottom: 4 }}>Medical Nutrition Therapy</Text>
+                                            <Text style={{ fontSize: 12, color: theme.textMuted }}>
+                                                Customize your daily calorie and nutrient targets based on your dietitian's recommendations.
+                                            </Text>
+                                        </View>
+                                    </View>
 
-                                        {Object.entries(nutritionLimits.nutrients).map(([key, limit]: [string, any]) => {
-                                            if (limit.max === undefined && limit.min === undefined) return null;
-
-                                            return (
-                                                <View key={key} style={{ marginBottom: 16 }}>
-                                                    <Text style={[styles.label, { fontSize: 14, color: theme.text }]}>
-                                                        {limit.label || key} <Text style={{ color: theme.textMuted, fontSize: 12 }}>({limit.unit})</Text>
-                                                    </Text>
-                                                    <View style={styles.row}>
-                                                        {limit.min !== undefined && (
-                                                            <View style={[styles.inputGroup, { flex: 1, marginRight: limit.max !== undefined ? 8 : 0 }]}>
-                                                                <Text style={[styles.label, { color: theme.text }]}>Min</Text>
-                                                                <TextInput
-                                                                    style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
-                                                                    keyboardType="numeric"
-                                                                    value={String(limit.min || '')}
-                                                                    onChangeText={(v) => setNutritionLimits({
-                                                                        ...nutritionLimits,
-                                                                        nutrients: {
-                                                                            ...nutritionLimits.nutrients,
-                                                                            [key]: { ...limit, min: parseInt(v) || 0 }
-                                                                        }
-                                                                    })}
-                                                                />
-                                                            </View>
-                                                        )}
-                                                        {limit.max !== undefined && (
-                                                            <View style={[styles.inputGroup, { flex: 1, marginLeft: limit.min !== undefined ? 8 : 0 }]}>
-                                                                <Text style={[styles.label, { color: theme.text }]}>Max</Text>
-                                                                <TextInput
-                                                                    style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
-                                                                    keyboardType="numeric"
-                                                                    value={String(limit.max || '')}
-                                                                    onChangeText={(v) => setNutritionLimits({
-                                                                        ...nutritionLimits,
-                                                                        nutrients: {
-                                                                            ...nutritionLimits.nutrients,
-                                                                            [key]: { ...limit, max: parseInt(v) || 0 }
-                                                                        }
-                                                                    })}
-                                                                />
-                                                            </View>
-                                                        )}
+                                    {isLoadingLimits ? (
+                                        <ActivityIndicator size="small" color={theme.primary} />
+                                    ) : !nutritionLimits ? (
+                                        <Text style={[styles.emptyText, { color: theme.textMuted }]}>No nutrition limits generated yet. Complete your profile to generate them.</Text>
+                                    ) : (
+                                        <View>
+                                            <View style={{ marginBottom: 24 }}>
+                                                <Text style={[styles.label, { fontSize: 16, color: theme.text }]}>Daily Calories</Text>
+                                                <View style={styles.row}>
+                                                    <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
+                                                        <Text style={[styles.label, { color: theme.text }]}>Min (kcal)</Text>
+                                                        <TextInput
+                                                            style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
+                                                            keyboardType="numeric"
+                                                            value={String(nutritionLimits.daily_calories.min || '')}
+                                                            onChangeText={(v) => setNutritionLimits({
+                                                                ...nutritionLimits,
+                                                                daily_calories: { ...nutritionLimits.daily_calories, min: parseInt(v) || 0 }
+                                                            })}
+                                                        />
+                                                    </View>
+                                                    <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
+                                                        <Text style={[styles.label, { color: theme.text }]}>Max (kcal)</Text>
+                                                        <TextInput
+                                                            style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
+                                                            keyboardType="numeric"
+                                                            value={String(nutritionLimits.daily_calories.max || '')}
+                                                            onChangeText={(v) => setNutritionLimits({
+                                                                ...nutritionLimits,
+                                                                daily_calories: { ...nutritionLimits.daily_calories, max: parseInt(v) || 0 }
+                                                            })}
+                                                        />
                                                     </View>
                                                 </View>
-                                            );
-                                        })}
-                                    </View>
-                                )}
+                                            </View>
+
+                                            {Object.entries(nutritionLimits.nutrients).map(([key, limit]: [string, any]) => {
+                                                if (limit.max === undefined && limit.min === undefined) return null;
+
+                                                return (
+                                                    <View key={key} style={{ marginBottom: 16 }}>
+                                                        <Text style={[styles.label, { fontSize: 14, color: theme.text }]}>
+                                                            {limit.label || key} <Text style={{ color: theme.textMuted, fontSize: 12 }}>({limit.unit})</Text>
+                                                        </Text>
+                                                        <View style={styles.row}>
+                                                            {limit.min !== undefined && (
+                                                                <View style={[styles.inputGroup, { flex: 1, marginRight: limit.max !== undefined ? 8 : 0 }]}>
+                                                                    <Text style={[styles.label, { color: theme.text }]}>Min</Text>
+                                                                    <TextInput
+                                                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
+                                                                        keyboardType="numeric"
+                                                                        value={String(limit.min || '')}
+                                                                        onChangeText={(v) => setNutritionLimits({
+                                                                            ...nutritionLimits,
+                                                                            nutrients: {
+                                                                                ...nutritionLimits.nutrients,
+                                                                                [key]: { ...limit, min: parseInt(v) || 0 }
+                                                                            }
+                                                                        })}
+                                                                    />
+                                                                </View>
+                                                            )}
+                                                            {limit.max !== undefined && (
+                                                                <View style={[styles.inputGroup, { flex: 1, marginLeft: limit.min !== undefined ? 8 : 0 }]}>
+                                                                    <Text style={[styles.label, { color: theme.text }]}>Max</Text>
+                                                                    <TextInput
+                                                                        style={[styles.input, { backgroundColor: theme.background, borderColor: theme.border, color: theme.text }]}
+                                                                        keyboardType="numeric"
+                                                                        value={String(limit.max || '')}
+                                                                        onChangeText={(v) => setNutritionLimits({
+                                                                            ...nutritionLimits,
+                                                                            nutrients: {
+                                                                                ...nutritionLimits.nutrients,
+                                                                                [key]: { ...limit, max: parseInt(v) || 0 }
+                                                                            }
+                                                                        })}
+                                                                    />
+                                                                </View>
+                                                            )}
+                                                        </View>
+                                                    </View>
+                                                );
+                                            })}
+                                        </View>
+                                    )}
+                                </View>
                             </View>
-                        </View>
                         </ProGate>
                     )}
 
@@ -662,6 +668,16 @@ export default function ProfileScreen() {
                                     ))}
                                 </View>
                             </View>
+
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Support</Text>
+
+                            <TouchableOpacity 
+                                style={[styles.logoutBtn, { marginBottom: 24, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }]} 
+                                onPress={() => Linking.openURL('mailto:support@nutripioneer.com')}
+                            >
+                                <Feather name="mail" size={18} color={theme.text} />
+                                <Text style={[styles.logoutBtnText, { color: theme.text }]}>Contact Support</Text>
+                            </TouchableOpacity>
 
                             <Text style={[styles.sectionTitle, { color: theme.text }]}>Account Management</Text>
 
@@ -702,7 +718,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingTop: 20,
         paddingBottom: 10,
     },
     title: {
