@@ -6,15 +6,27 @@ import GroceryScreen from '../screens/dashboard/GroceryScreen';
 import RestaurantRescueScreen from '../screens/dashboard/RestaurantRescueScreen';
 import ProfileScreen from '../screens/dashboard/ProfileScreen';
 import CustomTabBar from '../components/navigation/CustomTabBar';
+import { useTheme } from '../context/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
 export default function DashboardTabs() {
+    const { theme } = useTheme();
+
     return (
         <Tab.Navigator
             tabBar={(props) => <CustomTabBar {...props} />}
+            detachInactiveScreens={false}
             screenOptions={{
                 headerShown: false,
+                animation: 'shift',
+                sceneStyle: { backgroundColor: theme.background },
+                transitionSpec: {
+                    animation: 'timing',
+                    config: {
+                        duration: 150, // Makes the transition noticeably quicker
+                    },
+                },
             }}
         >
             <Tab.Screen name="Home" component={HomeScreen} />

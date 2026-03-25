@@ -17,11 +17,53 @@ import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 import { initIAP, destroyIAP } from './src/lib/iap';
 
+import { DefaultTheme, DarkTheme } from '@react-navigation/native';
+
 const Stack = createNativeStackNavigator();
 
 const ThemedStatusBar = () => {
   const { isDark } = useTheme();
   return <StatusBar style={isDark ? 'light' : 'dark'} />;
+};
+
+const RootNavigator = () => {
+  const { theme, isDark } = useTheme();
+
+  const navigationTheme = {
+    ...(isDark ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDark ? DarkTheme.colors : DefaultTheme.colors),
+      background: theme.background,
+      card: theme.card,
+      text: theme.text,
+      border: theme.border,
+      primary: theme.primary,
+    },
+  };
+
+  return (
+    <NavigationContainer theme={navigationTheme}>
+      <Stack.Navigator
+        initialRouteName="Splash"
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="Splash" component={SplashScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
+        <Stack.Screen name="Dashboard" component={DashboardTabs} />
+        <Stack.Screen name="OnboardingConditions" component={ConditionsScreen} />
+        <Stack.Screen name="OnboardingBiometrics" component={BiometricsScreen} />
+        <Stack.Screen name="OnboardingMedical" component={MedicalScreen} />
+        <Stack.Screen name="OnboardingDietary" component={DietaryScreen} />
+        <Stack.Screen name="OnboardingSynthesizing" component={SynthesizingScreen} />
+        <Stack.Screen name="Privacy" component={PrivacyScreen} />
+        <Stack.Screen name="Terms" component={TermsScreen} />
+      </Stack.Navigator>
+      <ThemedStatusBar />
+    </NavigationContainer>
+  );
 };
 
 export default function App() {
@@ -35,27 +77,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="Splash"
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen name="Splash" component={SplashScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
-            <Stack.Screen name="Dashboard" component={DashboardTabs} />
-            <Stack.Screen name="OnboardingConditions" component={ConditionsScreen} />
-            <Stack.Screen name="OnboardingBiometrics" component={BiometricsScreen} />
-            <Stack.Screen name="OnboardingMedical" component={MedicalScreen} />
-            <Stack.Screen name="OnboardingDietary" component={DietaryScreen} />
-            <Stack.Screen name="OnboardingSynthesizing" component={SynthesizingScreen} />
-            <Stack.Screen name="Privacy" component={PrivacyScreen} />
-            <Stack.Screen name="Terms" component={TermsScreen} />
-          </Stack.Navigator>
-          <ThemedStatusBar />
-        </NavigationContainer>
+        <RootNavigator />
       </ThemeProvider>
     </AuthProvider>
   );
