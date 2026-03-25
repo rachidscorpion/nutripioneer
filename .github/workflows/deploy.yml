@@ -114,6 +114,8 @@ jobs:
             echo '      - APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}' >> docker-compose.prod.yml
             echo '      - APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}' >> docker-compose.prod.yml
             echo '      - APPLE_PRIVATE_KEY=${{ secrets.APPLE_PRIVATE_KEY }}' >> docker-compose.prod.yml
+            echo '      - ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}' >> docker-compose.prod.yml
+            echo '      - ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}' >> docker-compose.prod.yml
             echo '    volumes:' >> docker-compose.prod.yml
             echo '      - backend_data:/app/data' >> docker-compose.prod.yml
             echo '    networks:' >> docker-compose.prod.yml
