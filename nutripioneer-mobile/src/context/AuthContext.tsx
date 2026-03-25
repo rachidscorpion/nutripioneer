@@ -3,6 +3,7 @@ import { authService } from '../lib/auth';
 import { User } from '../types/api';
 import apiClient, { setAuthLogoutCallback } from '../lib/api-client';
 import { api } from '../lib/api-client';
+import { AppState } from 'react-native';
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +13,7 @@ interface AuthContextType {
   login: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -92,6 +94,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     restoreSession();
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (!token) return;
+    try {
+      const profileRes = await api.user.getProfile();
+      const validUser = profileRes.data?.data;
+      if (validUser) {
+        setUser(validUser);
+      }
+    } catch (e) {
+      console.error('Failed to refresh user:', e);
+    }
+  }, [token]);
+
+  // Refresh user state when app comes to foreground
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && token) {
+        refreshUser();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [token, refreshUser]);
+
   // Register logout callback with API client for 401 handling
   useEffect(() => {
     setAuthLogoutCallback(logout);
@@ -110,6 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     restoreSession,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

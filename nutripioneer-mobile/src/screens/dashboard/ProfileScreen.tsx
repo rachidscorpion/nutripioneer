@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image, Linking } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -21,7 +21,7 @@ const TABS = [
 export default function ProfileScreen() {
     const navigation = useNavigation();
     const { theme, setTheme, selectedTheme: themeContextSelectedTheme } = useTheme();
-    const { logout: authLogout } = useAuth();
+    const { logout: authLogout, user: authUser, refreshUser } = useAuth();
     const insets = useSafeAreaInsets();
 
     const [user, setUser] = useState<any>(null);
@@ -61,6 +61,7 @@ export default function ProfileScreen() {
     const loadProfile = async () => {
         setLoading(true);
         try {
+            await refreshUser();
             const res = await api.user.getProfile();
             if (res.data) {
                 const u = res.data.data ? res.data.data : res.data;
@@ -296,8 +297,8 @@ export default function ProfileScreen() {
                         <Text style={[styles.profileName, { color: theme.text }]}>{user?.name || 'User'}</Text>
                         <Text style={[styles.profileEmail, { color: theme.textMuted }]}>{user?.email}</Text>
                         <View style={styles.badgeRow}>
-                            <View style={[styles.badge, user?.subscriptionStatus === 'active' ? styles.badgePro : styles.badgeStandard]}>
-                                <Text style={styles.badgeText}>{user?.subscriptionStatus === 'active' ? 'Pro Member' : 'Standard'}</Text>
+                            <View style={[styles.badge, authUser?.subscriptionStatus === 'active' ? styles.badgePro : styles.badgeStandard]}>
+                                <Text style={styles.badgeText}>{authUser?.subscriptionStatus === 'active' ? 'Pro Member' : 'Standard'}</Text>
                             </View>
                         </View>
                     </View>
@@ -528,7 +529,7 @@ export default function ProfileScreen() {
 
                     {activeTab === 'nutrition' && (
                         <ProGate
-                            isPro={user?.subscriptionStatus === 'active'}
+                            isPro={authUser?.subscriptionStatus === 'active'}
                             feature="Nutrition Limits"
                             description="Customize your daily calorie and nutrient targets based on your dietitian's recommendations"
                             benefits={[
@@ -667,6 +668,16 @@ export default function ProfileScreen() {
                                     ))}
                                 </View>
                             </View>
+
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Support</Text>
+
+                            <TouchableOpacity 
+                                style={[styles.logoutBtn, { marginBottom: 24, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }]} 
+                                onPress={() => Linking.openURL('mailto:support@nutripioneer.com')}
+                            >
+                                <Feather name="mail" size={18} color={theme.text} />
+                                <Text style={[styles.logoutBtnText, { color: theme.text }]}>Contact Support</Text>
+                            </TouchableOpacity>
 
                             <Text style={[styles.sectionTitle, { color: theme.text }]}>Account Management</Text>
 

@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, Alert, View } fr
 import { Ionicons } from '@expo/vector-icons';
 import { fetchSubscriptionProducts, purchaseSubscription, restorePurchases } from '../../lib/iap';
 import type { Product } from 'react-native-iap';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * SubscribeButton — triggers the iOS In-App Purchase flow.
@@ -13,6 +14,7 @@ export default function SubscribeButton() {
     const [isLoading, setIsLoading] = useState(false);
     const [product, setProduct] = useState<Product | null>(null);
     const [priceLabel, setPriceLabel] = useState('Upgrade to Pro');
+    const { restoreSession } = useAuth();
 
     useEffect(() => {
         (async () => {
@@ -38,7 +40,11 @@ export default function SubscribeButton() {
         }
         setIsLoading(true);
         try {
-            await purchaseSubscription(product.id);
+            const success = await purchaseSubscription(product.id);
+            if (success) {
+                await restoreSession();
+                Alert.alert('Success', 'Welcome to Nutri Pioneer PRO!');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -49,6 +55,7 @@ export default function SubscribeButton() {
         try {
             const restored = await restorePurchases();
             if (restored) {
+                await restoreSession();
                 Alert.alert('Success', 'Your subscription has been restored!');
             } else {
                 Alert.alert('No Purchases Found', 'We could not find a previous subscription on this Apple ID.');

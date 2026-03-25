@@ -31,6 +31,12 @@ apiClient.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        // Prevent aggressive caching on iOS for GET requests
+        if (config.method?.toLowerCase() === 'get') {
+            config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+            config.headers['Pragma'] = 'no-cache';
+            config.headers['Expires'] = '0';
+        }
         return config;
     },
     (error) => Promise.reject(error)
@@ -90,7 +96,7 @@ export const api = {
         generateNutritionLimits: () => apiClient.post('/users/profile/generate-limits', {}, {
             timeout: 60000,
         }),
-        validateReceipt: (data: { platform: string; receipt: string; productId: string }) =>
+        validateReceipt: (data: { platform: string; receipt: string; productId: string; originalTransactionId?: string }) =>
             apiClient.post('/users/validate-receipt', data),
     },
     plans: {

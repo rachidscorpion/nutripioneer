@@ -63,6 +63,24 @@
     box-shadow: none;
 }
 
+.success {
+    background: #61d588;
+    color: white;
+    border: 1px solid #61d588;
+}
+
+.success:hover:not(:disabled) {
+    background: #4ab86d;
+    color: white;
+}
+
+.success:disabled {
+    background-color: #61d588;
+    border-color: #61d588;
+    color: white;
+    opacity: 0.5;
+}
+
 .loadingSpinner {
     animation: spin 1s linear infinite;
 }

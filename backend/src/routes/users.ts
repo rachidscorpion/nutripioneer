@@ -29,6 +29,9 @@ users.post('/profile/generate-limits', authMiddleware, (c) => usersController.ge
 // POST /api/users/profile/subscription/sync - Sync subscription status
 users.post('/profile/subscription/sync', authMiddleware, (c) => usersController.syncSubscription(c));
 
+// POST /api/users/validate-receipt - Validate native app purchase receipt
+users.post('/validate-receipt', authMiddleware, (c) => usersController.validateReceipt(c));
+
 // DELETE /api/users/test-account - Delete test account
 users.delete('/test-account', authMiddleware, (c) => usersController.deleteTestAccount(c));
 

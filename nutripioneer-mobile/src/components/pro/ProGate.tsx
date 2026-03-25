@@ -54,7 +54,7 @@ export default function ProGate({
                     <View style={styles.benefitsList}>
                         {benefits.map((benefit, idx) => (
                             <View key={idx} style={styles.benefitRow}>
-                                <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                                <Ionicons name="checkmark-circle" size={16} color="#10b981" style={{ marginTop: 2 }} />
                                 <Text style={styles.benefitText}>{benefit}</Text>
                             </View>
                         ))}
@@ -145,17 +145,22 @@ const styles = StyleSheet.create({
     benefitsList: {
         width: '100%',
         marginBottom: 20,
+        alignItems: 'center',
     },
     benefitRow: {
         flexDirection: 'row',
-        alignItems: 'center',
+        direction: 'ltr',
+        alignItems: 'flex-start',
         marginBottom: 10,
+        width: '100%',
+        justifyContent: 'flex-start',
     },
     benefitText: {
         color: '#d1d5db',
         fontSize: 14,
         marginLeft: 10,
-        flex: 1,
+        flexShrink: 1,
+        textAlign: 'left',
     },
     ctaSection: {
         width: '100%',

@@ -349,6 +349,29 @@ export class UsersController {
             message: 'Account deleted successfully',
         });
     }
+
+    /**
+     * Validate native purchase receipt and update subscription status
+     */
+    async validateReceipt(c: Context) {
+        const userId = c.get('userId');
+        const body = await c.req.json();
+        const { platform, receipt, productId, originalTransactionId } = body;
+
+        if (!receipt || !productId) {
+            return c.json({
+                success: false,
+                message: 'Receipt and productId are required',
+            }, 400);
+        }
+
+        const result = await usersService.validateReceipt(userId, { platform, receipt, productId, originalTransactionId });
+
+        return c.json({
+            success: true,
+            data: result,
+        });
+    }
 }
 
 export const usersController = new UsersController();

@@ -387,6 +387,26 @@ export class UsersService {
             return { status: user.subscriptionStatus || 'inactive', error: 'Sync failed' };
         }
     }
+
+    async validateReceipt(userId: string, data: { platform: string; receipt: string; productId: string; originalTransactionId?: string }) {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) throw new ApiError(404, 'User not found');
+
+        // Note: For a production app, verify the receipt payload using an Apple/Google verification service
+        // Since we are mocking Sandbox verification, any receipt validates success.
+        
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                subscriptionStatus: 'active',
+                // For Mobile IAP, we store a structured ID that helps webhooks find the user
+                // e.g. "ios_orgTxId_174242...". We prefer originalTransactionId if available from client.
+                polarSubscriptionId: `${data.platform}_${data.originalTransactionId || 'manual'}_${Date.now()}`
+            }
+        });
+
+        return { status: 'active', productId: data.productId };
+    }
 }
 
 export const usersService = new UsersService();

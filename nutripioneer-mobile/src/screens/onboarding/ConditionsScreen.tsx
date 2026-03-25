@@ -117,7 +117,7 @@ export default function ConditionsScreen() {
 
     const handleBack = () => {
         prevStep();
-        navigation.goBack();
+        navigation.navigate('Login' as never);
     };
 
     return (
