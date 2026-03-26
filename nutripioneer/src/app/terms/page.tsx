@@ -81,6 +81,7 @@ export default function TermsAndConditionsPage() {
         <div className={styles.footerLinks}>
           <Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link>
           <Link href="/terms" className={styles.footerLink}>Terms & Conditions</Link>
+          <Link href="/support" className={styles.footerLink}>Support</Link>
         </div>
         <p className={styles.footerCopyright}>&copy; {new Date().getFullYear()} NutriPioneer. All rights reserved.</p>
       </footer>
