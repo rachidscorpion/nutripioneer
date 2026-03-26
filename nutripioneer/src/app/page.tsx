@@ -196,6 +196,7 @@ export default async function Page() {
         <div className={styles.footerLinks} style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
           <Link href="/privacy" className={styles.navLink}>Privacy Policy</Link>
           <Link href="/terms" className={styles.navLink}>Terms & Conditions</Link>
+          <Link href="/support" className={styles.navLink}>Support</Link>
         </div>
         <p>&copy; {new Date().getFullYear()} NutriPioneer. All rights reserved.</p>
       </footer>

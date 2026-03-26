@@ -15,3 +15,7 @@ nutripioneer-mobile/node_modules
 .env
 .env.local
 .env.production
+
+.vscode
+backend/prisma/dev.db-wal
+backend/prisma/dev.db-shm

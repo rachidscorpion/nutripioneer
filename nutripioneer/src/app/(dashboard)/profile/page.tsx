@@ -110,9 +110,9 @@ export default async function ProfilePage(props: { searchParams: Promise<{ succe
             </div>
 
             <div className={styles.feedbackContainer} style={{ marginTop: '0.5rem' }}>
-                <a href="mailto:support@nutripioneer.com" className={styles.feedbackBtn}>
-                    <Mail size={16} /> Contact Support
-                </a>
+                <Link href="/support" className={styles.feedbackBtn}>
+                    <Mail size={16} /> Support & FAQ
+                </Link>
             </div>
 
             <LogoutButton />
