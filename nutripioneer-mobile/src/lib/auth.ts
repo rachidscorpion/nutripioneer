@@ -38,7 +38,7 @@ export const authService = {
 
     async clearAuth() {
         try {
-            await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, USER_KEY]);
+            await AsyncStorage.clear();
         } catch (error) {
             console.error('Error clearing auth data:', error);
             throw error;

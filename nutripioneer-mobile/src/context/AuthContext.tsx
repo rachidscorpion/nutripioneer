@@ -4,6 +4,8 @@ import { User } from '../types/api';
 import apiClient, { setAuthLogoutCallback } from '../lib/api-client';
 import { api } from '../lib/api-client';
 import { AppState } from 'react-native';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { useOnboardingStore } from '../store/useOnboardingStore';
 
 interface AuthContextType {
   user: User | null;
@@ -39,6 +41,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = useCallback(async () => {
+    try {
+      await api.auth.logout();
+    } catch (e) {
+      console.log('Backend logout failed or already logged out', e);
+    }
+    
+    // Clear Google Sign-In session if applicable
+    try {
+      await GoogleSignin.signOut();
+    } catch (e) {
+      console.log('Google Sign-In clear failed', e);
+    }
+
+    // Reset Zustand onboarding store
+    useOnboardingStore.getState().reset();
+
     await authService.clearAuth();
     setToken(null);
     setUser(null);
