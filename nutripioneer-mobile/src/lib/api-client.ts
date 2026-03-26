@@ -27,9 +27,11 @@ const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
     async (config) => {
-        const token = await AsyncStorage.getItem('auth_token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        if (!config.headers.Authorization) {
+            const token = await AsyncStorage.getItem('auth_token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
         }
         // Prevent aggressive caching on iOS for GET requests
         if (config.method?.toLowerCase() === 'get') {

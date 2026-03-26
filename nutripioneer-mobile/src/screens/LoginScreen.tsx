@@ -178,6 +178,7 @@ export default function LoginScreen() {
             let user: any = null;
             if (sessionToken) {
                 // For email/password login, we need to fetch user profile first
+                apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
                 const profileRes = await api.user.getProfile();
                 user = profileRes.data?.data;
 
