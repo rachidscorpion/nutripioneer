@@ -2,7 +2,7 @@
   "expo": {
     "name": "nutripioneer-mobile",
     "slug": "nutripioneer-mobile",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nutripioneer.mobile",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -40,7 +40,8 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Nutripioneer to use your location to find nearby grocery stores."
+          "locationAlwaysAndWhenInUsePermission": "Allow Nutripioneer to use your location to find nearby grocery stores.",
+          "locationForegroundPermission": "Allow Nutripioneer to use your location to find nearby grocery stores."
         }
       ],
       "@react-native-community/datetimepicker",
@@ -48,8 +49,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Nutripioneer to access your photos to scan restaurant menus.",
-          "cameraPermission": "Allow Nutripioneer to use your camera to scan restaurant menus."
+          "photosPermission": "Allow NutriPioneer to access your photos to scan restaurant menus so our third-party AI (OpenAI) can analyze them for dietary safety.",
+          "cameraPermission": "Allow NutriPioneer to use your camera to photograph restaurant menus so our third-party AI (OpenAI) can analyze them for dietary safety."
         }
       ]
     ],

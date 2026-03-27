@@ -11,10 +11,14 @@ import {
     ActivityIndicator,
     Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
+import NPModal from '../../components/modals/NPModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 const COMMON_CONDITIONS = [
     { title: 'Type 2 Diabetes', icdCode: '5A11', searchTerm: 'Type 2 Diabetes Mellitus', icon: 'water-outline' },
@@ -25,6 +29,7 @@ const COMMON_CONDITIONS = [
 
 export default function ConditionsScreen() {
     const navigation = useNavigation();
+    const isFocused = useIsFocused();
     const { conditions, updateData, nextStep, prevStep } = useOnboardingStore();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -33,6 +38,23 @@ export default function ConditionsScreen() {
 
     // We store full objects for display, but persist slugs in the store
     const [selectedObjects, setSelectedObjects] = useState<any[]>([]);
+    const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+    const { theme } = useTheme();
+    const { logout } = useAuth();
+
+    useEffect(() => {
+        const checkConsent = async () => {
+            try {
+                const consent = await AsyncStorage.getItem('ai_data_consent');
+                if (consent !== 'true') {
+                    setShowPrivacyModal(true);
+                }
+            } catch (e) {
+                console.error('Failed to check consent', e);
+            }
+        };
+        checkConsent();
+    }, []);
 
     useEffect(() => {
         const fetchInitial = async () => {
@@ -115,10 +137,75 @@ export default function ConditionsScreen() {
         navigation.navigate('OnboardingBiometrics' as never);
     };
 
-    const handleBack = () => {
+    const handleBack = async () => {
+        try {
+            await logout();
+            await AsyncStorage.clear();
+        } catch (e) {
+            console.error('Logout error', e);
+        }
         prevStep();
         navigation.navigate('Login' as never);
     };
+
+    const handleAgreePrivacy = async () => {
+        try {
+            await AsyncStorage.setItem('ai_data_consent', 'true');
+            setShowPrivacyModal(false);
+        } catch (e) {
+            console.error('Failed to save consent', e);
+            setShowPrivacyModal(false);
+        }
+    };
+
+    const handleDeclinePrivacy = async () => {
+        try {
+            await logout();
+        } catch (e) {
+            console.error('Logout error', e);
+        }
+        setShowPrivacyModal(false);
+        navigation.navigate('Login' as never);
+    };
+
+    const DataPrivacyDescription = (
+        <View style={{ gap: 16 }}>
+            <Text style={{ color: theme.text, fontSize: 16, lineHeight: 24 }}>
+                NutriPioneer uses third-party AI to provide personalized nutrition recommendations. By proceeding, you grant us permission to share your data as follows:
+            </Text>
+            <View style={{ gap: 12 }}>
+                <Text style={{ color: theme.text, fontSize: 15, lineHeight: 22 }}>
+                    <Text style={{ fontWeight: 'bold' }}>Who the data is sent to:</Text> We integrate with <Text style={{ fontWeight: 'bold' }}>OpenAI</Text> (a third-party AI provider) for analyzing and generating intelligent nutrition profiles.
+                </Text>
+                <Text style={{ color: theme.text, fontSize: 15, lineHeight: 22 }}>
+                    <Text style={{ fontWeight: 'bold' }}>What data is sent:</Text> We send the medical conditions you select, biometrics, dietary preferences, and meals to OpenAI.
+                </Text>
+                <Text style={{ color: theme.text, fontSize: 15, lineHeight: 22 }}>
+                    <Text style={{ fontWeight: 'bold' }}>Data Protection:</Text> We confirm that OpenAI provides equal protection for your personal data. OpenAI explicitly does not use customer data submitted via their API to train or improve their models.
+                </Text>
+            </View>
+            <Text style={{ color: theme.textMuted, fontSize: 14, lineHeight: 20 }}>
+                For more details, please review our <Text style={{ color: theme.primary, fontWeight: 'bold' }} onPress={() => navigation.navigate('Privacy' as never)}>Privacy Policy</Text> and <Text style={{ color: theme.primary, fontWeight: 'bold' }} onPress={() => navigation.navigate('Terms' as never)}>Terms & Conditions</Text>.
+            </Text>
+        </View>
+    );
+
+    const DataPrivacyActions = (
+        <View style={{ gap: 12 }}>
+            <TouchableOpacity
+                style={{ backgroundColor: theme.primary, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+                onPress={handleAgreePrivacy}
+            >
+                <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>I Agree</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={{ paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+                onPress={handleDeclinePrivacy}
+            >
+                <Text style={{ color: theme.danger, fontSize: 16, fontWeight: '600' }}>Decline</Text>
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
@@ -207,6 +294,14 @@ export default function ConditionsScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            <NPModal
+                visible={showPrivacyModal && isFocused}
+                title="Data Privacy & AI"
+                description={DataPrivacyDescription}
+                actions={DataPrivacyActions}
+                hideCloseIcon={true}
+            />
         </KeyboardAvoidingView>
     );
 }

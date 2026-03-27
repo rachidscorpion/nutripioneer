@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../context/ThemeContext';
 import SubscribeButton from './SubscribeButton';
 
 interface ProGateProps {
@@ -28,25 +29,27 @@ export default function ProGate({
     children,
     mode = 'block',
 }: ProGateProps) {
+    const { theme, isDark } = useTheme();
+
     if (isPro) {
         return <>{children}</>;
     }
 
     const renderUpgradeUI = () => (
         <View style={styles.upgradeContainer}>
-            <View style={styles.upgradeContent}>
+            <View style={[styles.upgradeContent, { backgroundColor: theme.card, borderColor: theme.border }]}>
                 {/* Badge */}
-                <View style={styles.proBadge}>
-                    <Ionicons name="lock-closed" size={14} color="#fff" />
-                    <Text style={styles.proBadgeText}>Pro Feature</Text>
+                <View style={[styles.proBadge, { backgroundColor: theme.primary + '1A' }]}>
+                    <Ionicons name="lock-closed" size={14} color={theme.primary} />
+                    <Text style={[styles.proBadgeText, { color: theme.primary }]}>Pro Feature</Text>
                 </View>
 
                 {/* Title */}
-                <Text style={styles.featureTitle}>{feature}</Text>
+                <Text style={[styles.featureTitle, { color: theme.text }]}>{feature}</Text>
 
                 {/* Description */}
                 {description ? (
-                    <Text style={styles.featureDescription}>{description}</Text>
+                    <Text style={[styles.featureDescription, { color: theme.textMuted }]}>{description}</Text>
                 ) : null}
 
                 {/* Benefits */}
@@ -54,8 +57,8 @@ export default function ProGate({
                     <View style={styles.benefitsList}>
                         {benefits.map((benefit, idx) => (
                             <View key={idx} style={styles.benefitRow}>
-                                <Ionicons name="checkmark-circle" size={16} color="#10b981" style={{ marginTop: 2 }} />
-                                <Text style={styles.benefitText}>{benefit}</Text>
+                                <Ionicons name="checkmark-circle" size={16} color={theme.primary} style={{ marginTop: 2 }} />
+                                <Text style={[styles.benefitText, { color: theme.textMuted }]}>{benefit}</Text>
                             </View>
                         ))}
                     </View>
@@ -64,7 +67,7 @@ export default function ProGate({
                 {/* CTA */}
                 <View style={styles.ctaSection}>
                     <SubscribeButton />
-                    <Text style={styles.ctaHint}>Unlock {feature}</Text>
+                    <Text style={[styles.ctaHint, { color: theme.textMuted }]}>Unlock {feature}</Text>
                 </View>
             </View>
         </View>
@@ -91,7 +94,7 @@ export default function ProGate({
     return (
         <View style={{ position: 'relative' }}>
             {children}
-            <View style={styles.overlayBackdrop} />
+            <View style={[styles.overlayBackdrop, { backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)' }]} />
             {renderUpgradeUI()}
         </View>
     );
@@ -102,11 +105,11 @@ const styles = StyleSheet.create({
         padding: 24,
         alignItems: 'center',
         justifyContent: 'center',
+        maxWidth: 800,
+        alignSelf: 'center',
     },
     upgradeContent: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.12)',
         borderRadius: 20,
         padding: 28,
         alignItems: 'center',
@@ -115,48 +118,40 @@ const styles = StyleSheet.create({
     proBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.08)',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 20,
         marginBottom: 16,
     },
     proBadgeText: {
-        color: '#fff',
         fontSize: 12,
         fontWeight: '700',
         marginLeft: 6,
         letterSpacing: 0.5,
     },
     featureTitle: {
-        color: '#fff',
         fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 8,
         textAlign: 'center',
     },
     featureDescription: {
-        color: '#9ca3af',
         fontSize: 14,
         textAlign: 'center',
         lineHeight: 20,
         marginBottom: 16,
     },
     benefitsList: {
-        width: '100%',
         marginBottom: 20,
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
     benefitRow: {
         flexDirection: 'row',
         direction: 'ltr',
         alignItems: 'flex-start',
         marginBottom: 10,
-        width: '100%',
-        justifyContent: 'flex-start',
     },
     benefitText: {
-        color: '#d1d5db',
         fontSize: 14,
         marginLeft: 10,
         flexShrink: 1,
@@ -169,7 +164,6 @@ const styles = StyleSheet.create({
     ctaHint: {
         marginTop: 8,
         fontSize: 13,
-        color: '#64748b',
         textAlign: 'center',
     },
     readonlyWrapper: {
@@ -186,7 +180,6 @@ const styles = StyleSheet.create({
     },
     overlayBackdrop: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.6)',
         zIndex: 5,
     },
 });

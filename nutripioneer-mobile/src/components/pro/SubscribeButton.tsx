@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, Alert, View } from 'react-native';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, Alert, View, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchSubscriptionProducts, purchaseSubscription, restorePurchases } from '../../lib/iap';
 import type { Product } from 'react-native-iap';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
 /**
  * SubscribeButton — triggers the iOS In-App Purchase flow.
@@ -15,6 +16,7 @@ export default function SubscribeButton() {
     const [product, setProduct] = useState<Product | null>(null);
     const [priceLabel, setPriceLabel] = useState('Upgrade to Pro');
     const { restoreSession } = useAuth();
+    const navigation = useNavigation<any>();
 
     useEffect(() => {
         (async () => {
@@ -90,6 +92,29 @@ export default function SubscribeButton() {
             >
                 <Text style={styles.restoreText}>Restore Purchase</Text>
             </TouchableOpacity>
+
+            {product && (
+                <View style={styles.disclaimerContainer}>
+                    <Text style={styles.disclaimerTitle}>
+                        Subscription: {Platform.OS === 'ios' ? 'PRO MONTHLY' : (product.title || 'Nutri Pioneer PRO')} (1 Month)
+                    </Text>
+                    <Text style={styles.disclaimerText}>
+                        Price: {(product as any).localizedPrice || (product as any).price} / month
+                    </Text>
+                    <Text style={styles.disclaimerText}>
+                        Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.
+                    </Text>
+                    <View style={styles.linksContainer}>
+                        <TouchableOpacity onPress={() => navigation.navigate('Terms')} style={styles.linkTouch}>
+                            <Text style={styles.linkText}>Terms of Use (EULA)</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.linkSeparator}> • </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Privacy')} style={styles.linkTouch}>
+                            <Text style={styles.linkText}>Privacy Policy</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
@@ -108,12 +133,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 28,
         borderRadius: 16,
         width: '100%',
+        maxWidth: 360,
         gap: 8,
     },
     buttonText: {
         color: '#000',
         fontSize: 16,
         fontWeight: '700',
+        textAlign: 'center',
     },
     restoreBtn: {
         marginTop: 12,
@@ -123,5 +150,45 @@ const styles = StyleSheet.create({
         color: '#64748b',
         fontSize: 13,
         textDecorationLine: 'underline',
+    },
+    disclaimerContainer: {
+        marginTop: 24,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+    },
+    disclaimerTitle: {
+        color: '#9ca3af',
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginBottom: 4,
+        textAlign: 'center',
+    },
+    disclaimerText: {
+        color: '#64748b',
+        fontSize: 11,
+        textAlign: 'center',
+        lineHeight: 16,
+        marginBottom: 6,
+    },
+    linksContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 8,
+        flexWrap: 'wrap',
+    },
+    linkTouch: {
+        paddingVertical: 4,
+        paddingHorizontal: 4,
+    },
+    linkText: {
+        color: '#13ec5b',
+        fontSize: 11,
+        textDecorationLine: 'underline',
+    },
+    linkSeparator: {
+        color: '#64748b',
+        fontSize: 11,
+        marginHorizontal: 4,
     },
 });

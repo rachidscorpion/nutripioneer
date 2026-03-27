@@ -124,10 +124,10 @@ function TabItem({
                 { width: containerWidth, backgroundColor: isFocused ? theme.card : 'transparent' }
             ]}>
                 <Animated.View style={[styles.iconCircle, { backgroundColor: circleColor }]}>
-                    <Ionicons 
-                        name={iconName} 
-                        size={22} 
-                        color={isFocused ? '#000000' : theme.textMuted} 
+                    <Ionicons
+                        name={iconName}
+                        size={22}
+                        color={isFocused ? '#000000' : theme.textMuted}
                     />
                 </Animated.View>
 
@@ -148,7 +148,8 @@ const styles = StyleSheet.create({
     tabBarContainer: {
         position: 'absolute',
         bottom: 0,
-        width: '100%',
+        maxWidth: 560,
+        alignSelf: 'center',
         alignItems: 'center',
         paddingHorizontal: 20,
     },

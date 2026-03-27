@@ -21,7 +21,7 @@ function formatTime(time24: string) {
 
 export default function TimelineFeed({ plan, nutritionLimits, onRefresh }: TimelineFeedProps) {
     const { theme } = useTheme();
-    
+
     return (
         <View style={styles.container}>
             {/* Breakfast */}
@@ -78,13 +78,16 @@ export default function TimelineFeed({ plan, nutritionLimits, onRefresh }: Timel
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         paddingHorizontal: 20,
         paddingBottom: 100, // accommodate tab bar
+        alignSelf: 'center',
     },
     feedItem: {
         marginBottom: 32,
         position: 'relative',
         paddingLeft: 24,
+        minWidth: '80%',
     },
     timelineDot: {
         position: 'absolute',

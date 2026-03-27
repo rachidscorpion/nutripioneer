@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Modal, Image, TouchableOpacity, ScrollView, Act
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { api } from '../../lib/api-client';
+import SourceCitationBanner from '../ui/SourceCitationBanner';
 
 interface RecipeDetailsModalProps {
     visible: boolean;
@@ -302,6 +303,13 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                                 </View>
                                             </View>
                                         </View>
+
+                                        {recipe.sourceAPI && (
+                                            <SourceCitationBanner
+                                                compact
+                                                text={`Recipe & nutrition data from ${recipe.sourceAPI === 'Edamam' ? 'Edamam Nutrition API' : recipe.sourceAPI === 'FatSecret' ? 'FatSecret Platform API' : recipe.sourceAPI || 'third-party database'}`}
+                                            />
+                                        )}
                                     </>
                                 )}
                             </View>
