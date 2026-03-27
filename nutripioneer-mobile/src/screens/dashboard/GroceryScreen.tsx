@@ -246,6 +246,7 @@ export default function GroceryScreen() {
             {/* List Array */}
             <ScrollView
                 style={styles.list}
+                contentContainerStyle={{ paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.primary} />}
@@ -376,6 +377,7 @@ const styles = StyleSheet.create({
     list: {
         flex: 1,
         paddingHorizontal: 20,
+        paddingTop: 20,
     },
     emptyState: {
         alignItems: 'center',
@@ -422,6 +424,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         borderWidth: 1,
         borderColor: '#2a2a2a',
+        maxWidth: 750,
+        alignSelf: 'center',
     },
     itemRowChecked: {
         opacity: 0.6,

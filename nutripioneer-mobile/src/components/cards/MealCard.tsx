@@ -189,6 +189,12 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
                     <View style={[styles.badge, { backgroundColor: theme.background }]}><Text style={[styles.badgeText, { color: theme.textMuted }]}>{meal.protein}g P</Text></View>
                     {isDiabeticSafe && <View style={[styles.badge, styles.badgeGreen, { backgroundColor: theme.primary + '1A', borderColor: theme.primary + '4D' }]}><Text style={[styles.badgeGreenText, { color: theme.primary }]}>Glucose Friendly</Text></View>}
                     {isHeartSafe && <View style={[styles.badge, styles.badgeGreen, { backgroundColor: theme.primary + '1A', borderColor: theme.primary + '4D' }]}><Text style={[styles.badgeGreenText, { color: theme.primary }]}>Heart Healthy</Text></View>}
+                    {meal.sourceAPI && (
+                        <View style={[styles.badge, { backgroundColor: theme.background }]}>
+                            <Ionicons name="link-outline" size={10} color={theme.textMuted} style={{ marginRight: 3 }} />
+                            <Text style={[styles.badgeText, { color: theme.textMuted }]}>via {meal.sourceAPI}</Text>
+                        </View>
+                    )}
                 </View>
 
                 {isLoading && (

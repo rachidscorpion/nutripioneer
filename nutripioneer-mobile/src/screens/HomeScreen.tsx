@@ -96,7 +96,7 @@ export default function HomeScreen() {
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+                    <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={'#13ec5b'} />
                 }
             >
                 {error ? (
@@ -114,8 +114,8 @@ export default function HomeScreen() {
                 ) : (
                     <TimelineFeed plan={plan} nutritionLimits={nutritionLimits} onRefresh={fetchData} />
                 )}
-                
-                <View style={[styles.footerLinks, { marginTop: 40, paddingBottom: 40 }]}>
+
+                <View style={[styles.footerLinks, { marginTop: 40, paddingBottom: 120 }]}>
                     <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
                         <Text style={[styles.footerText, { color: theme.textMuted }]}>Privacy Policy</Text>
                     </TouchableOpacity>
@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#121212',
+
     },
     loadingContainer: {
         flex: 1,
