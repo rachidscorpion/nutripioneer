@@ -6,9 +6,10 @@ import { useTheme } from '../../context/ThemeContext';
 
 interface DashboardHeaderProps {
     onSearchPress?: () => void;
+    onMenuPress?: () => void;
 }
 
-export default function DashboardHeader({ onSearchPress }: DashboardHeaderProps) {
+export default function DashboardHeader({ onSearchPress, onMenuPress }: DashboardHeaderProps) {
     const insets = useSafeAreaInsets();
     const { theme } = useTheme();
     const today = new Date();
@@ -16,14 +17,21 @@ export default function DashboardHeader({ onSearchPress }: DashboardHeaderProps)
 
     return (
         <View style={[styles.header, { paddingTop: Math.max(insets.top, 20), backgroundColor: theme.background }]}>
-            <View>
+            <View style={{ flex: 1 }}>
                 <Text style={[styles.dateText, { color: theme.primary }]}>{dateString}</Text>
                 <Text style={[styles.title, { color: theme.text }]}>Today's Plan</Text>
             </View>
-            <TouchableOpacity style={[styles.searchBtn, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={onSearchPress}>
-                <Ionicons name="search" size={20} color={theme.textMuted} />
-                <Text style={[styles.searchText, { color: theme.textMuted }]}>Search Food</Text>
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+                <TouchableOpacity style={[styles.searchBtn, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={onSearchPress}>
+                    <Ionicons name="search" size={20} color={theme.textMuted} />
+                    <Text style={[styles.searchText, { color: theme.textMuted }]}>Search Food</Text>
+                </TouchableOpacity>
+                {onMenuPress && (
+                    <TouchableOpacity style={styles.menuBtn} onPress={onMenuPress}>
+                        <Ionicons name="ellipsis-vertical" size={20} color={theme.text} />
+                    </TouchableOpacity>
+                )}
+            </View>
         </View>
     );
 }
@@ -36,6 +44,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingBottom: 20,
         backgroundColor: '#121212',
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     dateText: {
         color: '#13ec5b',
@@ -65,5 +78,13 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         fontSize: 14,
         fontWeight: '500',
-    }
+    },
+    menuBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
+

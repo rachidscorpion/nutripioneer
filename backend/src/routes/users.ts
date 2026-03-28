@@ -39,6 +39,22 @@ users.delete('/test-account', authMiddleware, (c) => usersController.deleteTestA
 users.delete('/account', authMiddleware, (c) => usersController.deleteAccount(c));
 
 // ============================================
+// Saved Recipes (authenticated via session)
+// ============================================
+
+// GET /api/users/saved-recipes - Get current user's saved recipes
+users.get('/saved-recipes', authMiddleware, (c) => usersController.getMySavedRecipes(c));
+
+// POST /api/users/saved-recipes - Save a recipe for the current user
+users.post('/saved-recipes', authMiddleware, (c) => usersController.mySaveRecipe(c));
+
+// DELETE /api/users/saved-recipes/:recipeId - Unsave a recipe for the current user
+users.delete('/saved-recipes/:recipeId', authMiddleware, (c) => usersController.myUnsaveRecipe(c));
+
+// GET /api/users/saved-recipes/:recipeId/check - Check if a recipe is saved
+users.get('/saved-recipes/:recipeId/check', authMiddleware, (c) => usersController.checkRecipeSaved(c));
+
+// ============================================
 // Admin/legacy routes (no auth for backward compatibility)
 // ============================================
 

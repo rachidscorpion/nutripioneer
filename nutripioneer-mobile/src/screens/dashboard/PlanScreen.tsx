@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
     View,
     Text,
@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function PlanScreen() {
+    const navigation = useNavigation();
     const [currentDate, setCurrentDate] = useState<Date>(() => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
@@ -165,6 +166,13 @@ export default function PlanScreen() {
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
             <View style={styles.header}>
+                <TouchableOpacity
+                    style={[styles.backButton, { backgroundColor: theme.card, borderColor: theme.border }]}
+                    onPress={() => navigation.goBack()}
+                >
+                    <Ionicons name="chevron-back" size={18} color={theme.text} />
+                </TouchableOpacity>
+
                 <View style={styles.headerTitles}>
                     <Text style={[styles.title, { color: theme.text }]}>Daily Plan</Text>
                     <Text style={[styles.subtitle, { color: theme.textMuted }]}>Manage your schedule and meals.</Text>
@@ -180,7 +188,10 @@ export default function PlanScreen() {
                             {isDeleting ? (
                                 <ActivityIndicator size="small" color={theme.danger} />
                             ) : (
-                                <Ionicons name="trash-outline" size={20} color={theme.danger} />
+                                <View style={styles.deleteBtnContent}>
+                                    <Ionicons name="trash-outline" size={18} color={theme.danger} />
+                                    <Text style={[styles.deleteBtnText, { color: theme.danger }]}>Delete Plan</Text>
+                                </View>
                             )}
                         </TouchableOpacity>
                     )}
@@ -341,29 +352,47 @@ export default function PlanScreen() {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        // flex: 1,
         backgroundColor: '#121212',
     },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 16,
         paddingBottom: 24,
+        gap: 12,
+    },
+    backButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
     },
     headerTitles: {
         flex: 1,
     },
     title: {
-        fontSize: 32,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#fff',
         marginBottom: 4,
     },
     subtitle: {
-        fontSize: 15,
+        fontSize: 12,
         color: '#a1a1aa',
+    },
+    deleteBtnContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    deleteBtnText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        paddingTop: 1,
     },
     headerControls: {
         flexDirection: 'row',

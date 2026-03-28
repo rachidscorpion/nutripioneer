@@ -27,6 +27,8 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
     const [webviewError, setWebviewError] = useState(false);
     const [isSwapping, setIsSwapping] = useState(false);
     const [imgSrc, setImgSrc] = useState(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (!visible || !recipe) return;
@@ -74,7 +76,18 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
             }
         };
 
+        const checkSavedStatus = async () => {
+            if (!recipe.id) return;
+            try {
+                const res = await api.savedRecipes.check(recipe.id);
+                setIsSaved(res.data?.data?.saved || false);
+            } catch {
+                setIsSaved(false);
+            }
+        };
+
         fetchInstructions();
+        checkSavedStatus();
         setImgSrc(recipe.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
         setActiveTab('instructions');
         setWebviewError(false);
@@ -100,7 +113,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
         rawLines.forEach(line => {
             let trimmed = line.trim();
             if (!trimmed) return;
-            trimmed = trimmed.replace(/^\d+[\).]\s*/, '');
+            trimmed = trimmed.replace(/^\d+[\)\.]\s*/, '');
             if (!trimmed) return;
             if (/^\d+$/.test(trimmed)) return;
             steps.push(trimmed);
@@ -169,6 +182,29 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
             Alert.alert('Error', 'Failed to swap meal');
         } finally {
             setIsSwapping(false);
+        }
+    };
+
+    const handleToggleSave = async () => {
+        if (!recipe.id) return;
+        setIsSaving(true);
+        const wasSaved = isSaved;
+        setIsSaved(!wasSaved);
+        try {
+            if (wasSaved) {
+                await api.savedRecipes.unsave(recipe.id);
+            } else {
+                await api.savedRecipes.save(recipe.id);
+            }
+        } catch (e: any) {
+            setIsSaved(wasSaved);
+            if (e?.response?.status === 400) {
+                setIsSaved(true);
+            } else {
+                Alert.alert('Error', wasSaved ? 'Failed to unsave recipe' : 'Failed to save recipe');
+            }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -312,15 +348,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                                             </View>
                                                         )}
                                                         {isStepUrl ? (
-                                                            <TouchableOpacity
-                                                                onPress={() => { setWebviewError(false); setWebviewUrl(step.replace(/^http:/, 'https:')); }}
-                                                                style={styles.webviewPlaceholderBtn}
-                                                            >
-                                                                <Ionicons name="link" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
-                                                                <Text style={[styles.stepText, { color: '#3b82f6', textDecorationLine: 'underline', flex: 1 }]} numberOfLines={2}>
-                                                                    View Full Recipe on Web
-                                                                </Text>
-                                                            </TouchableOpacity>
+                                                            null
                                                         ) : (
                                                             <Text style={styles.stepText}>{step}</Text>
                                                         )}
@@ -404,16 +432,26 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
 
                     {/* Footer */}
                     <View style={styles.footer}>
-                        <TouchableOpacity style={styles.btnSecondary} onPress={handleAddIngredients} disabled={isAdding}>
-                            {isAdding ? <ActivityIndicator size="small" color="#13ec5b" /> : <Ionicons name="cart" size={18} color="#13ec5b" />}
-                            <Text style={styles.btnSecondaryText}>{isAdding ? "Adding..." : "Groceries"}</Text>
-                        </TouchableOpacity>
-                        {planId && mealType && (
-                            <TouchableOpacity style={styles.btnSwap} onPress={handleSwapMeal} disabled={isSwapping}>
-                                {isSwapping ? <ActivityIndicator size="small" color="#9ca3af" /> : <Ionicons name="refresh" size={18} color="#9ca3af" />}
-                                <Text style={styles.btnSwapText}>{isSwapping ? "Swapping..." : "Swap"}</Text>
+                        <View style={styles.footerRow}>
+                            <TouchableOpacity style={styles.btnSecondary} onPress={handleAddIngredients} disabled={isAdding}>
+                                {isAdding ? <ActivityIndicator size="small" color="#13ec5b" /> : <Ionicons name="cart" size={18} color="#13ec5b" />}
+                                <Text style={styles.btnSecondaryText}>{isAdding ? "Adding..." : "Groceries"}</Text>
                             </TouchableOpacity>
-                        )}
+                            {planId && mealType && (
+                                <TouchableOpacity style={styles.btnSwap} onPress={handleSwapMeal} disabled={isSwapping}>
+                                    {isSwapping ? <ActivityIndicator size="small" color="#9ca3af" /> : <Ionicons name="refresh" size={18} color="#9ca3af" />}
+                                    <Text style={styles.btnSwapText}>{isSwapping ? "Swapping..." : "Swap"}</Text>
+                                </TouchableOpacity>
+                            )}
+                            <TouchableOpacity style={[styles.btnSave, isSaved && styles.btnSaveActive]} onPress={handleToggleSave} disabled={isSaving}>
+                                {isSaving ? (
+                                    <ActivityIndicator size="small" color={isSaved ? '#000' : '#f59e0b'} />
+                                ) : (
+                                    <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={18} color={isSaved ? '#000' : '#f59e0b'} />
+                                )}
+                                <Text style={[styles.btnSaveText, isSaved && styles.btnSaveTextActive]}>{isSaved ? "Saved" : "Save"}</Text>
+                            </TouchableOpacity>
+                        </View>
                         <TouchableOpacity style={styles.btnPrimary} onPress={onClose}>
                             <Text style={styles.btnPrimaryText}>Done</Text>
                         </TouchableOpacity>
@@ -503,7 +541,7 @@ const styles = StyleSheet.create({
         right: 0,
         padding: 20,
         paddingTop: 40,
-        backgroundColor: 'rgba(0,0,0,0.5)', // Fallback if gradient not used
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
     recipeName: {
         fontSize: 24,
@@ -683,11 +721,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     reasoningBox: {
-        backgroundColor: 'rgba(5b, 130, 246, 0.1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
         padding: 16,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: 'rgba(5b, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 0.2)',
     },
     reasoningTitle: {
         color: '#3b82f6',
@@ -699,13 +737,16 @@ const styles = StyleSheet.create({
         lineHeight: 22,
     },
     footer: {
-        flexDirection: 'row',
         padding: 20,
         paddingBottom: 40,
         backgroundColor: '#1a1a1c',
         borderTopWidth: 1,
         borderTopColor: '#2a2a2a',
-        gap: 12,
+        gap: 10,
+    },
+    footerRow: {
+        flexDirection: 'row',
+        gap: 10,
     },
     btnSecondary: {
         flex: 1,
@@ -725,20 +766,42 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     btnPrimary: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#13ec5b',
         borderRadius: 16,
-        paddingVertical: 14,
+        paddingVertical: 16,
     },
     btnPrimaryText: {
         color: '#000',
         fontWeight: 'bold',
+        fontSize: 16,
+    },
+    btnSave: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(245, 158, 11, 0.3)',
+        paddingVertical: 14,
+        gap: 6,
+    },
+    btnSaveActive: {
+        backgroundColor: '#f59e0b',
+        borderColor: '#f59e0b',
+    },
+    btnSaveText: {
+        color: '#f59e0b',
+        fontWeight: 'bold',
         fontSize: 14,
     },
+    btnSaveTextActive: {
+        color: '#000',
+    },
     webviewPlaceholderBtn: {
-        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',

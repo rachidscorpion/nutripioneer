@@ -43,7 +43,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
 
                     let iconName: keyof typeof Ionicons.glyphMap = 'home';
                     if (route.name === 'Home') iconName = 'home';
-                    else if (route.name === 'Plan') iconName = 'briefcase';
+                    else if (route.name === 'Saved') iconName = 'bookmark';
                     else if (route.name === 'Grocery') iconName = 'cart';
                     else if (route.name === 'Rescue') iconName = 'camera';
                     else if (route.name === 'Profile') iconName = 'person';
