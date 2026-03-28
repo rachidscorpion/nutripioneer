@@ -10,16 +10,22 @@ interface RecipeDetailsModalProps {
     onClose: () => void;
     recipe: any;
     nutritionLimits?: any;
+    planId?: string;
+    mealType?: 'breakfast' | 'lunch' | 'dinner';
+    onUpdate?: () => void;
 }
 
 const { width, height } = Dimensions.get('window');
 
-export default function RecipeDetailsModal({ visible, onClose, recipe, nutritionLimits }: RecipeDetailsModalProps) {
+export default function RecipeDetailsModal({ visible, onClose, recipe, nutritionLimits, planId, mealType, onUpdate }: RecipeDetailsModalProps) {
     const [activeTab, setActiveTab] = useState<'instructions' | 'ingredients' | 'health'>('instructions');
     const [isAdding, setIsAdding] = useState(false);
     const [scrapedInstructions, setScrapedInstructions] = useState<string[] | null>(null);
     const [loadingInstructions, setLoadingInstructions] = useState(false);
+    const [instructionsError, setInstructionsError] = useState<string | null>(null);
     const [webviewUrl, setWebviewUrl] = useState<string | null>(null);
+    const [webviewError, setWebviewError] = useState(false);
+    const [isSwapping, setIsSwapping] = useState(false);
     const [imgSrc, setImgSrc] = useState(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
 
     useEffect(() => {
@@ -44,6 +50,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
 
             if (targetUrl && !scrapedInstructions) {
                 setLoadingInstructions(true);
+                setInstructionsError(null);
                 try {
                     const res = await api.recipes.getInstructions(targetUrl);
                     const data = res.data;
@@ -54,8 +61,13 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                     } else {
                         setScrapedInstructions([]);
                     }
-                } catch (e) {
-                    console.error("Failed to fetch instructions", e);
+                } catch (e: any) {
+                    const status = e?.response?.status;
+                    if (status === 500) {
+                        setInstructionsError('This recipe source is currently unavailable. The site may be blocking access from your region.');
+                    } else {
+                        setInstructionsError('Failed to load instructions. Please try again later.');
+                    }
                 } finally {
                     setLoadingInstructions(false);
                 }
@@ -65,6 +77,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
         fetchInstructions();
         setImgSrc(recipe.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
         setActiveTab('instructions');
+        setWebviewError(false);
     }, [visible, recipe]);
 
     if (!recipe) return null;
@@ -142,6 +155,20 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
             Alert.alert('Error', 'Error adding ingredients');
         } finally {
             setIsAdding(false);
+        }
+    };
+
+    const handleSwapMeal = async () => {
+        if (!planId || !mealType) return;
+        setIsSwapping(true);
+        try {
+            await api.meals.swap(planId, mealType);
+            onUpdate?.();
+            onClose();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to swap meal');
+        } finally {
+            setIsSwapping(false);
         }
     };
 
@@ -250,6 +277,28 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                         <ActivityIndicator size="large" color="#13ec5b" />
                                         <Text style={styles.loaderText}>Fetching detailed instructions...</Text>
                                     </View>
+                                ) : instructionsError ? (
+                                    <View style={styles.errorBox}>
+                                        <Ionicons name="alert-circle" size={32} color="#f59e0b" />
+                                        <Text style={styles.errorTitle}>Instructions Unavailable</Text>
+                                        <Text style={styles.errorText}>{instructionsError}</Text>
+                                        {planId && mealType && (
+                                            <TouchableOpacity
+                                                style={styles.swapErrorBtn}
+                                                onPress={handleSwapMeal}
+                                                disabled={isSwapping}
+                                            >
+                                                {isSwapping ? (
+                                                    <ActivityIndicator size="small" color="#000" />
+                                                ) : (
+                                                    <>
+                                                        <Ionicons name="refresh" size={16} color="#000" style={{ marginRight: 6 }} />
+                                                        <Text style={styles.swapErrorBtnText}>Swap for a Different Recipe</Text>
+                                                    </>
+                                                )}
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
                                 ) : (
                                     <>
                                         {instructionsSteps.length > 0 ? (
@@ -263,8 +312,8 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                                             </View>
                                                         )}
                                                         {isStepUrl ? (
-                                                            <TouchableOpacity 
-                                                                onPress={() => setWebviewUrl(step)} 
+                                                            <TouchableOpacity
+                                                                onPress={() => { setWebviewError(false); setWebviewUrl(step.replace(/^http:/, 'https:')); }}
                                                                 style={styles.webviewPlaceholderBtn}
                                                             >
                                                                 <Ionicons name="link" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
@@ -281,6 +330,21 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                         ) : (
                                             <Text style={styles.emptyContentText}>No detailed instructions found.</Text>
                                         )}
+
+                                        {(() => {
+                                            const sourceUrl = recipe.url || (typeof recipe.instructions === 'string' && recipe.instructions.startsWith('http') ? recipe.instructions : null);
+                                            return sourceUrl ? (
+                                                <TouchableOpacity
+                                                    onPress={() => { setWebviewError(false); setWebviewUrl(sourceUrl.replace(/^http:/, 'https:')); }}
+                                                    style={styles.webviewPlaceholderBtn}
+                                                >
+                                                    <Ionicons name="link" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
+                                                    <Text style={[styles.stepText, { color: '#3b82f6', textDecorationLine: 'underline', flex: 1 }]} numberOfLines={2}>
+                                                        View Original Source
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ) : null;
+                                        })()}
 
                                         <View style={styles.nutritionBoxContainer}>
                                             <Text style={styles.nutritionBoxTitle}>Nutrition Facts</Text>
@@ -342,10 +406,16 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                     <View style={styles.footer}>
                         <TouchableOpacity style={styles.btnSecondary} onPress={handleAddIngredients} disabled={isAdding}>
                             {isAdding ? <ActivityIndicator size="small" color="#13ec5b" /> : <Ionicons name="cart" size={18} color="#13ec5b" />}
-                            <Text style={styles.btnSecondaryText}>{isAdding ? "Adding..." : "Add to Groceries"}</Text>
+                            <Text style={styles.btnSecondaryText}>{isAdding ? "Adding..." : "Groceries"}</Text>
                         </TouchableOpacity>
+                        {planId && mealType && (
+                            <TouchableOpacity style={styles.btnSwap} onPress={handleSwapMeal} disabled={isSwapping}>
+                                {isSwapping ? <ActivityIndicator size="small" color="#9ca3af" /> : <Ionicons name="refresh" size={18} color="#9ca3af" />}
+                                <Text style={styles.btnSwapText}>{isSwapping ? "Swapping..." : "Swap"}</Text>
+                            </TouchableOpacity>
+                        )}
                         <TouchableOpacity style={styles.btnPrimary} onPress={onClose}>
-                            <Text style={styles.btnPrimaryText}>Done Cooking</Text>
+                            <Text style={styles.btnPrimaryText}>Done</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -367,7 +437,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                         <Ionicons name="open-outline" size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>
-                {webviewUrl && (
+                {webviewUrl && !webviewError && (
                     <WebView
                         source={{ uri: webviewUrl }}
                         style={{ flex: 1 }}
@@ -377,7 +447,28 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                 <ActivityIndicator size="large" color="#13ec5b" />
                             </View>
                         )}
+                        onError={() => setWebviewError(true)}
+                        onHttpError={() => setWebviewError(true)}
                     />
+                )}
+                {webviewUrl && webviewError && (
+                    <View style={[StyleSheet.absoluteFillObject, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#1c1c1e', padding: 24 }]}>
+                        <Ionicons name="globe-outline" size={48} color="#f59e0b" />
+                        <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginTop: 16, textAlign: 'center' }}>Unable to Load Page</Text>
+                        <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 8, textAlign: 'center', lineHeight: 20 }}>This website may be blocking access from your region or requires a secure connection.</Text>
+                        <TouchableOpacity
+                            style={{ backgroundColor: '#13ec5b', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 24 }}
+                            onPress={() => { if (webviewUrl) Linking.openURL(webviewUrl); }}
+                        >
+                            <Text style={{ color: '#000', fontWeight: 'bold' }}>Open in Browser</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={{ marginTop: 12 }}
+                            onPress={() => { setWebviewError(false); setWebviewUrl(null); }}
+                        >
+                            <Text style={{ color: '#9ca3af' }}>Go Back</Text>
+                        </TouchableOpacity>
+                    </View>
                 )}
             </Modal>
         </Modal>
@@ -682,5 +773,51 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: 'center',
         marginHorizontal: 16,
+    },
+    errorBox: {
+        alignItems: 'center',
+        padding: 32,
+    },
+    errorTitle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 12,
+    },
+    errorText: {
+        color: '#9ca3af',
+        fontSize: 14,
+        textAlign: 'center',
+        marginTop: 8,
+        lineHeight: 20,
+    },
+    swapErrorBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#13ec5b',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 12,
+        marginTop: 24,
+    },
+    swapErrorBtnText: {
+        color: '#000',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    btnSwap: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#2a2a2a',
+        borderRadius: 16,
+        paddingVertical: 14,
+        gap: 6,
+    },
+    btnSwapText: {
+        color: '#9ca3af',
+        fontWeight: 'bold',
+        fontSize: 14,
     },
 });

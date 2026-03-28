@@ -725,29 +725,31 @@ export default function ProfileScreen() {
 
                                 <Text style={{ fontSize: 13, fontWeight: '600', color: theme.text, marginBottom: 8 }}>Nutrition & Recipe Data</Text>
                                 {[
-                                    { label: 'Edamam Nutrition API', url: 'https://www.edamam.com/' },
-                                    { label: 'FatSecret Platform API', url: 'https://www.fatsecret.com/' },
-                                    { label: 'USDA FoodData Central', url: 'https://fdc.nal.usda.gov/' },
-                                    { label: 'Open Food Facts', url: 'https://world.openfoodfacts.org/' },
-                                    { label: 'TheMealDB', url: 'https://www.themealdb.com/' },
+                                    { label: 'Edamam Nutrition API', url: 'https://www.edamam.com/', isPrimary: true },
+                                    { label: 'FatSecret Platform API', url: 'https://www.fatsecret.com/', isPrimary: false },
+                                    { label: 'USDA FoodData Central', url: 'https://fdc.nal.usda.gov/', isPrimary: false },
+                                    { label: 'Open Food Facts', url: 'https://world.openfoodfacts.org/', isPrimary: false },
+                                    { label: 'TheMealDB', url: 'https://www.themealdb.com/', isPrimary: false },
                                 ].map((s, i) => (
                                     <TouchableOpacity key={i} onPress={() => Linking.openURL(s.url)} style={{ paddingVertical: 6, flexDirection: 'row', alignItems: 'center' }}>
                                         <Feather name="external-link" size={12} color={theme.primary} style={{ marginRight: 8 }} />
                                         <Text style={{ fontSize: 13, color: theme.primary }}>{s.label}</Text>
+                                        <Text style={{ fontSize: 13, color: theme.textMuted }}> {s.isPrimary ? '(Primary)' : ''}</Text>
                                     </TouchableOpacity>
                                 ))}
 
                                 <Text style={{ fontSize: 13, fontWeight: '600', color: theme.text, marginTop: 16, marginBottom: 8 }}>Medical & Clinical References</Text>
                                 {[
-                                    { label: 'WHO ICD-11 Classification', url: 'https://icd.who.int/' },
-                                    { label: 'NLM RxNorm (Medications)', url: 'https://www.nlm.nih.gov/research/umls/rxnorm/' },
-                                    { label: 'KDOQI Clinical Guidelines', url: 'https://www.kidney.org/professionals/guidelines' },
-                                    { label: 'ADA Standards of Care', url: 'https://diabetes.org/about-diabetes/treatment-care/standards-of-care' },
-                                    { label: 'AHA Dietary Guidelines', url: 'https://www.heart.org/en/healthy-living/healthy-eating/eat-smart/nutrition-basics/aha-diet-and-lifestyle-recommendations' },
+                                    { label: 'WHO ICD-11 Classification', url: 'https://icd.who.int/', isPrimary: true },
+                                    { label: 'NLM RxNorm (Medications)', url: 'https://www.nlm.nih.gov/research/umls/rxnorm/', isPrimary: false },
+                                    { label: 'KDOQI Clinical Guidelines', url: 'https://www.kidney.org/professionals/guidelines', isPrimary: false },
+                                    { label: 'ADA Standards of Care', url: 'https://diabetes.org/about-diabetes/treatment-care/standards-of-care', isPrimary: false },
+                                    { label: 'AHA Dietary Guidelines', url: 'https://www.heart.org/en/healthy-living/healthy-eating/eat-smart/nutrition-basics/aha-diet-and-lifestyle-recommendations', isPrimary: false },
                                 ].map((s, i) => (
                                     <TouchableOpacity key={i} onPress={() => Linking.openURL(s.url)} style={{ paddingVertical: 6, flexDirection: 'row', alignItems: 'center' }}>
                                         <Feather name="external-link" size={12} color={theme.primary} style={{ marginRight: 8 }} />
                                         <Text style={{ fontSize: 13, color: theme.primary }}>{s.label}</Text>
+                                        <Text style={{ fontSize: 13, color: theme.textMuted }}> {s.isPrimary ? '(Primary)' : ''}</Text>
                                     </TouchableOpacity>
                                 ))}
 
@@ -806,7 +808,6 @@ const styles = StyleSheet.create({
     },
     profileCard: {
         flexDirection: 'row',
-        alignItems: 'center',
         padding: 20,
         marginHorizontal: 16,
         backgroundColor: 'rgba(255,255,255,0.05)',

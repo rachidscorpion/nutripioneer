@@ -244,6 +244,9 @@ export default function MealCard({ meal, type, planId, status = 'PENDING', nutri
                 onClose={() => setIsModalOpen(false)}
                 recipe={meal}
                 nutritionLimits={nutritionLimits}
+                planId={planId}
+                mealType={type}
+                onUpdate={onUpdate}
             />
         </View>
     );
