@@ -97,6 +97,7 @@ export default function HomeScreen() {
             <DashboardHeader
                 onSearchPress={() => setIsFoodModalOpen(true)}
                 onMenuPress={() => setIsMenuOpen(true)}
+                plan={plan}
             />
 
             {/* Menu Dropdown */}
