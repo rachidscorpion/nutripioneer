@@ -1,8 +1,8 @@
 'use client';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Utensils, ShoppingBag, Loader2, ExternalLink, Clock } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { X, Flame, Utensils, ShoppingBag, Loader2, ExternalLink, Clock, RefreshCw, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import styles from '@/styles/Timeline.module.css';
@@ -15,16 +15,36 @@ interface RecipeDetailsModalProps {
     recipe: any;
     userId: string;
     nutritionLimits?: any;
+    planId?: string;
+    mealType?: 'breakfast' | 'lunch' | 'dinner';
 }
 
-export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nutritionLimits }: RecipeDetailsModalProps) {
+export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nutritionLimits, planId, mealType }: RecipeDetailsModalProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'instructions' | 'ingredients' | 'health'>('instructions');
     const [mounted, setMounted] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [scrapedInstructions, setScrapedInstructions] = useState<string[] | null>(null);
     const [loadingInstructions, setLoadingInstructions] = useState(false);
+    const [instructionsError, setInstructionsError] = useState<string | null>(null);
+    const [isSwapping, setIsSwapping] = useState(false);
     const [imgSrc, setImgSrc] = useState(recipe.image || '/assets/np-placeholder.jpg');
+    const prevRecipeIdRef = useRef<string | null>(null);
+    const fetchGuardRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (!recipe) return;
+        const currentRecipeId = recipe.id;
+        if (currentRecipeId !== prevRecipeIdRef.current) {
+            setScrapedInstructions(null);
+            setInstructionsError(null);
+            setLoadingInstructions(false);
+            setActiveTab('instructions');
+            setImgSrc(recipe.image || '/assets/np-placeholder.jpg');
+            fetchGuardRef.current = null;
+            prevRecipeIdRef.current = currentRecipeId;
+        }
+    }, [recipe]);
 
     useEffect(() => {
         const fetchInstructions = async () => {
@@ -47,8 +67,9 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                 targetUrl = recipe.instructions;
             }
 
-            if (targetUrl && !scrapedInstructions) {
+            if (targetUrl && fetchGuardRef.current !== recipe.id) {
                 setLoadingInstructions(true);
+                setInstructionsError(null);
                 try {
                     const res = await api.recipes.getInstructions(targetUrl);
                     const data = res.data;
@@ -59,8 +80,15 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                     } else {
                         setScrapedInstructions([]);
                     }
-                } catch (e) {
+                    fetchGuardRef.current = recipe.id;
+                } catch (e: any) {
                     console.error("Failed to fetch instructions", e);
+                    const status = e?.response?.status;
+                    if (status === 500) {
+                        setInstructionsError('This recipe source is currently unavailable. The site may be blocking access from your region.');
+                    } else {
+                        setInstructionsError('Failed to load instructions. Please try again later.');
+                    }
                 } finally {
                     setLoadingInstructions(false);
                 }
@@ -68,7 +96,7 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
         };
 
         fetchInstructions();
-    }, [isOpen, recipe.url, recipe.instructions]);
+    }, [isOpen, recipe?.id, recipe?.url, recipe?.instructions]);
 
     useEffect(() => {
         setMounted(true);
@@ -154,6 +182,20 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
             toast.error('Error adding ingredients');
         } finally {
             setIsAdding(false);
+        }
+    };
+
+    const handleSwapMeal = async () => {
+        if (!planId || !mealType) return;
+        setIsSwapping(true);
+        try {
+            await api.meals.swap(planId, mealType);
+            toast.success('Meal swapped!');
+            router.refresh();
+        } catch (e) {
+            toast.error('Failed to swap meal');
+        } finally {
+            setIsSwapping(false);
         }
     };
 
@@ -341,6 +383,23 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: '1rem', color: '#64748b' }}>
                                                     <Loader2 className="animate-spin" size={32} />
                                                     <span>Fetching detailed instructions...</span>
+                                                </div>
+                                            ) : instructionsError ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: '1rem', color: '#64748b', textAlign: 'center' }}>
+                                                    <AlertCircle size={32} color="#f59e0b" />
+                                                    <h3 style={{ margin: 0, color: '#0f172a' }}>Instructions Unavailable</h3>
+                                                    <p>{instructionsError}</p>
+                                                    {planId && mealType && (
+                                                        <button
+                                                            onClick={handleSwapMeal}
+                                                            disabled={isSwapping}
+                                                            className={styles.btnSecondary}
+                                                            style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                                        >
+                                                            {isSwapping ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />}
+                                                            Swap for a Different Recipe
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <>

@@ -53,7 +53,6 @@ export default function NutrientStatsBar({ plan }: NutrientStatsBarProps) {
 
 const styles = StyleSheet.create({
     container: {
-        paddingBottom: 4,
     },
     bar: {
         flexDirection: 'row',
@@ -83,7 +82,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     statValue: {
-        fontSize: 15,
+        fontSize: 13,
         fontWeight: 'bold',
     },
     statLabel: {

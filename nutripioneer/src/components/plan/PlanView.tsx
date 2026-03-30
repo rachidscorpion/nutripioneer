@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Loader2, Sparkles, AlertCircle, Search, Trash2 } from 'lucide-react';
 import { format, addDays, subDays, isSameDay } from 'date-fns';
 import FoodCheckModal from '@/components/modals/FoodCheckModal';
+import NutrientStatsBar from './NutrientStatsBar';
 
 interface PlanWithMeals {
     id: string;
@@ -185,6 +186,8 @@ export default function PlanView({ plan, dateString, isOwner = false, isPro = fa
                 <Search size={20} />
                 <span className="search-text">Search Food</span>
             </button>
+
+            {plan && <NutrientStatsBar plan={plan} />}
 
             {isPending && (
                 <div className={styles.loadingOverlay}>

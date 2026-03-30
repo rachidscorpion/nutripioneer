@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, Image, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
@@ -29,8 +29,27 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
     const [imgSrc, setImgSrc] = useState(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
     const [isSaved, setIsSaved] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const prevRecipeIdRef = useRef<string | null>(null);
+    const fetchGuardRef = useRef<string | null>(null);
 
     useEffect(() => {
+        const currentRecipeId = recipe?.id;
+        // Reset instruction-related state when recipe changes (even if modal is closed)
+        if (currentRecipeId !== prevRecipeIdRef.current) {
+            // Recipe changed, reset all instruction and UI state
+            setScrapedInstructions(null);
+            setInstructionsError(null);
+            setLoadingInstructions(false);
+            setWebviewUrl(null);
+            setWebviewError(false);
+            setActiveTab('instructions');
+            setImgSrc(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
+            setIsSaved(false);
+            setIsSaving(false);
+            fetchGuardRef.current = null;
+            prevRecipeIdRef.current = currentRecipeId;
+        }
+
         if (!visible || !recipe) return;
 
         const fetchInstructions = async () => {
@@ -50,7 +69,8 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                 targetUrl = recipe.instructions;
             }
 
-            if (targetUrl && !scrapedInstructions) {
+            // Only fetch if we haven't already fetched for this recipe
+            if (targetUrl && fetchGuardRef.current !== recipe.id) {
                 setLoadingInstructions(true);
                 setInstructionsError(null);
                 try {
@@ -63,6 +83,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                     } else {
                         setScrapedInstructions([]);
                     }
+                    fetchGuardRef.current = recipe.id;
                 } catch (e: any) {
                     const status = e?.response?.status;
                     if (status === 500) {
@@ -88,8 +109,6 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
 
         fetchInstructions();
         checkSavedStatus();
-        setImgSrc(recipe.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
-        setActiveTab('instructions');
         setWebviewError(false);
     }, [visible, recipe]);
 
@@ -299,7 +318,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                 style={[styles.tabBtn, activeTab === 'health' && styles.tabBtnActive]}
                                 onPress={() => setActiveTab('health')}
                             >
-                                <Text style={[styles.tabText, activeTab === 'health' && styles.tabTextActive]}>Health Status</Text>
+                                <Text style={[styles.tabText, activeTab === 'health' && styles.tabTextActive]}>Health Context</Text>
                             </TouchableOpacity>
                         )}
                     </View>
@@ -419,11 +438,56 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                 )}
                             </View>
                         ) : (
-                            <View style={styles.tabContent}>
+                            <View style={[styles.tabContent, { gap: 20 }]}>
                                 {nutritionLimits?.reasoning && (
                                     <View style={styles.reasoningBox}>
                                         <Text style={styles.reasoningTitle}>Why this meal?</Text>
                                         <Text style={styles.reasoningText}>{nutritionLimits.reasoning}</Text>
+                                    </View>
+                                )}
+
+                                <View>
+                                    <Text style={styles.sectionTitleSmall}>Your Nutrition Profile Limits</Text>
+
+                                    {nutritionLimits?.daily_calories && (
+                                        <View style={styles.limitCardMain}>
+                                            <Text style={styles.limitLabelSmall}>{nutritionLimits.daily_calories.label} Target</Text>
+                                            <Text style={styles.limitValueLarge}>
+                                                {nutritionLimits.daily_calories.min} - {nutritionLimits.daily_calories.max} kcal
+                                            </Text>
+                                        </View>
+                                    )}
+
+                                    {nutritionLimits?.nutrients && (
+                                        <View style={styles.limitsGrid}>
+                                            {Object.entries(nutritionLimits.nutrients).map(([key, data]: [string, any]) => (
+                                                <View key={key} style={styles.limitCard}>
+                                                    <Text style={styles.limitLabelSmall}>{data.label}</Text>
+                                                    <Text style={styles.limitValue}>
+                                                        {data.min && data.max
+                                                            ? `${data.min} - ${data.max}${data.unit}`
+                                                            : data.max
+                                                                ? `< ${data.max}${data.unit}`
+                                                                : data.min
+                                                                    ? `> ${data.min}${data.unit}`
+                                                                    : `${data.val}${data.unit}`}
+                                                    </Text>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    )}
+                                </View>
+
+                                {nutritionLimits?.avoid_ingredients && nutritionLimits.avoid_ingredients.length > 0 && (
+                                    <View style={styles.avoidSection}>
+                                        <Text style={styles.avoidTitle}>Avoid Ingredients per Logic:</Text>
+                                        <View style={styles.avoidBadgesRow}>
+                                            {nutritionLimits.avoid_ingredients.map((ing: string, i: number) => (
+                                                <View key={i} style={styles.avoidBadge}>
+                                                    <Text style={styles.avoidBadgeText}>{ing}</Text>
+                                                </View>
+                                            ))}
+                                        </View>
                                     </View>
                                 )}
                             </View>
@@ -735,6 +799,76 @@ const styles = StyleSheet.create({
     reasoningText: {
         color: '#e5e7eb',
         lineHeight: 22,
+    },
+    sectionTitleSmall: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 16,
+    },
+    limitCardMain: {
+        backgroundColor: '#2a2a2a',
+        padding: 16,
+        borderRadius: 12,
+        marginBottom: 16,
+    },
+    limitLabelSmall: {
+        color: '#9ca3af',
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    limitValueLarge: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    limitsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+    },
+    limitCard: {
+        backgroundColor: '#2a2a2a',
+        padding: 12,
+        borderRadius: 10,
+        flex: 1,
+        minWidth: '45%',
+    },
+    limitValue: {
+        color: '#13ec5b',
+        fontSize: 15,
+        fontWeight: 'bold',
+        marginTop: 2,
+    },
+    avoidSection: {
+        marginTop: 4,
+    },
+    avoidTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#ef4444',
+        marginBottom: 10,
+    },
+    avoidBadgesRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    avoidBadge: {
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(239, 68, 68, 0.3)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    avoidBadgeText: {
+        color: '#ef4444',
+        fontSize: 13,
+        fontWeight: '600',
     },
     footer: {
         padding: 20,

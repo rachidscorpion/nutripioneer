@@ -17,6 +17,7 @@ import WorkoutCard from '../../components/cards/WorkoutCard';
 import TimePicker from '../../components/ui/TimePicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
+import NutrientStatsBar from '../../components/dashboard/NutrientStatsBar';
 
 export default function PlanScreen() {
     const navigation = useNavigation();
@@ -231,6 +232,11 @@ export default function PlanScreen() {
                     />
                 }
             >
+                {plan && (
+                    <View style={{ marginBottom: 16 }}>
+                        <NutrientStatsBar plan={plan} />
+                    </View>
+                )}
                 {!plan && !isLoading ? (
                     <View style={styles.emptyState}>
                         <View style={[styles.emptyIconWrapper, { backgroundColor: theme.primary + '1A', borderColor: theme.primary + '4D' }]}>
