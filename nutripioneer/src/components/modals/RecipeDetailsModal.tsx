@@ -1,7 +1,7 @@
 'use client';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Utensils, ShoppingBag, Loader2, ExternalLink, Clock, RefreshCw, AlertCircle } from 'lucide-react';
+import { X, Flame, Utensils, ShoppingBag, Loader2, ExternalLink, Clock, RefreshCw, AlertCircle, Bookmark } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
@@ -28,6 +28,8 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
     const [loadingInstructions, setLoadingInstructions] = useState(false);
     const [instructionsError, setInstructionsError] = useState<string | null>(null);
     const [isSwapping, setIsSwapping] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [imgSrc, setImgSrc] = useState(recipe.image || '/assets/np-placeholder.jpg');
     const prevRecipeIdRef = useRef<string | null>(null);
     const fetchGuardRef = useRef<string | null>(null);
@@ -41,10 +43,25 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
             setLoadingInstructions(false);
             setActiveTab('instructions');
             setImgSrc(recipe.image || '/assets/np-placeholder.jpg');
+            setIsSaved(false);
+            setIsSaving(false);
             fetchGuardRef.current = null;
             prevRecipeIdRef.current = currentRecipeId;
         }
     }, [recipe]);
+
+    useEffect(() => {
+        if (!isOpen || !recipe?.id) return;
+        const checkSavedStatus = async () => {
+            try {
+                const res = await api.savedRecipes.check(recipe.id);
+                setIsSaved(res.data?.data?.saved || false);
+            } catch {
+                setIsSaved(false);
+            }
+        };
+        checkSavedStatus();
+    }, [isOpen, recipe?.id]);
 
     useEffect(() => {
         const fetchInstructions = async () => {
@@ -67,6 +84,10 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                 targetUrl = recipe.instructions;
             }
 
+            if (targetUrl && targetUrl.startsWith('http://')) {
+                targetUrl = targetUrl.replace('http://', 'https://');
+            }
+
             if (targetUrl && fetchGuardRef.current !== recipe.id) {
                 setLoadingInstructions(true);
                 setInstructionsError(null);
@@ -82,7 +103,6 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                     }
                     fetchGuardRef.current = recipe.id;
                 } catch (e: any) {
-                    console.error("Failed to fetch instructions", e);
                     const status = e?.response?.status;
                     if (status === 500) {
                         setInstructionsError('This recipe source is currently unavailable. The site may be blocking access from your region.');
@@ -199,6 +219,31 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
         }
     };
 
+    const handleToggleSave = async () => {
+        if (!recipe.id) return;
+        setIsSaving(true);
+        const wasSaved = isSaved;
+        setIsSaved(!wasSaved);
+        try {
+            if (wasSaved) {
+                await api.savedRecipes.unsave(recipe.id);
+                toast.success('Recipe unsaved');
+            } else {
+                await api.savedRecipes.save(recipe.id);
+                toast.success('Recipe saved!');
+            }
+        } catch (e: any) {
+            setIsSaved(wasSaved);
+            if (e?.response?.status === 400) {
+                setIsSaved(true);
+            } else {
+                toast.error(wasSaved ? 'Failed to unsave recipe' : 'Failed to save recipe');
+            }
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     // ... (existing helper functions unchanged if they were outside main flow, but formatInstructions is inside so we just continue)
 
     // Enhanced Instruction Parsing
@@ -235,8 +280,12 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
 
     if (potentialUrl) {
         try {
-            const u = new URL(potentialUrl);
-            sourceUrl = potentialUrl;
+            let httpsUrl = potentialUrl;
+            if (httpsUrl.startsWith('http://')) {
+                httpsUrl = httpsUrl.replace('http://', 'https://');
+            }
+            const u = new URL(httpsUrl);
+            sourceUrl = httpsUrl;
             sourceHostname = u.hostname.replace('www.', '');
         } catch (e) {
             // Invalid URL, ignore
@@ -413,8 +462,8 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                                     )) : (
                                                         <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
                                                             <p>No detailed instructions found.</p>
-                                                            {(recipe.url || (recipe.instructions && recipe.instructions.startsWith('http'))) && (
-                                                                <a href={recipe.url || recipe.instructions} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>
+                                                            {sourceUrl && (
+                                                                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>
                                                                     View original recipe <ExternalLink size={14} />
                                                                 </a>
                                                             )}
@@ -534,15 +583,34 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
 
                             {/* Footer */}
                             <div className={styles.modalFooter}>
-                                <button
-                                    onClick={handleAddIngredients}
-                                    className={styles.btnSecondary}
-                                    disabled={isAdding}
-                                    style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                >
-                                    <ShoppingBag size={18} />
-                                    {isAdding ? 'Adding...' : 'Add Ingredients to grocery list'}
-                                </button>
+                                <div className={styles.modalFooterRow}>
+                                    <button
+                                        onClick={handleAddIngredients}
+                                        className={styles.btnSecondary}
+                                        disabled={isAdding}
+                                    >
+                                        {isAdding ? <Loader2 size={18} className="spin" /> : <ShoppingBag size={18} />}
+                                        {isAdding ? 'Adding...' : 'Groceries'}
+                                    </button>
+                                    {planId && mealType && (
+                                        <button
+                                            onClick={handleSwapMeal}
+                                            className={styles.btnSwap}
+                                            disabled={isSwapping}
+                                        >
+                                            {isSwapping ? <Loader2 size={18} className="spin" /> : <RefreshCw size={18} />}
+                                            {isSwapping ? 'Swapping...' : 'Swap'}
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleToggleSave}
+                                        className={`${styles.btnSave} ${isSaved ? styles.btnSaveActive : ''}`}
+                                        disabled={isSaving}
+                                    >
+                                        {isSaving ? <Loader2 size={18} className="spin" /> : <Bookmark size={18} fill={isSaved ? 'currentColor' : 'none'} />}
+                                        {isSaved ? 'Saved' : 'Save'}
+                                    </button>
+                                </div>
                                 <button
                                     onClick={onClose}
                                     className={styles.btnPrimary}

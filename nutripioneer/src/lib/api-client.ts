@@ -130,6 +130,12 @@ export const api = {
             });
         },
     },
+    savedRecipes: {
+        list: () => apiClient.get('/users/saved-recipes'),
+        save: (recipeId: string) => apiClient.post('/users/saved-recipes', { recipeId }),
+        unsave: (recipeId: string) => apiClient.delete(`/users/saved-recipes/${recipeId}`),
+        check: (recipeId: string) => apiClient.get(`/users/saved-recipes/${recipeId}/check`),
+    },
     feedback: {
         submit: (data: any) => apiClient.post('/feedback', data),
     },

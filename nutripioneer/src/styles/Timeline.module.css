@@ -558,7 +558,64 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 1rem;
+    gap: 0.75rem;
+}
+
+.modalFooterRow {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btnSwap {
+    flex: 1;
+    background-color: var(--background);
+    color: var(--text-muted);
+    padding: 0.65rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnSwap:hover {
+    background-color: var(--border-subtle);
+}
+
+.btnSave {
+    flex: 1;
+    background-color: #fffbeb;
+    color: #d97706;
+    padding: 0.65rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid #fde68a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnSave:hover {
+    background-color: #fef3c7;
+}
+
+.btnSaveActive {
+    background-color: #d97706;
+    color: white;
+    border-color: #d97706;
+}
+
+.btnSaveActive:hover {
+    background-color: #b45309;
 }
 
 .closeBtn {
@@ -768,6 +825,36 @@
 :global([data-theme='dark']) .btnSecondary:hover {
     background-color: var(--foreground);
     color: var(--background);
+}
+
+:global([data-theme='dark']) .btnSwap {
+    background-color: #1e293b;
+    color: #94a3b8;
+    border-color: #334155;
+}
+
+:global([data-theme='dark']) .btnSwap:hover {
+    background-color: #334155;
+}
+
+:global([data-theme='dark']) .btnSave {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+:global([data-theme='dark']) .btnSave:hover {
+    background-color: rgba(245, 158, 11, 0.2);
+}
+
+:global([data-theme='dark']) .btnSaveActive {
+    background-color: #f59e0b;
+    color: #0f172a;
+    border-color: #f59e0b;
+}
+
+:global([data-theme='dark']) .btnSaveActive:hover {
+    background-color: #d97706;
 }
 
 :global([data-theme='dark']) .title {
