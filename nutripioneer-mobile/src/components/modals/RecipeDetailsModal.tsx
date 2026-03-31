@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { api } from '../../lib/api-client';
 import SourceCitationBanner from '../ui/SourceCitationBanner';
+import NPModal from './NPModal';
+import { useTheme } from '../../context/ThemeContext';
 
 interface RecipeDetailsModalProps {
     visible: boolean;
@@ -18,6 +20,7 @@ interface RecipeDetailsModalProps {
 const { width, height } = Dimensions.get('window');
 
 export default function RecipeDetailsModal({ visible, onClose, recipe, nutritionLimits, planId, mealType, onUpdate }: RecipeDetailsModalProps) {
+    const { theme } = useTheme();
     const [activeTab, setActiveTab] = useState<'instructions' | 'ingredients' | 'health'>('instructions');
     const [isAdding, setIsAdding] = useState(false);
     const [scrapedInstructions, setScrapedInstructions] = useState<string[] | null>(null);
@@ -29,6 +32,9 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
     const [imgSrc, setImgSrc] = useState(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
     const [isSaved, setIsSaved] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<any>(null);
+    const [showAnalysisModal, setShowAnalysisModal] = useState(false);
     const prevRecipeIdRef = useRef<string | null>(null);
     const fetchGuardRef = useRef<string | null>(null);
 
@@ -46,6 +52,9 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
             setImgSrc(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
             setIsSaved(false);
             setIsSaving(false);
+            setIsAnalyzing(false);
+            setAnalysisResult(null);
+            setShowAnalysisModal(false);
             fetchGuardRef.current = null;
             prevRecipeIdRef.current = currentRecipeId;
         }
@@ -225,6 +234,123 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleAnalyzeMeal = async () => {
+        setIsAnalyzing(true);
+        try {
+            const res = await api.meals.analyzeMeal({
+                name: recipe.name,
+                calories: recipe.calories,
+                protein: recipe.protein,
+                carbs: recipe.carbs,
+                fat: recipe.fat,
+                sodium: recipe.sodium,
+                sugar: recipe.sugar,
+                fiber: recipe.fiber,
+                servingSize: recipe.servingSize,
+                servingSizeUnit: recipe.servingSizeUnit,
+                ingredients: recipe.ingredients,
+                prepTime: recipe.prepTime,
+                tags: recipe.tags,
+            });
+            if (res.data?.success && res.data?.data) {
+                setAnalysisResult(res.data.data);
+                setShowAnalysisModal(true);
+            } else {
+                Alert.alert('Error', 'Failed to analyze meal');
+            }
+        } catch (e: any) {
+            Alert.alert('Error', e?.response?.data?.message || 'Failed to analyze meal. Try again later.');
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    const renderAnalysisContent = () => {
+        if (!analysisResult) return null;
+
+        const statusColor = analysisResult.status === 'SAFE' ? '#10b981' : analysisResult.status === 'CAUTION' ? '#f59e0b' : '#ef4444';
+        const statusIcon = analysisResult.status === 'SAFE' ? 'shield-checkmark' : analysisResult.status === 'CAUTION' ? 'alert-triangle' : 'close-circle';
+
+        return (
+            <View style={{ gap: 16 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: theme.background, borderRadius: 14, padding: 14 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: statusColor + '15', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 }}>
+                        <Ionicons name={statusIcon} size={18} color={statusColor} />
+                        <Text style={{ fontWeight: '700', color: statusColor, fontSize: 14 }}>{analysisResult.status}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 2 }}>
+                        <Text style={{ fontSize: 28, fontWeight: '800', color: theme.text }}>{analysisResult.overallScore}</Text>
+                        <Text style={{ fontSize: 14, color: theme.textMuted }}>/100</Text>
+                    </View>
+                </View>
+
+                <Text style={{ fontSize: 14, lineHeight: 21, color: theme.textMuted }}>{analysisResult.reasoning}</Text>
+
+                {analysisResult.nutritionalAnalysis && analysisResult.nutritionalAnalysis.length > 0 && (
+                    <View style={{ gap: 8 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Nutritional Breakdown</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                            {analysisResult.nutritionalAnalysis.map((n: any, i: number) => {
+                                const nColor = n.status === 'SAFE' ? '#10b981' : n.status === 'CAUTION' ? '#f59e0b' : '#ef4444';
+                                return (
+                                    <View key={i} style={{ flex: 1, minWidth: '45%', backgroundColor: theme.background, borderRadius: 10, padding: 10, borderLeftWidth: 3, borderLeftColor: nColor }}>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                                            <Text style={{ fontSize: 12, fontWeight: '700', color: theme.text }}>{n.nutrient}</Text>
+                                            <Text style={{ fontSize: 9, fontWeight: '700', color: nColor, textTransform: 'uppercase' }}>{n.status}</Text>
+                                        </View>
+                                        <Text style={{ fontSize: 16, fontWeight: '700', color: theme.text }}>{n.value} {n.unit}</Text>
+                                        <Text style={{ fontSize: 11, color: theme.textMuted }}>Limit: {n.limit}</Text>
+                                        {n.note ? <Text style={{ fontSize: 11, color: theme.textMuted, marginTop: 3, lineHeight: 15 }}>{n.note}</Text> : null}
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
+
+                {analysisResult.ingredientConcerns && analysisResult.ingredientConcerns.length > 0 && (
+                    <View style={{ gap: 8 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ingredient Concerns</Text>
+                        <View style={{ gap: 6 }}>
+                            {analysisResult.ingredientConcerns.map((c: any, i: number) => {
+                                const riskColor = c.risk === 'HIGH' ? '#ef4444' : c.risk === 'MEDIUM' ? '#f59e0b' : '#3b82f6';
+                                return (
+                                    <View key={i} style={{ backgroundColor: theme.background, borderRadius: 10, padding: 12 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                            <Text style={{ fontSize: 9, fontWeight: '700', color: riskColor, textTransform: 'uppercase', backgroundColor: riskColor + '15', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4 }}>{c.risk}</Text>
+                                            <Text style={{ fontSize: 13, fontWeight: '600', color: theme.text }}>{c.ingredient}</Text>
+                                        </View>
+                                        <Text style={{ fontSize: 12, color: theme.textMuted, lineHeight: 16 }}>{c.reason}</Text>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
+
+                {analysisResult.modifications && analysisResult.modifications.length > 0 && (
+                    <View style={{ gap: 8 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Suggested Modifications</Text>
+                        <View style={{ gap: 6 }}>
+                            {analysisResult.modifications.map((m: any, i: number) => (
+                                <View key={i} style={{ backgroundColor: 'rgba(139, 92, 246, 0.05)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.15)' }}>
+                                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#8b5cf6' }}>{m.action}</Text>
+                                    <Text style={{ fontSize: 12, color: theme.textMuted, lineHeight: 16, marginTop: 2 }}>{m.reason}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                )}
+
+                {analysisResult.summary && (
+                    <View style={{ backgroundColor: 'rgba(139, 92, 246, 0.06)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.15)' }}>
+                        <Text style={{ fontSize: 13, lineHeight: 20, color: theme.textMuted }}>{analysisResult.summary}</Text>
+                    </View>
+                )}
+            </View>
+        );
     };
 
     return (
@@ -516,13 +642,31 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                 <Text style={[styles.btnSaveText, isSaved && styles.btnSaveTextActive]}>{isSaved ? "Saved" : "Save"}</Text>
                             </TouchableOpacity>
                         </View>
-                        <TouchableOpacity style={styles.btnPrimary} onPress={onClose}>
-                            <Text style={styles.btnPrimaryText}>Done</Text>
-                        </TouchableOpacity>
+                        <View style={styles.footerRow}>
+                            <TouchableOpacity style={[styles.btnAnalyze, isAnalyzing && styles.btnAnalyzeDisabled]} onPress={handleAnalyzeMeal} disabled={isAnalyzing}>
+                                {isAnalyzing ? <ActivityIndicator size="small" color="#8b5cf6" /> : <Ionicons name="sparkles" size={18} color="#8b5cf6" />}
+                                <Text style={styles.btnAnalyzeText}>{isAnalyzing ? "Analyzing..." : "AI Analyze"}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.btnPrimary, { flex: 1 }]} onPress={onClose}>
+                                <Text style={styles.btnPrimaryText}>Done</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                 </View>
             </View>
+
+            <NPModal
+                visible={showAnalysisModal}
+                title="AI Meal Analysis"
+                description={renderAnalysisContent()}
+                onClose={() => setShowAnalysisModal(false)}
+                actions={
+                    <TouchableOpacity style={{ backgroundColor: '#8b5cf6', borderRadius: 12, paddingVertical: 12, alignItems: 'center' }} onPress={() => setShowAnalysisModal(false)}>
+                        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>Close</Text>
+                    </TouchableOpacity>
+                }
+            />
 
             {/* WebView Full Screen Modal */}
             <Modal
@@ -1014,6 +1158,26 @@ const styles = StyleSheet.create({
     },
     btnSwapText: {
         color: '#9ca3af',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    btnAnalyze: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(139, 92, 246, 0.3)',
+        paddingVertical: 14,
+        gap: 6,
+    },
+    btnAnalyzeDisabled: {
+        opacity: 0.6,
+    },
+    btnAnalyzeText: {
+        color: '#8b5cf6',
         fontWeight: 'bold',
         fontSize: 14,
     },

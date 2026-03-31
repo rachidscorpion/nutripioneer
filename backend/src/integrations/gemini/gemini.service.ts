@@ -32,15 +32,15 @@ export interface ConditionProfile {
 }
 
 export interface HealthProfile {
-    conditions: string[]; // e.g., ["ckd-3b-5", "htn"]
-    medications: any[];   // Your existing med objects
+    conditions: string[];
+    medications: any[];
     biometrics: {
-        weight: number;   // 82
-        height: number;   // 160
-        age: number;      // 23
-        gender: string;   // Male
+        weight: number;
+        height: number;
+        age: number;
+        gender: string;
     };
-    nutritionLimits?: ComputedLimits;
+    nutritionLimits?: ComputedLimits | Record<string, unknown>;
 }
 
 export interface ComputedLimits {
@@ -67,6 +67,52 @@ export interface MenuItem {
 export interface MenuAnalysisResult {
     items: MenuItem[];
     summary: string;
+}
+
+export interface MealAnalysisNutrientCheck {
+    nutrient: string;
+    value: number;
+    unit: string;
+    limit: string;
+    status: 'SAFE' | 'CAUTION' | 'AVOID';
+    note: string;
+}
+
+export interface MealIngredientConcern {
+    ingredient: string;
+    risk: 'HIGH' | 'MEDIUM' | 'LOW';
+    reason: string;
+}
+
+export interface MealModification {
+    action: string;
+    reason: string;
+}
+
+export interface MealAnalysisResult {
+    status: 'SAFE' | 'CAUTION' | 'AVOID';
+    overallScore: number;
+    reasoning: string;
+    nutritionalAnalysis: MealAnalysisNutrientCheck[];
+    ingredientConcerns: MealIngredientConcern[];
+    modifications: MealModification[];
+    summary: string;
+}
+
+export interface RecipeData {
+    name: string;
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    sodium?: number;
+    sugar?: number;
+    fiber?: number;
+    servingSize?: number;
+    servingSizeUnit?: string;
+    ingredients?: string;
+    prepTime?: number;
+    tags?: string;
 }
 
 export async function generateConditionProfile(conditionName: string, icdDescription: string): Promise<ConditionProfile> {
@@ -287,5 +333,176 @@ OUTPUT FORMAT (JSON ONLY):
     } catch (error) {
         console.error('Failed to parse Gemini response:', error);
         throw new Error('Failed to parse menu analysis results');
+    }
+}
+
+export async function analyzeMeal(recipeData: RecipeData, healthProfile: {
+    conditions: string[];
+    medications: any[];
+    biometrics: {
+        weight: number;
+        height: number;
+        age: number;
+        gender: string;
+    };
+    nutritionLimits?: ComputedLimits | Record<string, unknown>;
+    conditionProfiles?: Array<{
+        label: string;
+        nutrientLimits: Array<{ nutrient: string; limitType: string; limitValue: string; unit?: string; notes?: string }>;
+        ingredientExclusions: Array<{ additiveCategory: string; ingredientRegex: string; severity: string }>;
+    }>;
+    recentMetrics?: Array<{ type: string; value1?: number; value2?: number; tag?: string; createdAt: string }>;
+}): Promise<MealAnalysisResult> {
+    const conditions = healthProfile.conditions.join(', ') || 'None specified';
+    const medications = healthProfile.medications.map((m: any) => m.name).join(', ') || 'None';
+    const biometrics = `Age ${healthProfile.biometrics.age}, Weight ${healthProfile.biometrics.weight}kg, Height ${healthProfile.biometrics.height}cm, Gender ${healthProfile.biometrics.gender}`;
+
+    let conditionContext = '';
+    if (healthProfile.conditionProfiles && healthProfile.conditionProfiles.length > 0) {
+        const profiles = healthProfile.conditionProfiles.map(cp => {
+            const limits = cp.nutrientLimits.map(l => `${l.nutrient}: ${l.limitType} ${l.limitValue}${l.unit || ''}`).join('; ');
+            const exclusions = cp.ingredientExclusions.map(e => `${e.additiveCategory} (${e.severity})`).join('; ');
+            return `  - ${cp.label}: Limits=[${limits}], Exclusions=[${exclusions}]`;
+        }).join('\n');
+        conditionContext = `\n\nDETAILED CONDITION PROFILES:\n${profiles}`;
+    }
+
+    let metricsContext = '';
+    if (healthProfile.recentMetrics && healthProfile.recentMetrics.length > 0) {
+        const metrics = healthProfile.recentMetrics.map(m => {
+            if (m.type === 'GLUCOSE') return `Glucose: ${m.value1}mg/dL (${m.tag || 'no tag'})`;
+            if (m.type === 'BP') return `BP: ${m.value1}/${m.value2}mmHg (${m.tag || 'no tag'})`;
+            if (m.type === 'WEIGHT') return `Weight: ${m.value1} (${m.tag || 'no tag'})`;
+            return `${m.type}: ${m.value1}`;
+        }).join(', ');
+        metricsContext = `\n\nRECENT HEALTH METRICS:\n${metrics}`;
+    }
+
+    let ingredientsList: string[] = [];
+    if (recipeData.ingredients) {
+        try {
+            const parsed = typeof recipeData.ingredients === 'string' ? JSON.parse(recipeData.ingredients) : recipeData.ingredients;
+            ingredientsList = parsed.map((i: any) => `${i.item}${i.measure ? ` (${i.measure})` : ''}`);
+        } catch {
+            ingredientsList = [recipeData.ingredients];
+        }
+    }
+
+    const prompt = `You are an expert clinical dietitian and nutrition safety analyst. Analyze this meal/recipe against the patient's health profile.
+
+PATIENT HEALTH PROFILE:
+- Conditions: ${conditions}
+- Medications: ${medications}
+- Biometrics: ${biometrics}
+- Nutrition Limits: ${JSON.stringify(healthProfile.nutritionLimits || 'Not set')}
+${conditionContext}
+${metricsContext}
+
+MEAL TO ANALYZE:
+- Name: ${recipeData.name}
+- Calories: ${recipeData.calories || 'Unknown'} kcal
+- Protein: ${recipeData.protein || 'Unknown'}g
+- Carbs: ${recipeData.carbs || 'Unknown'}g
+- Fat: ${recipeData.fat || 'Unknown'}g
+- Sodium: ${recipeData.sodium || 'Unknown'}mg
+- Sugar: ${recipeData.sugar || 'Unknown'}g
+- Fiber: ${recipeData.fiber || 'Unknown'}g
+- Serving Size: ${recipeData.servingSize || 'Unknown'}${recipeData.servingSizeUnit || 'g'}
+- Prep Time: ${recipeData.prepTime || 'Unknown'} min
+${ingredientsList.length > 0 ? `- Ingredients: ${ingredientsList.join(', ')}` : ''}
+${recipeData.tags ? `- Tags: ${typeof recipeData.tags === 'string' ? recipeData.tags : JSON.stringify(recipeData.tags)}` : ''}
+
+YOUR TASK:
+Perform a comprehensive safety analysis of this meal for the patient. Consider:
+1. How each nutrient value compares to the patient's daily limits (divide daily by 3 for per-meal)
+2. Any ingredient interactions with the patient's medications
+3. Condition-specific risks (CKD: phosphorus/potassium/sodium; HTN: sodium; T2DM: carbs/sugar; PCOS: sugar/inflammatory foods)
+4. Ingredient exclusions from the patient's condition profiles
+5. Whether recent health metrics suggest extra caution
+
+SAFETY CRITERIA:
+- SAFE (score 85-100): All nutrients well within limits, no risky ingredients, fits conditions
+- CAUTION (score 51-84): Some nutrients approaching limits, may need modifications
+- AVOID (score 0-50): Contains harmful ingredients or violates critical nutrient limits
+
+OUTPUT FORMAT (JSON ONLY):
+{
+  "status": "SAFE" | "CAUTION" | "AVOID",
+  "overallScore": number (0-100),
+  "reasoning": "Detailed explanation of why this meal is rated as such (2-4 sentences)",
+  "nutritionalAnalysis": [
+    {
+      "nutrient": "Calories",
+      "value": 450,
+      "unit": "kcal",
+      "limit": "400-600",
+      "status": "SAFE" | "CAUTION" | "AVOID",
+      "note": "Brief explanation"
+    }
+  ],
+  "ingredientConcerns": [
+    {
+      "ingredient": "ingredient name",
+      "risk": "HIGH" | "MEDIUM" | "LOW",
+      "reason": "Why this is concerning"
+    }
+  ],
+  "modifications": [
+    {
+      "action": "What to change",
+      "reason": "Why it helps"
+    }
+  ],
+  "summary": "Brief 2-3 sentence summary the patient can quickly read"
+}`;
+
+    const genAI = getGenAI();
+    const model = genAI.getGenerativeModel({
+        model: "gemini-3-flash-preview",
+        generationConfig: { responseMimeType: "application/json" }
+    });
+
+    const result = await model.generateContent(prompt);
+    const content = result.response.text();
+
+    if (!content) {
+        throw new Error("Gemini returned empty content for meal analysis");
+    }
+
+    try {
+        const parsed = JSON.parse(content);
+
+        if (!['SAFE', 'CAUTION', 'AVOID'].includes(parsed.status)) {
+            parsed.status = 'CAUTION';
+        }
+
+        if (typeof parsed.overallScore !== 'number' || parsed.overallScore < 0 || parsed.overallScore > 100) {
+            parsed.overallScore = parsed.status === 'SAFE' ? 85 : parsed.status === 'CAUTION' ? 60 : 25;
+        }
+
+        if (!parsed.nutritionalAnalysis || !Array.isArray(parsed.nutritionalAnalysis)) {
+            parsed.nutritionalAnalysis = [];
+        }
+
+        if (!parsed.ingredientConcerns || !Array.isArray(parsed.ingredientConcerns)) {
+            parsed.ingredientConcerns = [];
+        }
+
+        if (!parsed.modifications || !Array.isArray(parsed.modifications)) {
+            parsed.modifications = [];
+        }
+
+        if (!parsed.reasoning) {
+            parsed.reasoning = 'Unable to determine reasoning for this meal.';
+        }
+
+        if (!parsed.summary) {
+            parsed.summary = 'Meal analysis complete.';
+        }
+
+        return parsed as MealAnalysisResult;
+    } catch (error) {
+        console.error('Failed to parse Gemini meal analysis response:', error);
+        throw new Error('Failed to parse meal analysis results');
     }
 }

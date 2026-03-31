@@ -77,6 +77,9 @@ export const api = {
     },
     meals: {
         swap: (planId: string, type: string) => apiClient.post(`/plans/${planId}/meals/${type}/swap`, {}),
+        analyzeMeal: (recipeData: any) => apiClient.post('/meals/analyze', recipeData, {
+            timeout: 60000
+        }),
     },
     recipes: {
         regenerateAll: () => apiClient.post('/recipes/regenerate-all'),

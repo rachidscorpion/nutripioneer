@@ -18,6 +18,10 @@ export default function DietaryStep() {
     // Tab state: 'favorites' or 'dislikes'
     const [activeTab, setActiveTab] = useState<'favorites' | 'dislikes'>('favorites');
 
+    const toggleVegetarian = (val: boolean) => {
+        updateData('dietary', { vegetarian: val });
+    };
+
     const addItem = (type: 'favorites' | 'dislikes', item: string) => {
         if (!item.trim()) return;
         const currentList = dietary[type];
@@ -65,6 +69,45 @@ export default function DietaryStep() {
             <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#1e293b' }}>
                 Taste Profile
             </h1>
+
+            {/* Vegetarian Toggle */}
+            <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#334155' }}>Are you vegetarian?</h3>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button
+                        onClick={() => toggleVegetarian(true)}
+                        style={{
+                            padding: '0.8rem 2rem',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: dietary.vegetarian ? '#0f172a' : 'rgba(255,255,255,0.5)',
+                            color: dietary.vegetarian ? 'white' : '#64748b',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: dietary.vegetarian ? '0 4px 12px rgba(15, 23, 42, 0.2)' : 'none'
+                        }}
+                    >
+                        Yes
+                    </button>
+                    <button
+                        onClick={() => toggleVegetarian(false)}
+                        style={{
+                            padding: '0.8rem 2rem',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: !dietary.vegetarian ? '#0f172a' : 'rgba(255,255,255,0.5)',
+                            color: !dietary.vegetarian ? 'white' : '#64748b',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: !dietary.vegetarian ? '0 4px 12px rgba(15, 23, 42, 0.2)' : 'none'
+                        }}
+                    >
+                        No
+                    </button>
+                </div>
+            </div>
 
             {/* Tabs */}
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid #e2e8f0' }}>

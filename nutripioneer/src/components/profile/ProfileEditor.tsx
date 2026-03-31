@@ -39,6 +39,7 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
             favorites: initialData.dietary?.favorites ?? [],
             dislikes: initialData.dietary?.dislikes ?? [],
             allergies: initialData.dietary?.allergies ?? [],
+            vegetarian: initialData.dietary?.vegetarian ?? false,
         },
         medical: {
             ...initialData.medical,
@@ -518,6 +519,22 @@ export default function ProfileEditor({ user, initialData }: ProfileEditorProps)
                                 <Utensils className={styles.iconOrange} size={24} />
                                 Dietary Preferences
                             </h3>
+
+                            <div className={styles.infoCard} style={{ marginBottom: '1.5rem' }}>
+                                <div className={styles.insulinRow}>
+                                    <div>
+                                        <span className={styles.infoLabel} style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--foreground)' }}>Vegetarian Diet</span>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>Do you follow a vegetarian diet?</div>
+                                    </div>
+                                    <button
+                                        onClick={() => updateNested('dietary', 'vegetarian', !data.dietary.vegetarian)}
+                                        className={`${styles.insulinToggle} ${data.dietary.vegetarian ? styles.toggleActive : styles.toggleInactive}`}
+                                    >
+                                        <div className={`${styles.toggleKnob} ${data.dietary.vegetarian ? styles.knobOn : styles.knobOff}`} />
+                                    </button>
+                                </div>
+                            </div>
+
                             <div style={{ display: 'grid', gap: '1rem' }}>
                                 <div className={styles.fieldGroup}>
                                     <label className={styles.label}>Dislikes (comma separated)</label>

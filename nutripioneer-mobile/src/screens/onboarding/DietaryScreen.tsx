@@ -69,6 +69,19 @@ export default function DietaryScreen() {
                     <Text style={styles.subtitle}>Help us tailor options to what you love.</Text>
                 </View>
 
+                {/* Vegetarian Toggle */}
+                <TouchableOpacity style={styles.toggleCard} onPress={() => updateData('dietary', { vegetarian: !dietary.vegetarian })} activeOpacity={0.8}>
+                    <View style={styles.toggleCardContent}>
+                        <Ionicons name="leaf-outline" size={24} color={dietary.vegetarian ? '#13ec5b' : '#9ca3af'} />
+                        <Text style={[styles.toggleText, dietary.vegetarian && styles.toggleTextActive]}>
+                            I am a Vegetarian
+                        </Text>
+                    </View>
+                    <View style={[styles.checkbox, dietary.vegetarian && styles.checkboxActive]}>
+                        {dietary.vegetarian && <Ionicons name="checkmark-outline" size={16} color="#000" />}
+                    </View>
+                </TouchableOpacity>
+
                 {/* Custom Tabs */}
                 <View style={styles.tabContainer}>
                     <TouchableOpacity
@@ -234,6 +247,48 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: 16,
         color: '#9ca3af',
+    },
+    toggleCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 24,
+    },
+    toggleCardContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    toggleText: {
+        color: '#9ca3af',
+        fontSize: 18,
+        fontWeight: '600',
+        marginLeft: 12,
+    },
+    toggleTextActive: {
+        color: '#fff',
+    },
+    checkbox: {
+        width: 24,
+        height: 24,
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    checkboxActive: {
+        backgroundColor: '#13ec5b',
+        borderColor: '#13ec5b',
+        shadowColor: '#13ec5b',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        elevation: 5,
     },
     tabContainer: {
         flexDirection: 'row',

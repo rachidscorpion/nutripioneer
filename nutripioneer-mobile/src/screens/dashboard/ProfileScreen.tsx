@@ -29,7 +29,7 @@ export default function ProfileScreen() {
     const [data, setData] = useState({
         biometrics: { gender: 'female', heightCm: 165, weightKg: 65, waistCm: 70 },
         medical: { insulin: false, medications: [] as any[] },
-        dietary: { favorites: [], dislikes: [] as string[], allergies: [] as string[] }
+        dietary: { favorites: [], dislikes: [] as string[], allergies: [] as string[], vegetarian: false }
     });
 
     const [loading, setLoading] = useState(true);
@@ -97,6 +97,7 @@ export default function ProfileScreen() {
                         favorites: raw.dietary?.favorites || [],
                         dislikes: raw.dietary?.dislikes || [],
                         allergies: raw.dietary?.allergies || [],
+                        vegetarian: raw.dietary?.vegetarian || false,
                     }
                 });
 
@@ -519,6 +520,19 @@ export default function ProfileScreen() {
                         <View style={styles.section}>
                             <Text style={[styles.sectionTitle, { color: theme.text }]}>Dietary Preferences</Text>
                             <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                                <View style={styles.switchRow}>
+                                    <View>
+                                        <Text style={[styles.label, { color: theme.text }]}>Vegetarian Diet</Text>
+                                        <Text style={[styles.subText, { color: theme.textMuted }]}>Do you follow a vegetarian diet?</Text>
+                                    </View>
+                                    <TouchableOpacity
+                                        style={[styles.toggleBtn, data.dietary.vegetarian ? [styles.toggleBtnOn, { backgroundColor: theme.primary }] : [styles.toggleBtnOff, { backgroundColor: theme.textMuted }]]}
+                                        onPress={() => updateNested('dietary', 'vegetarian', !data.dietary.vegetarian)}
+                                    >
+                                        <View style={[styles.toggleKnob, data.dietary.vegetarian ? styles.toggleKnobOn : styles.toggleKnobOff, { backgroundColor: theme.background }]} />
+                                    </TouchableOpacity>
+                                </View>
+
                                 <View style={styles.inputGroup}>
                                     <Text style={[styles.label, { color: theme.text }]}>Dislikes (comma separated)</Text>
                                     <TextInput

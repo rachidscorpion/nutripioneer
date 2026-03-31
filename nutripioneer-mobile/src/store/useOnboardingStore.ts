@@ -35,6 +35,7 @@ export interface OnboardingState {
         dislikes: string[];
         favCuisines: string[];
         dislikeCuisines: string[];
+        vegetarian: boolean;
     };
     // Actions
     nextStep: () => void;
@@ -67,6 +68,7 @@ const initialState = {
         dislikes: [],
         favCuisines: [],
         dislikeCuisines: [],
+        vegetarian: false,
     },
 };
 
