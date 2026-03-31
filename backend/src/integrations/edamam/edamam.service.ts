@@ -346,9 +346,10 @@ class EdamamService {
             type: 'public',
         });
 
-        // 3. Map Cuisines (favCuisines)
+        // 3. Parse Onboarding Data safely for reuse
+        let onboarding: any = null;
         try {
-            const onboarding = typeof userProfile.onboardingData === 'string'
+            onboarding = typeof userProfile.onboardingData === 'string'
                 ? JSON.parse(userProfile.onboardingData)
                 : userProfile.onboardingData;
 
@@ -404,6 +405,10 @@ class EdamamService {
         // 5. Health Labels & Exclusions
         // Force alcohol-free due to Tylenol/Liver warning in profile
         params.append('health', 'alcohol-free');
+
+        if (onboarding?.dietary?.vegetarian) {
+            params.append('health', 'vegetarian');
+        }
 
         // 6. Meal Type
         if (options.mealType) {
