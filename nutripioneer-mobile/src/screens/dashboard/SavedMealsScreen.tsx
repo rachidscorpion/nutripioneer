@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../lib/api-client';
 import { useTheme } from '../../context/ThemeContext';
 import RecipeDetailsModal from '../../components/modals/RecipeDetailsModal';
+import placeholderImg from '../../../assets/np-placeholder.jpg';
 
 interface SavedRecipe {
     id: string;
@@ -37,6 +38,7 @@ export default function SavedMealsScreen() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [selectedRecipe, setSelectedRecipe] = useState<SavedRecipe | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
     const fetchSavedRecipes = async () => {
         try {
@@ -90,7 +92,10 @@ export default function SavedMealsScreen() {
         setShowModal(true);
     };
 
-    const getFallbackImage = () => 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80';
+    const getImageSource = (recipe: SavedRecipe) => {
+        if (!recipe.image || failedImages.has(recipe.id)) return placeholderImg;
+        return { uri: recipe.image };
+    };
 
     const parseTags = (tagsStr?: string): string[] => {
         if (!tagsStr) return [];
@@ -146,8 +151,9 @@ export default function SavedMealsScreen() {
                                 activeOpacity={0.8}
                             >
                                 <Image
-                                    source={{ uri: recipe.image || getFallbackImage() }}
+                                    source={getImageSource(recipe)}
                                     style={styles.recipeImage}
+                                    onError={() => setFailedImages(prev => new Set(prev).add(recipe.id))}
                                 />
                                 <View style={styles.recipeInfo}>
                                     <Text style={[styles.recipeName, { color: theme.text }]} numberOfLines={2}>
