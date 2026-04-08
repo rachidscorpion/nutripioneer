@@ -88,7 +88,7 @@ export default async function Page() {
             <span className={styles.gradientText}>Live Healthier.</span>
           </h1>
           <p className={styles.subtext}>
-            The intelligent nutrition platform that adapts to your biology. 
+            The intelligent nutrition platform that adapts to your biology.
             Plan meals, track nutrients, and ensure medication safety in one elegant interface.
           </p>
 
@@ -99,6 +99,42 @@ export default async function Page() {
             </Link>
             <Link href="#features" className={styles.secondaryBtn}>Discover More</Link>
           </div>
+
+          <motion.div
+            className={styles.appPromo}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <p className={styles.appPromoText}>Now available on iOS</p>
+            <a
+              href="https://apps.apple.com/us/app/nutri-pioneer/id6760688109"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.appLink}
+            >
+              <div className={styles.iphoneWrapper}>
+                <Image
+                  src="/assets/iphone-frame.png"
+                  alt="iPhone App Frame"
+                  width={440}
+                  height={880}
+                  className={styles.iphoneFrame}
+                  priority
+                />
+                <div className={styles.screenWrapper}>
+                  <Image
+                    src="/assets/logo-with-brandname.svg"
+                    alt="NutriPioneer"
+                    width={180}
+                    height={390}
+                    className={styles.iphoneScreen}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
+              </div>
+            </a>
+          </motion.div>
         </motion.div>
       </section>
 
