@@ -350,6 +350,52 @@ export class UsersController {
         });
     }
 
+    async getMySavedRecipes(c: Context) {
+        const userId = c.get('userId');
+        const recipes = await usersService.getSavedRecipes(userId);
+
+        return c.json({
+            success: true,
+            data: recipes,
+        });
+    }
+
+    async mySaveRecipe(c: Context) {
+        const userId = c.get('userId');
+        const { recipeId } = await c.req.json();
+
+        const result = await usersService.saveRecipe(userId, recipeId);
+
+        return c.json({
+            success: true,
+            data: result,
+        });
+    }
+
+    async myUnsaveRecipe(c: Context) {
+        const userId = c.get('userId');
+        const recipeId = c.req.param('recipeId');
+
+        await usersService.unsaveRecipe(userId, recipeId);
+
+        return c.json({
+            success: true,
+            message: 'Recipe removed from saved',
+        });
+    }
+
+    async checkRecipeSaved(c: Context) {
+        const userId = c.get('userId');
+        const recipeId = c.req.param('recipeId');
+
+        const saved = await usersService.isRecipeSaved(userId, recipeId);
+
+        return c.json({
+            success: true,
+            data: { saved },
+        });
+    }
+
     /**
      * Validate native purchase receipt and update subscription status
      */

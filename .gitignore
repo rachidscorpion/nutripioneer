@@ -19,3 +19,5 @@ nutripioneer-mobile/node_modules
 .vscode
 backend/prisma/dev.db-wal
 backend/prisma/dev.db-shm
+
+AGENTS.md

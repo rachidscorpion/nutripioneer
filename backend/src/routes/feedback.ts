@@ -33,7 +33,7 @@ app.post('/', zValidator('json', feedbackSchema), async (c) => {
         console.log("Saved feedback to DB:", feedback.id);
 
         // 2. Send Email
-        const fromEmail = 'onboarding@resend.dev';
+        const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
         const toEmail = 'admin@nutripioneer.com';
 
         if (process.env.RESEND_API_KEY && fromEmail && toEmail) {

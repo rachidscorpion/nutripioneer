@@ -34,6 +34,7 @@ export interface OnboardingState {
         dislikes: string[];
         favCuisines: string[];
         dislikeCuisines: string[];
+        vegetarian: boolean;
     };
     // Actions
     nextStep: () => void;
@@ -68,6 +69,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         dislikes: [],
         favCuisines: [],
         dislikeCuisines: [],
+        vegetarian: false,
     },
 
     nextStep: () => set((state) => ({ step: state.step + 1 })),
@@ -96,6 +98,7 @@ export const useOnboardingStore = create<OnboardingState>()(
             dislikes: [],
             favCuisines: [],
             dislikeCuisines: [],
+            vegetarian: false,
         },
     }),
 
@@ -136,6 +139,7 @@ export const useOnboardingStore = create<OnboardingState>()(
                 dislikes: [],
                 favCuisines: [],
                 dislikeCuisines: [],
+                vegetarian: false,
             },
         });
         // Clear persisted storage

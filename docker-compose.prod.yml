@@ -23,6 +23,9 @@ services:
        - APPLE_TEAM_ID=${APPLE_TEAM_ID}
        - APPLE_PRIVATE_KEY=${APPLE_PRIVATE_KEY}
 
+       # Email (Resend)
+       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-contact@updates.nutripioneer.com}
+
     volumes:
       - backend_data:/app/data
     networks:

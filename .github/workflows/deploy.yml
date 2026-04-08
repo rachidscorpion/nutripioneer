@@ -91,6 +91,7 @@ jobs:
             echo '      - BETTER_AUTH_URL=https://www.nutripioneer.com' >> docker-compose.prod.yml
             echo '      - BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}' >> docker-compose.prod.yml
             echo '      - RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}' >> docker-compose.prod.yml
+            echo '      - RESEND_FROM_EMAIL=contact@updates.nutripioneer.com' >> docker-compose.prod.yml
             echo '      - GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}' >> docker-compose.prod.yml
             echo '      - GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}' >> docker-compose.prod.yml
             echo '      - USDA_API_KEY=${{ secrets.USDA_API_KEY }}' >> docker-compose.prod.yml

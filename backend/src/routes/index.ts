@@ -12,6 +12,7 @@ import webhooks from './webhooks';
 
 import drugs from './drugs';
 import recipe from './recipe';
+import mealAnalysis from './meal-analysis';
 import appleWebhooks from './apple-webhooks';
 
 const api = new Hono();
@@ -29,6 +30,7 @@ api.route('/products', products);
 api.route('/webhooks', webhooks);
 api.route('/apple-webhooks', appleWebhooks);
 api.route('/recipe', recipe);
+api.route('/meals', mealAnalysis);
 
 export default api;
 

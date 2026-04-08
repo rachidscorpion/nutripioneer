@@ -240,6 +240,8 @@ export default function MealCard({ meal, type, planId, userId, status = 'PENDING
                 recipe={meal}
                 userId={userId}
                 nutritionLimits={nutritionLimits}
+                planId={planId}
+                mealType={type}
             />
         </div>
     );

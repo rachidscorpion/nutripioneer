@@ -1,8 +1,8 @@
 'use client';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Utensils, ShoppingBag, Loader2, ExternalLink, Clock } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { X, Flame, Utensils, ShoppingBag, Loader2, ExternalLink, Clock, RefreshCw, AlertCircle, Bookmark, Sparkles, ShieldCheck, ShieldAlert, ShieldX } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import styles from '@/styles/Timeline.module.css';
@@ -15,16 +15,59 @@ interface RecipeDetailsModalProps {
     recipe: any;
     userId: string;
     nutritionLimits?: any;
+    planId?: string;
+    mealType?: 'breakfast' | 'lunch' | 'dinner';
 }
 
-export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nutritionLimits }: RecipeDetailsModalProps) {
+export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nutritionLimits, planId, mealType }: RecipeDetailsModalProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'instructions' | 'ingredients' | 'health'>('instructions');
     const [mounted, setMounted] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [scrapedInstructions, setScrapedInstructions] = useState<string[] | null>(null);
     const [loadingInstructions, setLoadingInstructions] = useState(false);
+    const [instructionsError, setInstructionsError] = useState<string | null>(null);
+    const [isSwapping, setIsSwapping] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<any>(null);
+    const [showAnalysisModal, setShowAnalysisModal] = useState(false);
     const [imgSrc, setImgSrc] = useState(recipe.image || '/assets/np-placeholder.jpg');
+    const prevRecipeIdRef = useRef<string | null>(null);
+    const fetchGuardRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (!recipe) return;
+        const currentRecipeId = recipe.id;
+        if (currentRecipeId !== prevRecipeIdRef.current) {
+            setScrapedInstructions(null);
+            setInstructionsError(null);
+            setLoadingInstructions(false);
+            setActiveTab('instructions');
+            setImgSrc(recipe.image || '/assets/np-placeholder.jpg');
+            setIsSaved(false);
+            setIsSaving(false);
+            setIsAnalyzing(false);
+            setAnalysisResult(null);
+            setShowAnalysisModal(false);
+            fetchGuardRef.current = null;
+            prevRecipeIdRef.current = currentRecipeId;
+        }
+    }, [recipe]);
+
+    useEffect(() => {
+        if (!isOpen || !recipe?.id) return;
+        const checkSavedStatus = async () => {
+            try {
+                const res = await api.savedRecipes.check(recipe.id);
+                setIsSaved(res.data?.data?.saved || false);
+            } catch {
+                setIsSaved(false);
+            }
+        };
+        checkSavedStatus();
+    }, [isOpen, recipe?.id]);
 
     useEffect(() => {
         const fetchInstructions = async () => {
@@ -47,8 +90,13 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                 targetUrl = recipe.instructions;
             }
 
-            if (targetUrl && !scrapedInstructions) {
+            if (targetUrl && targetUrl.startsWith('http://')) {
+                targetUrl = targetUrl.replace('http://', 'https://');
+            }
+
+            if (targetUrl && fetchGuardRef.current !== recipe.id) {
                 setLoadingInstructions(true);
+                setInstructionsError(null);
                 try {
                     const res = await api.recipes.getInstructions(targetUrl);
                     const data = res.data;
@@ -59,8 +107,14 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                     } else {
                         setScrapedInstructions([]);
                     }
-                } catch (e) {
-                    console.error("Failed to fetch instructions", e);
+                    fetchGuardRef.current = recipe.id;
+                } catch (e: any) {
+                    const status = e?.response?.status;
+                    if (status === 500) {
+                        setInstructionsError('This recipe source is currently unavailable. The site may be blocking access from your region.');
+                    } else {
+                        setInstructionsError('Failed to load instructions. Please try again later.');
+                    }
                 } finally {
                     setLoadingInstructions(false);
                 }
@@ -68,7 +122,7 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
         };
 
         fetchInstructions();
-    }, [isOpen, recipe.url, recipe.instructions]);
+    }, [isOpen, recipe?.id, recipe?.url, recipe?.instructions]);
 
     useEffect(() => {
         setMounted(true);
@@ -157,6 +211,76 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
         }
     };
 
+    const handleSwapMeal = async () => {
+        if (!planId || !mealType) return;
+        setIsSwapping(true);
+        try {
+            await api.meals.swap(planId, mealType);
+            toast.success('Meal swapped!');
+            router.refresh();
+        } catch (e) {
+            toast.error('Failed to swap meal');
+        } finally {
+            setIsSwapping(false);
+        }
+    };
+
+    const handleToggleSave = async () => {
+        if (!recipe.id) return;
+        setIsSaving(true);
+        const wasSaved = isSaved;
+        setIsSaved(!wasSaved);
+        try {
+            if (wasSaved) {
+                await api.savedRecipes.unsave(recipe.id);
+                toast.success('Recipe unsaved');
+            } else {
+                await api.savedRecipes.save(recipe.id);
+                toast.success('Recipe saved!');
+            }
+        } catch (e: any) {
+            setIsSaved(wasSaved);
+            if (e?.response?.status === 400) {
+                setIsSaved(true);
+            } else {
+                toast.error(wasSaved ? 'Failed to unsave recipe' : 'Failed to save recipe');
+            }
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleAnalyzeMeal = async () => {
+        setIsAnalyzing(true);
+        try {
+            const res = await api.meals.analyzeMeal({
+                name: recipe.name,
+                calories: recipe.calories,
+                protein: recipe.protein,
+                carbs: recipe.carbs,
+                fat: recipe.fat,
+                sodium: recipe.sodium,
+                sugar: recipe.sugar,
+                fiber: recipe.fiber,
+                servingSize: recipe.servingSize,
+                servingSizeUnit: recipe.servingSizeUnit,
+                ingredients: recipe.ingredients,
+                prepTime: recipe.prepTime,
+                tags: recipe.tags,
+            });
+            if (res.data?.success && res.data?.data) {
+                setAnalysisResult(res.data.data);
+                setShowAnalysisModal(true);
+            } else {
+                toast.error('Failed to analyze meal');
+            }
+        } catch (e: any) {
+            toast.error(e?.response?.data?.message || 'Failed to analyze meal. Try again later.');
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
     // ... (existing helper functions unchanged if they were outside main flow, but formatInstructions is inside so we just continue)
 
     // Enhanced Instruction Parsing
@@ -193,8 +317,12 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
 
     if (potentialUrl) {
         try {
-            const u = new URL(potentialUrl);
-            sourceUrl = potentialUrl;
+            let httpsUrl = potentialUrl;
+            if (httpsUrl.startsWith('http://')) {
+                httpsUrl = httpsUrl.replace('http://', 'https://');
+            }
+            const u = new URL(httpsUrl);
+            sourceUrl = httpsUrl;
             sourceHostname = u.hostname.replace('www.', '');
         } catch (e) {
             // Invalid URL, ignore
@@ -342,6 +470,23 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                                     <Loader2 className="animate-spin" size={32} />
                                                     <span>Fetching detailed instructions...</span>
                                                 </div>
+                                            ) : instructionsError ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: '1rem', color: '#64748b', textAlign: 'center' }}>
+                                                    <AlertCircle size={32} color="#f59e0b" />
+                                                    <h3 style={{ margin: 0, color: '#0f172a' }}>Instructions Unavailable</h3>
+                                                    <p>{instructionsError}</p>
+                                                    {planId && mealType && (
+                                                        <button
+                                                            onClick={handleSwapMeal}
+                                                            disabled={isSwapping}
+                                                            className={styles.btnSecondary}
+                                                            style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                                        >
+                                                            {isSwapping ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />}
+                                                            Swap for a Different Recipe
+                                                        </button>
+                                                    )}
+                                                </div>
                                             ) : (
                                                 <>
                                                     {instructionsSteps.length > 0 ? instructionsSteps.map((step, idx) => (
@@ -354,8 +499,8 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
                                                     )) : (
                                                         <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
                                                             <p>No detailed instructions found.</p>
-                                                            {(recipe.url || (recipe.instructions && recipe.instructions.startsWith('http'))) && (
-                                                                <a href={recipe.url || recipe.instructions} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>
+                                                            {sourceUrl && (
+                                                                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600 }}>
                                                                     View original recipe <ExternalLink size={14} />
                                                                 </a>
                                                             )}
@@ -475,24 +620,163 @@ export default function RecipeDetailsModal({ isOpen, onClose, recipe, userId, nu
 
                             {/* Footer */}
                             <div className={styles.modalFooter}>
-                                <button
-                                    onClick={handleAddIngredients}
-                                    className={styles.btnSecondary}
-                                    disabled={isAdding}
-                                    style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                >
-                                    <ShoppingBag size={18} />
-                                    {isAdding ? 'Adding...' : 'Add Ingredients to grocery list'}
-                                </button>
-                                <button
-                                    onClick={onClose}
-                                    className={styles.btnPrimary}
-                                >
-                                    Done Cooking
-                                </button>
+                                <div className={styles.modalFooterRow}>
+                                    <button
+                                        onClick={handleAddIngredients}
+                                        className={styles.btnSecondary}
+                                        disabled={isAdding}
+                                    >
+                                        {isAdding ? <Loader2 size={18} className="spin" /> : <ShoppingBag size={18} />}
+                                        {isAdding ? 'Adding...' : 'Groceries'}
+                                    </button>
+                                    {planId && mealType && (
+                                        <button
+                                            onClick={handleSwapMeal}
+                                            className={styles.btnSwap}
+                                            disabled={isSwapping}
+                                        >
+                                            {isSwapping ? <Loader2 size={18} className="spin" /> : <RefreshCw size={18} />}
+                                            {isSwapping ? 'Swapping...' : 'Swap'}
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleToggleSave}
+                                        className={`${styles.btnSave} ${isSaved ? styles.btnSaveActive : ''}`}
+                                        disabled={isSaving}
+                                    >
+                                        {isSaving ? <Loader2 size={18} className="spin" /> : <Bookmark size={18} fill={isSaved ? 'currentColor' : 'none'} />}
+                                        {isSaved ? 'Saved' : 'Save'}
+                                    </button>
+                                    <button
+                                        onClick={handleAnalyzeMeal}
+                                        className={styles.btnAnalyze}
+                                        disabled={isAnalyzing}
+                                    >
+                                        {isAnalyzing ? <Loader2 size={18} className="spin" /> : <Sparkles size={18} />}
+                                        {isAnalyzing ? 'Analyzing...' : 'AI Analyze'}
+                                    </button>
+                                </div>
+                                <div className={styles.modalFooterRow}>
+                                    <button
+                                        onClick={onClose}
+                                        className={styles.btnPrimary}
+                                    >
+                                        Done Cooking
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>
+
+                    {showAnalysisModal && analysisResult && createPortal(
+                        <AnimatePresence>
+                            {showAnalysisModal && (
+                                <>
+                                    <motion.div
+                                        className={styles.analysisBackdrop}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        onClick={() => setShowAnalysisModal(false)}
+                                    />
+                                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10002 }}>
+                                        <motion.div
+                                            className={styles.analysisModalWrapper}
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ type: "spring", duration: 0.5 }}
+                                            style={{ pointerEvents: 'auto' }}
+                                        >
+                                            <div className={styles.analysisModalContent}>
+                                                <div className={styles.analysisHeader}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                        <Sparkles size={20} className={styles.analysisSparkleIcon} />
+                                                        <h3 className={styles.analysisTitle}>AI Meal Analysis</h3>
+                                                    </div>
+                                                    <button onClick={() => setShowAnalysisModal(false)} className={styles.analysisCloseBtn}>
+                                                        <X size={20} />
+                                                    </button>
+                                                </div>
+
+                                                <div className={styles.analysisBody}>
+                                                    <div className={styles.analysisScoreRow}>
+                                                        <div className={`${styles.analysisScoreBadge} ${analysisResult.status === 'SAFE' ? styles.scoreSafe : analysisResult.status === 'CAUTION' ? styles.scoreCaution : styles.scoreAvoid}`}>
+                                                            {analysisResult.status === 'SAFE' ? <ShieldCheck size={20} /> : analysisResult.status === 'CAUTION' ? <ShieldAlert size={20} /> : <ShieldX size={20} />}
+                                                            <span>{analysisResult.status}</span>
+                                                        </div>
+                                                        <div className={styles.analysisScoreValue}>
+                                                            <div className={styles.analysisScoreNumber}>{analysisResult.overallScore}</div>
+                                                            <div className={styles.analysisScoreLabel}>/100</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <p className={styles.analysisReasoning}>{analysisResult.reasoning}</p>
+
+                                                    {analysisResult.nutritionalAnalysis && analysisResult.nutritionalAnalysis.length > 0 && (
+                                                        <div className={styles.analysisSection}>
+                                                            <h4 className={styles.analysisSectionTitle}>Nutritional Breakdown</h4>
+                                                            <div className={styles.analysisNutrientGrid}>
+                                                                {analysisResult.nutritionalAnalysis.map((n: any, i: number) => (
+                                                                    <div key={i} className={`${styles.analysisNutrientCard} ${n.status === 'SAFE' ? styles.nutrientSafe : n.status === 'CAUTION' ? styles.nutrientCaution : n.status === 'AVOID' ? styles.nutrientAvoid : ''}`}>
+                                                                        <div className={styles.nutrientCardHeader}>
+                                                                            <span className={styles.nutrientCardName}>{n.nutrient}</span>
+                                                                            <span className={`${styles.nutrientCardStatus} ${n.status === 'SAFE' ? styles.statusSafe : n.status === 'CAUTION' ? styles.statusCaution : styles.statusAvoid}`}>{n.status}</span>
+                                                                        </div>
+                                                                        <div className={styles.nutrientCardValue}>{n.value} {n.unit}</div>
+                                                                        <div className={styles.nutrientCardLimit}>Limit: {n.limit}</div>
+                                                                        {n.note && <div className={styles.nutrientCardNote}>{n.note}</div>}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {analysisResult.ingredientConcerns && analysisResult.ingredientConcerns.length > 0 && (
+                                                        <div className={styles.analysisSection}>
+                                                            <h4 className={styles.analysisSectionTitle}>Ingredient Concerns</h4>
+                                                            <div className={styles.concernList}>
+                                                                {analysisResult.ingredientConcerns.map((c: any, i: number) => (
+                                                                    <div key={i} className={styles.concernItem}>
+                                                                        <span className={`${styles.concernRisk} ${c.risk === 'HIGH' ? styles.riskHigh : c.risk === 'MEDIUM' ? styles.riskMedium : styles.riskLow}`}>{c.risk}</span>
+                                                                        <span className={styles.concernName}>{c.ingredient}</span>
+                                                                        <span className={styles.concernReason}>{c.reason}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {analysisResult.modifications && analysisResult.modifications.length > 0 && (
+                                                        <div className={styles.analysisSection}>
+                                                            <h4 className={styles.analysisSectionTitle}>Suggested Modifications</h4>
+                                                            <div className={styles.modList}>
+                                                                {analysisResult.modifications.map((m: any, i: number) => (
+                                                                    <div key={i} className={styles.modItem}>
+                                                                        <span className={styles.modAction}>{m.action}</span>
+                                                                        <span className={styles.modReason}>{m.reason}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    <div className={styles.analysisSummaryBox}>
+                                                        <p>{analysisResult.summary}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className={styles.analysisFooter}>
+                                                    <button className={styles.analysisCloseAction} onClick={() => setShowAnalysisModal(false)}>Close</button>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    </div>
+                                </>
+                            )}
+                        </AnimatePresence>,
+                        document.body
+                    )}
                 </>
             )}
         </AnimatePresence>

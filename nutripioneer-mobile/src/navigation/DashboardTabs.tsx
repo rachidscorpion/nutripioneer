@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
-import PlanScreen from '../screens/dashboard/PlanScreen';
+import SavedMealsScreen from '../screens/dashboard/SavedMealsScreen';
 import GroceryScreen from '../screens/dashboard/GroceryScreen';
 import RestaurantRescueScreen from '../screens/dashboard/RestaurantRescueScreen';
 import ProfileScreen from '../screens/dashboard/ProfileScreen';
@@ -30,7 +30,7 @@ export default function DashboardTabs() {
             }}
         >
             <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Plan" component={PlanScreen} />
+            <Tab.Screen name="Saved" component={SavedMealsScreen} options={{ tabBarLabel: 'Saved' }} />
             <Tab.Screen name="Grocery" component={GroceryScreen} />
             <Tab.Screen name="Rescue" component={RestaurantRescueScreen} options={{ tabBarLabel: 'Rescue' }} />
             <Tab.Screen name="Profile" component={ProfileScreen} />

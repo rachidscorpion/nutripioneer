@@ -1,28 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, Image, TouchableOpacity, ScrollView, ActivityIndicator, Dimensions, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { api } from '../../lib/api-client';
 import SourceCitationBanner from '../ui/SourceCitationBanner';
+import NPModal from './NPModal';
+import { useTheme } from '../../context/ThemeContext';
 
 interface RecipeDetailsModalProps {
     visible: boolean;
     onClose: () => void;
     recipe: any;
     nutritionLimits?: any;
+    planId?: string;
+    mealType?: 'breakfast' | 'lunch' | 'dinner';
+    onUpdate?: () => void;
 }
 
 const { width, height } = Dimensions.get('window');
 
-export default function RecipeDetailsModal({ visible, onClose, recipe, nutritionLimits }: RecipeDetailsModalProps) {
+export default function RecipeDetailsModal({ visible, onClose, recipe, nutritionLimits, planId, mealType, onUpdate }: RecipeDetailsModalProps) {
+    const { theme } = useTheme();
     const [activeTab, setActiveTab] = useState<'instructions' | 'ingredients' | 'health'>('instructions');
     const [isAdding, setIsAdding] = useState(false);
     const [scrapedInstructions, setScrapedInstructions] = useState<string[] | null>(null);
     const [loadingInstructions, setLoadingInstructions] = useState(false);
+    const [instructionsError, setInstructionsError] = useState<string | null>(null);
     const [webviewUrl, setWebviewUrl] = useState<string | null>(null);
+    const [webviewError, setWebviewError] = useState(false);
+    const [isSwapping, setIsSwapping] = useState(false);
     const [imgSrc, setImgSrc] = useState(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<any>(null);
+    const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+    const prevRecipeIdRef = useRef<string | null>(null);
+    const fetchGuardRef = useRef<string | null>(null);
 
     useEffect(() => {
+        const currentRecipeId = recipe?.id;
+        // Reset instruction-related state when recipe changes (even if modal is closed)
+        if (currentRecipeId !== prevRecipeIdRef.current) {
+            // Recipe changed, reset all instruction and UI state
+            setScrapedInstructions(null);
+            setInstructionsError(null);
+            setLoadingInstructions(false);
+            setWebviewUrl(null);
+            setWebviewError(false);
+            setActiveTab('instructions');
+            setImgSrc(recipe?.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
+            setIsSaved(false);
+            setIsSaving(false);
+            setIsAnalyzing(false);
+            setAnalysisResult(null);
+            setShowAnalysisModal(false);
+            fetchGuardRef.current = null;
+            prevRecipeIdRef.current = currentRecipeId;
+        }
+
         if (!visible || !recipe) return;
 
         const fetchInstructions = async () => {
@@ -42,8 +78,10 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                 targetUrl = recipe.instructions;
             }
 
-            if (targetUrl && !scrapedInstructions) {
+            // Only fetch if we haven't already fetched for this recipe
+            if (targetUrl && fetchGuardRef.current !== recipe.id) {
                 setLoadingInstructions(true);
+                setInstructionsError(null);
                 try {
                     const res = await api.recipes.getInstructions(targetUrl);
                     const data = res.data;
@@ -54,17 +92,33 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                     } else {
                         setScrapedInstructions([]);
                     }
-                } catch (e) {
-                    console.error("Failed to fetch instructions", e);
+                    fetchGuardRef.current = recipe.id;
+                } catch (e: any) {
+                    const status = e?.response?.status;
+                    if (status === 500) {
+                        setInstructionsError('This recipe source is currently unavailable. The site may be blocking access from your region.');
+                    } else {
+                        setInstructionsError('Failed to load instructions. Please try again later.');
+                    }
                 } finally {
                     setLoadingInstructions(false);
                 }
             }
         };
 
+        const checkSavedStatus = async () => {
+            if (!recipe.id) return;
+            try {
+                const res = await api.savedRecipes.check(recipe.id);
+                setIsSaved(res.data?.data?.saved || false);
+            } catch {
+                setIsSaved(false);
+            }
+        };
+
         fetchInstructions();
-        setImgSrc(recipe.image || 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=80');
-        setActiveTab('instructions');
+        checkSavedStatus();
+        setWebviewError(false);
     }, [visible, recipe]);
 
     if (!recipe) return null;
@@ -87,7 +141,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
         rawLines.forEach(line => {
             let trimmed = line.trim();
             if (!trimmed) return;
-            trimmed = trimmed.replace(/^\d+[\).]\s*/, '');
+            trimmed = trimmed.replace(/^\d+[\)\.]\s*/, '');
             if (!trimmed) return;
             if (/^\d+$/.test(trimmed)) return;
             steps.push(trimmed);
@@ -143,6 +197,160 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
         } finally {
             setIsAdding(false);
         }
+    };
+
+    const handleSwapMeal = async () => {
+        if (!planId || !mealType) return;
+        setIsSwapping(true);
+        try {
+            await api.meals.swap(planId, mealType);
+            onUpdate?.();
+            onClose();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to swap meal');
+        } finally {
+            setIsSwapping(false);
+        }
+    };
+
+    const handleToggleSave = async () => {
+        if (!recipe.id) return;
+        setIsSaving(true);
+        const wasSaved = isSaved;
+        setIsSaved(!wasSaved);
+        try {
+            if (wasSaved) {
+                await api.savedRecipes.unsave(recipe.id);
+            } else {
+                await api.savedRecipes.save(recipe.id);
+            }
+        } catch (e: any) {
+            setIsSaved(wasSaved);
+            if (e?.response?.status === 400) {
+                setIsSaved(true);
+            } else {
+                Alert.alert('Error', wasSaved ? 'Failed to unsave recipe' : 'Failed to save recipe');
+            }
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleAnalyzeMeal = async () => {
+        setIsAnalyzing(true);
+        try {
+            const res = await api.meals.analyzeMeal({
+                name: recipe.name,
+                calories: recipe.calories,
+                protein: recipe.protein,
+                carbs: recipe.carbs,
+                fat: recipe.fat,
+                sodium: recipe.sodium,
+                sugar: recipe.sugar,
+                fiber: recipe.fiber,
+                servingSize: recipe.servingSize,
+                servingSizeUnit: recipe.servingSizeUnit,
+                ingredients: recipe.ingredients,
+                prepTime: recipe.prepTime,
+                tags: recipe.tags,
+            });
+            if (res.data?.success && res.data?.data) {
+                setAnalysisResult(res.data.data);
+                setShowAnalysisModal(true);
+            } else {
+                Alert.alert('Error', 'Failed to analyze meal');
+            }
+        } catch (e: any) {
+            Alert.alert('Error', e?.response?.data?.message || 'Failed to analyze meal. Try again later.');
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    const renderAnalysisContent = () => {
+        if (!analysisResult) return null;
+
+        const statusColor = analysisResult.status === 'SAFE' ? '#10b981' : analysisResult.status === 'CAUTION' ? '#f59e0b' : '#ef4444';
+        const statusIcon = analysisResult.status === 'SAFE' ? 'shield-checkmark' : analysisResult.status === 'CAUTION' ? 'alert-triangle' : 'close-circle';
+
+        return (
+            <View style={{ gap: 16 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: theme.background, borderRadius: 14, padding: 14 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: statusColor + '15', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 }}>
+                        <Ionicons name={statusIcon} size={18} color={statusColor} />
+                        <Text style={{ fontWeight: '700', color: statusColor, fontSize: 14 }}>{analysisResult.status}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 2 }}>
+                        <Text style={{ fontSize: 28, fontWeight: '800', color: theme.text }}>{analysisResult.overallScore}</Text>
+                        <Text style={{ fontSize: 14, color: theme.textMuted }}>/100</Text>
+                    </View>
+                </View>
+
+                <Text style={{ fontSize: 14, lineHeight: 21, color: theme.textMuted }}>{analysisResult.reasoning}</Text>
+
+                {analysisResult.nutritionalAnalysis && analysisResult.nutritionalAnalysis.length > 0 && (
+                    <View style={{ gap: 8 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Nutritional Breakdown</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                            {analysisResult.nutritionalAnalysis.map((n: any, i: number) => {
+                                const nColor = n.status === 'SAFE' ? '#10b981' : n.status === 'CAUTION' ? '#f59e0b' : '#ef4444';
+                                return (
+                                    <View key={i} style={{ flex: 1, minWidth: '45%', backgroundColor: theme.background, borderRadius: 10, padding: 10, borderLeftWidth: 3, borderLeftColor: nColor }}>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                                            <Text style={{ fontSize: 12, fontWeight: '700', color: theme.text }}>{n.nutrient}</Text>
+                                            <Text style={{ fontSize: 9, fontWeight: '700', color: nColor, textTransform: 'uppercase' }}>{n.status}</Text>
+                                        </View>
+                                        <Text style={{ fontSize: 16, fontWeight: '700', color: theme.text }}>{n.value} {n.unit}</Text>
+                                        <Text style={{ fontSize: 11, color: theme.textMuted }}>Limit: {n.limit}</Text>
+                                        {n.note ? <Text style={{ fontSize: 11, color: theme.textMuted, marginTop: 3, lineHeight: 15 }}>{n.note}</Text> : null}
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
+
+                {analysisResult.ingredientConcerns && analysisResult.ingredientConcerns.length > 0 && (
+                    <View style={{ gap: 8 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ingredient Concerns</Text>
+                        <View style={{ gap: 6 }}>
+                            {analysisResult.ingredientConcerns.map((c: any, i: number) => {
+                                const riskColor = c.risk === 'HIGH' ? '#ef4444' : c.risk === 'MEDIUM' ? '#f59e0b' : '#3b82f6';
+                                return (
+                                    <View key={i} style={{ backgroundColor: theme.background, borderRadius: 10, padding: 12 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                            <Text style={{ fontSize: 9, fontWeight: '700', color: riskColor, textTransform: 'uppercase', backgroundColor: riskColor + '15', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4 }}>{c.risk}</Text>
+                                            <Text style={{ fontSize: 13, fontWeight: '600', color: theme.text }}>{c.ingredient}</Text>
+                                        </View>
+                                        <Text style={{ fontSize: 12, color: theme.textMuted, lineHeight: 16 }}>{c.reason}</Text>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
+
+                {analysisResult.modifications && analysisResult.modifications.length > 0 && (
+                    <View style={{ gap: 8 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Suggested Modifications</Text>
+                        <View style={{ gap: 6 }}>
+                            {analysisResult.modifications.map((m: any, i: number) => (
+                                <View key={i} style={{ backgroundColor: 'rgba(139, 92, 246, 0.05)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.15)' }}>
+                                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#8b5cf6' }}>{m.action}</Text>
+                                    <Text style={{ fontSize: 12, color: theme.textMuted, lineHeight: 16, marginTop: 2 }}>{m.reason}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                )}
+
+                {analysisResult.summary && (
+                    <View style={{ backgroundColor: 'rgba(139, 92, 246, 0.06)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.15)' }}>
+                        <Text style={{ fontSize: 13, lineHeight: 20, color: theme.textMuted }}>{analysisResult.summary}</Text>
+                    </View>
+                )}
+            </View>
+        );
     };
 
     return (
@@ -236,7 +444,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                 style={[styles.tabBtn, activeTab === 'health' && styles.tabBtnActive]}
                                 onPress={() => setActiveTab('health')}
                             >
-                                <Text style={[styles.tabText, activeTab === 'health' && styles.tabTextActive]}>Health Status</Text>
+                                <Text style={[styles.tabText, activeTab === 'health' && styles.tabTextActive]}>Health Context</Text>
                             </TouchableOpacity>
                         )}
                     </View>
@@ -249,6 +457,28 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                     <View style={styles.loaderContainer}>
                                         <ActivityIndicator size="large" color="#13ec5b" />
                                         <Text style={styles.loaderText}>Fetching detailed instructions...</Text>
+                                    </View>
+                                ) : instructionsError ? (
+                                    <View style={styles.errorBox}>
+                                        <Ionicons name="alert-circle" size={32} color="#f59e0b" />
+                                        <Text style={styles.errorTitle}>Instructions Unavailable</Text>
+                                        <Text style={styles.errorText}>{instructionsError}</Text>
+                                        {planId && mealType && (
+                                            <TouchableOpacity
+                                                style={styles.swapErrorBtn}
+                                                onPress={handleSwapMeal}
+                                                disabled={isSwapping}
+                                            >
+                                                {isSwapping ? (
+                                                    <ActivityIndicator size="small" color="#000" />
+                                                ) : (
+                                                    <>
+                                                        <Ionicons name="refresh" size={16} color="#000" style={{ marginRight: 6 }} />
+                                                        <Text style={styles.swapErrorBtnText}>Swap for a Different Recipe</Text>
+                                                    </>
+                                                )}
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 ) : (
                                     <>
@@ -263,15 +493,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                                             </View>
                                                         )}
                                                         {isStepUrl ? (
-                                                            <TouchableOpacity 
-                                                                onPress={() => setWebviewUrl(step)} 
-                                                                style={styles.webviewPlaceholderBtn}
-                                                            >
-                                                                <Ionicons name="link" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
-                                                                <Text style={[styles.stepText, { color: '#3b82f6', textDecorationLine: 'underline', flex: 1 }]} numberOfLines={2}>
-                                                                    View Full Recipe on Web
-                                                                </Text>
-                                                            </TouchableOpacity>
+                                                            null
                                                         ) : (
                                                             <Text style={styles.stepText}>{step}</Text>
                                                         )}
@@ -281,6 +503,21 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                         ) : (
                                             <Text style={styles.emptyContentText}>No detailed instructions found.</Text>
                                         )}
+
+                                        {(() => {
+                                            const sourceUrl = recipe.url || (typeof recipe.instructions === 'string' && recipe.instructions.startsWith('http') ? recipe.instructions : null);
+                                            return sourceUrl ? (
+                                                <TouchableOpacity
+                                                    onPress={() => { setWebviewError(false); setWebviewUrl(sourceUrl.replace(/^http:/, 'https:')); }}
+                                                    style={styles.webviewPlaceholderBtn}
+                                                >
+                                                    <Ionicons name="link" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
+                                                    <Text style={[styles.stepText, { color: '#3b82f6', textDecorationLine: 'underline', flex: 1 }]} numberOfLines={2}>
+                                                        View Original Source
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ) : null;
+                                        })()}
 
                                         <View style={styles.nutritionBoxContainer}>
                                             <Text style={styles.nutritionBoxTitle}>Nutrition Facts</Text>
@@ -327,11 +564,56 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                 )}
                             </View>
                         ) : (
-                            <View style={styles.tabContent}>
+                            <View style={[styles.tabContent, { gap: 20 }]}>
                                 {nutritionLimits?.reasoning && (
                                     <View style={styles.reasoningBox}>
                                         <Text style={styles.reasoningTitle}>Why this meal?</Text>
                                         <Text style={styles.reasoningText}>{nutritionLimits.reasoning}</Text>
+                                    </View>
+                                )}
+
+                                <View>
+                                    <Text style={styles.sectionTitleSmall}>Your Nutrition Profile Limits</Text>
+
+                                    {nutritionLimits?.daily_calories && (
+                                        <View style={styles.limitCardMain}>
+                                            <Text style={styles.limitLabelSmall}>{nutritionLimits.daily_calories.label} Target</Text>
+                                            <Text style={styles.limitValueLarge}>
+                                                {nutritionLimits.daily_calories.min} - {nutritionLimits.daily_calories.max} kcal
+                                            </Text>
+                                        </View>
+                                    )}
+
+                                    {nutritionLimits?.nutrients && (
+                                        <View style={styles.limitsGrid}>
+                                            {Object.entries(nutritionLimits.nutrients).map(([key, data]: [string, any]) => (
+                                                <View key={key} style={styles.limitCard}>
+                                                    <Text style={styles.limitLabelSmall}>{data.label}</Text>
+                                                    <Text style={styles.limitValue}>
+                                                        {data.min && data.max
+                                                            ? `${data.min} - ${data.max}${data.unit}`
+                                                            : data.max
+                                                                ? `< ${data.max}${data.unit}`
+                                                                : data.min
+                                                                    ? `> ${data.min}${data.unit}`
+                                                                    : `${data.val}${data.unit}`}
+                                                    </Text>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    )}
+                                </View>
+
+                                {nutritionLimits?.avoid_ingredients && nutritionLimits.avoid_ingredients.length > 0 && (
+                                    <View style={styles.avoidSection}>
+                                        <Text style={styles.avoidTitle}>Avoid Ingredients per Logic:</Text>
+                                        <View style={styles.avoidBadgesRow}>
+                                            {nutritionLimits.avoid_ingredients.map((ing: string, i: number) => (
+                                                <View key={i} style={styles.avoidBadge}>
+                                                    <Text style={styles.avoidBadgeText}>{ing}</Text>
+                                                </View>
+                                            ))}
+                                        </View>
                                     </View>
                                 )}
                             </View>
@@ -340,17 +622,51 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
 
                     {/* Footer */}
                     <View style={styles.footer}>
-                        <TouchableOpacity style={styles.btnSecondary} onPress={handleAddIngredients} disabled={isAdding}>
-                            {isAdding ? <ActivityIndicator size="small" color="#13ec5b" /> : <Ionicons name="cart" size={18} color="#13ec5b" />}
-                            <Text style={styles.btnSecondaryText}>{isAdding ? "Adding..." : "Add to Groceries"}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.btnPrimary} onPress={onClose}>
-                            <Text style={styles.btnPrimaryText}>Done Cooking</Text>
-                        </TouchableOpacity>
+                        <View style={styles.footerRow}>
+                            <TouchableOpacity style={styles.btnSecondary} onPress={handleAddIngredients} disabled={isAdding}>
+                                {isAdding ? <ActivityIndicator size="small" color="#13ec5b" /> : <Ionicons name="cart" size={18} color="#13ec5b" />}
+                                <Text style={styles.btnSecondaryText}>{isAdding ? "Adding..." : "Groceries"}</Text>
+                            </TouchableOpacity>
+                            {planId && mealType && (
+                                <TouchableOpacity style={styles.btnSwap} onPress={handleSwapMeal} disabled={isSwapping}>
+                                    {isSwapping ? <ActivityIndicator size="small" color="#9ca3af" /> : <Ionicons name="refresh" size={18} color="#9ca3af" />}
+                                    <Text style={styles.btnSwapText}>{isSwapping ? "Swapping..." : "Swap"}</Text>
+                                </TouchableOpacity>
+                            )}
+                            <TouchableOpacity style={[styles.btnSave, isSaved && styles.btnSaveActive]} onPress={handleToggleSave} disabled={isSaving}>
+                                {isSaving ? (
+                                    <ActivityIndicator size="small" color={isSaved ? '#000' : '#f59e0b'} />
+                                ) : (
+                                    <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={18} color={isSaved ? '#000' : '#f59e0b'} />
+                                )}
+                                <Text style={[styles.btnSaveText, isSaved && styles.btnSaveTextActive]}>{isSaved ? "Saved" : "Save"}</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.footerRow}>
+                            <TouchableOpacity style={[styles.btnAnalyze, isAnalyzing && styles.btnAnalyzeDisabled]} onPress={handleAnalyzeMeal} disabled={isAnalyzing}>
+                                {isAnalyzing ? <ActivityIndicator size="small" color="#8b5cf6" /> : <Ionicons name="sparkles" size={18} color="#8b5cf6" />}
+                                <Text style={styles.btnAnalyzeText}>{isAnalyzing ? "Analyzing..." : "AI Analyze"}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.btnPrimary, { flex: 1 }]} onPress={onClose}>
+                                <Text style={styles.btnPrimaryText}>Done</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                 </View>
             </View>
+
+            <NPModal
+                visible={showAnalysisModal}
+                title="AI Meal Analysis"
+                description={renderAnalysisContent()}
+                onClose={() => setShowAnalysisModal(false)}
+                actions={
+                    <TouchableOpacity style={{ backgroundColor: '#8b5cf6', borderRadius: 12, paddingVertical: 12, alignItems: 'center' }} onPress={() => setShowAnalysisModal(false)}>
+                        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>Close</Text>
+                    </TouchableOpacity>
+                }
+            />
 
             {/* WebView Full Screen Modal */}
             <Modal
@@ -367,7 +683,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                         <Ionicons name="open-outline" size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>
-                {webviewUrl && (
+                {webviewUrl && !webviewError && (
                     <WebView
                         source={{ uri: webviewUrl }}
                         style={{ flex: 1 }}
@@ -377,7 +693,28 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
                                 <ActivityIndicator size="large" color="#13ec5b" />
                             </View>
                         )}
+                        onError={() => setWebviewError(true)}
+                        onHttpError={() => setWebviewError(true)}
                     />
+                )}
+                {webviewUrl && webviewError && (
+                    <View style={[StyleSheet.absoluteFillObject, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#1c1c1e', padding: 24 }]}>
+                        <Ionicons name="globe-outline" size={48} color="#f59e0b" />
+                        <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginTop: 16, textAlign: 'center' }}>Unable to Load Page</Text>
+                        <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 8, textAlign: 'center', lineHeight: 20 }}>This website may be blocking access from your region or requires a secure connection.</Text>
+                        <TouchableOpacity
+                            style={{ backgroundColor: '#13ec5b', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 24 }}
+                            onPress={() => { if (webviewUrl) Linking.openURL(webviewUrl); }}
+                        >
+                            <Text style={{ color: '#000', fontWeight: 'bold' }}>Open in Browser</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={{ marginTop: 12 }}
+                            onPress={() => { setWebviewError(false); setWebviewUrl(null); }}
+                        >
+                            <Text style={{ color: '#9ca3af' }}>Go Back</Text>
+                        </TouchableOpacity>
+                    </View>
                 )}
             </Modal>
         </Modal>
@@ -412,7 +749,7 @@ const styles = StyleSheet.create({
         right: 0,
         padding: 20,
         paddingTop: 40,
-        backgroundColor: 'rgba(0,0,0,0.5)', // Fallback if gradient not used
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
     recipeName: {
         fontSize: 24,
@@ -592,11 +929,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     reasoningBox: {
-        backgroundColor: 'rgba(5b, 130, 246, 0.1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
         padding: 16,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: 'rgba(5b, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 0.2)',
     },
     reasoningTitle: {
         color: '#3b82f6',
@@ -607,14 +944,87 @@ const styles = StyleSheet.create({
         color: '#e5e7eb',
         lineHeight: 22,
     },
-    footer: {
+    sectionTitleSmall: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 16,
+    },
+    limitCardMain: {
+        backgroundColor: '#2a2a2a',
+        padding: 16,
+        borderRadius: 12,
+        marginBottom: 16,
+    },
+    limitLabelSmall: {
+        color: '#9ca3af',
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    limitValueLarge: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    limitsGrid: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+    },
+    limitCard: {
+        backgroundColor: '#2a2a2a',
+        padding: 12,
+        borderRadius: 10,
+        flex: 1,
+        minWidth: '45%',
+    },
+    limitValue: {
+        color: '#13ec5b',
+        fontSize: 15,
+        fontWeight: 'bold',
+        marginTop: 2,
+    },
+    avoidSection: {
+        marginTop: 4,
+    },
+    avoidTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#ef4444',
+        marginBottom: 10,
+    },
+    avoidBadgesRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    avoidBadge: {
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(239, 68, 68, 0.3)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    avoidBadgeText: {
+        color: '#ef4444',
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    footer: {
         padding: 20,
         paddingBottom: 40,
         backgroundColor: '#1a1a1c',
         borderTopWidth: 1,
         borderTopColor: '#2a2a2a',
-        gap: 12,
+        gap: 10,
+    },
+    footerRow: {
+        flexDirection: 'row',
+        gap: 10,
     },
     btnSecondary: {
         flex: 1,
@@ -634,20 +1044,42 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     btnPrimary: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#13ec5b',
         borderRadius: 16,
-        paddingVertical: 14,
+        paddingVertical: 16,
     },
     btnPrimaryText: {
         color: '#000',
         fontWeight: 'bold',
+        fontSize: 16,
+    },
+    btnSave: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(245, 158, 11, 0.3)',
+        paddingVertical: 14,
+        gap: 6,
+    },
+    btnSaveActive: {
+        backgroundColor: '#f59e0b',
+        borderColor: '#f59e0b',
+    },
+    btnSaveText: {
+        color: '#f59e0b',
+        fontWeight: 'bold',
         fontSize: 14,
     },
+    btnSaveTextActive: {
+        color: '#000',
+    },
     webviewPlaceholderBtn: {
-        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -682,5 +1114,71 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: 'center',
         marginHorizontal: 16,
+    },
+    errorBox: {
+        alignItems: 'center',
+        padding: 32,
+    },
+    errorTitle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 12,
+    },
+    errorText: {
+        color: '#9ca3af',
+        fontSize: 14,
+        textAlign: 'center',
+        marginTop: 8,
+        lineHeight: 20,
+    },
+    swapErrorBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#13ec5b',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 12,
+        marginTop: 24,
+    },
+    swapErrorBtnText: {
+        color: '#000',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    btnSwap: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#2a2a2a',
+        borderRadius: 16,
+        paddingVertical: 14,
+        gap: 6,
+    },
+    btnSwapText: {
+        color: '#9ca3af',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    btnAnalyze: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(139, 92, 246, 0.3)',
+        paddingVertical: 14,
+        gap: 6,
+    },
+    btnAnalyzeDisabled: {
+        opacity: 0.6,
+    },
+    btnAnalyzeText: {
+        color: '#8b5cf6',
+        fontWeight: 'bold',
+        fontSize: 14,
     },
 });

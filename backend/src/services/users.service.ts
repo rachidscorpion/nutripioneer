@@ -280,6 +280,18 @@ export class UsersService {
         });
     }
 
+    async isRecipeSaved(userId: string, recipeId: string): Promise<boolean> {
+        const record = await prisma.userRecipe.findUnique({
+            where: {
+                userId_recipeId: {
+                    userId,
+                    recipeId,
+                },
+            },
+        });
+        return !!record;
+    }
+
     /**
      * Sync subscription status with Polar
      */

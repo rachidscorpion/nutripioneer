@@ -21,6 +21,7 @@ export interface OnboardingData {
         allergies: string[];
         favCuisines?: string[];
         dislikeCuisines?: string[];
+        vegetarian?: boolean;
     };
 }
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, Text, RefreshControl, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, Text, RefreshControl, TouchableOpacity, Alert, Modal, Pressable } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../lib/api-client';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import TimelineFeed from '../components/dashboard/TimelineFeed';
@@ -20,6 +21,7 @@ export default function HomeScreen() {
     const [userProfile, setUserProfile] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -92,7 +94,34 @@ export default function HomeScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <DashboardHeader onSearchPress={() => setIsFoodModalOpen(true)} />
+            <DashboardHeader
+                onSearchPress={() => setIsFoodModalOpen(true)}
+                onMenuPress={() => setIsMenuOpen(true)}
+                plan={plan}
+            />
+
+            {/* Menu Dropdown */}
+            <Modal
+                visible={isMenuOpen}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setIsMenuOpen(false)}
+            >
+                <Pressable style={styles.menuOverlay} onPress={() => setIsMenuOpen(false)}>
+                    <View style={[styles.menuDropdown, { backgroundColor: theme.card, borderColor: theme.border, top: Math.max(insets.top, 20) + 48 }]}>
+                        <TouchableOpacity
+                            style={[styles.menuItem, { borderBottomColor: theme.border }]}
+                            onPress={() => {
+                                setIsMenuOpen(false);
+                                navigation.navigate('Plan');
+                            }}
+                        >
+                            <Ionicons name="calendar-outline" size={18} color={theme.text} />
+                            <Text style={[styles.menuItemText, { color: theme.text }]}>Edit Plan</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Pressable>
+            </Modal>
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 refreshControl={
@@ -186,6 +215,34 @@ const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 13,
-    }
+    },
+    menuOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+    },
+    menuDropdown: {
+        position: 'absolute',
+        right: 20,
+        minWidth: 180,
+        borderRadius: 14,
+        borderWidth: 1,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        gap: 12,
+    },
+    menuItemText: {
+        fontSize: 15,
+        fontWeight: '600',
+    },
 });
 

@@ -114,10 +114,10 @@
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, 
-    rgba(10, 10, 10, 0.7) 0%, 
-    rgba(10, 10, 10, 0.85) 50%,
-    rgba(10, 10, 10, 0.95) 100%);
+  background: linear-gradient(180deg,
+      rgba(10, 10, 10, 0.7) 0%,
+      rgba(10, 10, 10, 0.85) 50%,
+      rgba(10, 10, 10, 0.95) 100%);
 }
 
 .heroContent {
@@ -229,6 +229,75 @@
   background: var(--glass-bg);
   border-color: var(--emerald);
   transform: translateY(-3px);
+}
+
+.appPromo {
+  margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.appPromoText {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.appLink {
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border-radius: 2.5rem;
+}
+
+.appLink:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.iphoneWrapper {
+  position: relative;
+  width: 340px;
+  height: 680px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  filter: drop-shadow(0 25px 40px rgba(0, 0, 0, 0.6));
+}
+
+.iphoneFrame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 10;
+  pointer-events: none;
+  z-index: -100;
+}
+
+.screenWrapper {
+  display: flex;
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  right: 20px;
+  bottom: 18px;
+  border-radius: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.iphoneScreen {
+  width: 75%;
+  height: auto;
+  opacity: 0.95;
 }
 
 .trustSection {
@@ -399,11 +468,11 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, 
-    transparent 0%, 
-    var(--emerald) 20%, 
-    var(--emerald) 80%, 
-    transparent 100%);
+  background: linear-gradient(180deg,
+      transparent 0%,
+      var(--emerald) 20%,
+      var(--emerald) 80%,
+      transparent 100%);
   opacity: 0.4;
 }
 
@@ -500,10 +569,10 @@
 .ctaCard {
   max-width: 700px;
   margin: 0 auto;
-  background: linear-gradient(135deg, 
-    rgba(16, 185, 129, 0.1) 0%, 
-    rgba(16, 185, 129, 0.05) 50%,
-    transparent 100%);
+  background: linear-gradient(135deg,
+      rgba(16, 185, 129, 0.1) 0%,
+      rgba(16, 185, 129, 0.05) 50%,
+      transparent 100%);
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 1.5rem;
   padding: 4rem 2.5rem;

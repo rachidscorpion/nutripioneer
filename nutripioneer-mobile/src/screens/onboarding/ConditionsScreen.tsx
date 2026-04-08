@@ -10,6 +10,7 @@ import {
     Platform,
     ActivityIndicator,
     Alert,
+    Linking
 } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useOnboardingStore } from '../../store/useOnboardingStore';
@@ -175,17 +176,18 @@ export default function ConditionsScreen() {
             </Text>
             <View style={{ gap: 12 }}>
                 <Text style={{ color: theme.text, fontSize: 15, lineHeight: 22 }}>
-                    <Text style={{ fontWeight: 'bold' }}>Who the data is sent to:</Text> We integrate with <Text style={{ fontWeight: 'bold' }}>OpenAI</Text> (a third-party AI provider) for analyzing and generating intelligent nutrition profiles.
+                    <Text style={{ fontWeight: 'bold' }}>Who the data is sent to:</Text> We integrate with <Text style={{ fontWeight: 'bold' }}>AI</Text> (a third-party AI provider) for analyzing and generating intelligent nutrition profiles.
                 </Text>
                 <Text style={{ color: theme.text, fontSize: 15, lineHeight: 22 }}>
-                    <Text style={{ fontWeight: 'bold' }}>What data is sent:</Text> We send the medical conditions you select, biometrics, dietary preferences, and meals to OpenAI.
+                    <Text style={{ fontWeight: 'bold' }}>What data is sent:</Text> We send the medical conditions you select, biometrics, dietary preferences, and meals to AI, but not your name, email, or phone number.
                 </Text>
                 <Text style={{ color: theme.text, fontSize: 15, lineHeight: 22 }}>
-                    <Text style={{ fontWeight: 'bold' }}>Data Protection:</Text> We confirm that OpenAI provides equal protection for your personal data. OpenAI explicitly does not use customer data submitted via their API to train or improve their models.
+                    <Text style={{ fontWeight: 'bold' }}>Data Protection:</Text> We confirm that the third-party AI provides equal protection for your personal data. The third-party AI explicitly does not use customer data submitted via their API to train or improve their models.
                 </Text>
             </View>
             <Text style={{ color: theme.textMuted, fontSize: 14, lineHeight: 20 }}>
-                For more details, please review our <Text style={{ color: theme.primary, fontWeight: 'bold' }} onPress={() => navigation.navigate('Privacy' as never)}>Privacy Policy</Text> and <Text style={{ color: theme.primary, fontWeight: 'bold' }} onPress={() => navigation.navigate('Terms' as never)}>Terms & Conditions</Text>.
+                For more details, please review our <Text style={{ color: theme.primary, fontWeight: 'bold' }} onPress={() => navigation.navigate('Privacy' as never)}>Privacy Policy</Text> and <Text style={{ color: theme.primary, fontWeight: 'bold' }} onPress={() => navigation.navigate('Terms' as never)}>Terms & Conditions </Text>
+                Apple Standard Terms of Use (EULA): <Text style={{ color: theme.primary, fontWeight: 'bold' }} onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>https://www.apple.com/legal/internet-services/itunes/dev/stdeula/</Text>.
             </Text>
         </View>
     );

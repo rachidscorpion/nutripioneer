@@ -2,6 +2,7 @@
 import { requireAuth, fetchWithAuth } from '@/lib/server-auth';
 import TimelineFeed from './TimelineFeed';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import NutrientStatsBar from '@/components/plan/NutrientStatsBar';
 import { redirect } from 'next/navigation';
 
 export default async function HomePage() {
@@ -65,6 +66,10 @@ export default async function HomePage() {
             </div>
 
             <DashboardHeader conditions={conditions} planId={plan?.id} isPro={isPro} />
+            
+            <div className="px-5 relative z-10">
+                {plan && <NutrientStatsBar plan={plan} />}
+            </div>
 
             {plan && <TimelineFeed plan={plan} nutritionLimits={nutritionLimits} />}
         </main>

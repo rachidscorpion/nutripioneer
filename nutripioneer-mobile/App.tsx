@@ -13,6 +13,7 @@ import SynthesizingScreen from './src/screens/onboarding/SynthesizingScreen';
 import VerifyEmailScreen from './src/screens/VerifyEmailScreen';
 import PrivacyScreen from './src/screens/PrivacyScreen';
 import TermsScreen from './src/screens/TermsScreen';
+import PlanScreen from './src/screens/dashboard/PlanScreen';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
 import { initIAP, destroyIAP } from './src/lib/iap';
@@ -60,6 +61,7 @@ const RootNavigator = () => {
         <Stack.Screen name="OnboardingSynthesizing" component={SynthesizingScreen} />
         <Stack.Screen name="Privacy" component={PrivacyScreen} />
         <Stack.Screen name="Terms" component={TermsScreen} />
+        <Stack.Screen name="Plan" component={PlanScreen} />
       </Stack.Navigator>
       <ThemedStatusBar />
     </NavigationContainer>
