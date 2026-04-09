@@ -271,7 +271,7 @@ export default function RecipeDetailsModal({ visible, onClose, recipe, nutrition
         if (!analysisResult) return null;
 
         const statusColor = analysisResult.status === 'SAFE' ? '#10b981' : analysisResult.status === 'CAUTION' ? '#f59e0b' : '#ef4444';
-        const statusIcon = analysisResult.status === 'SAFE' ? 'shield-checkmark' : analysisResult.status === 'CAUTION' ? 'alert-triangle' : 'close-circle';
+        const statusIcon = analysisResult.status === 'SAFE' ? 'shield-checkmark' : analysisResult.status === 'CAUTION' ? 'warning' : 'close-circle';
 
         return (
             <View style={{ gap: 16 }}>
