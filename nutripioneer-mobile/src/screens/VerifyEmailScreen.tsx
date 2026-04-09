@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../lib/api-client';
 import apiClient from '../lib/api-client';
 import { useTheme } from '../context/ThemeContext';
@@ -60,52 +61,85 @@ export default function VerifyEmailScreen() {
         }
         setLoading(true);
         try {
-            await api.auth.verifyOtp(email, otpString);
+            const verifyRes = await api.auth.verifyOtp(email, otpString);
+            const verifyData = verifyRes.data;
 
-            // After verification, login
-            const loginRes = await api.auth.login({ email, password });
-            const sessionToken = loginRes.data?.session?.token;
+            if (verifyData?.status === false || verifyData?.error) {
+                Alert.alert('Error', verifyData?.message || verifyData?.error?.message || 'OTP verification failed. Please try again.');
+                setLoading(false);
+                return;
+            }
 
-            if (sessionToken) {
-                // Fetch user profile
-                const profileRes = await api.user.getProfile();
-                const user = profileRes.data?.data;
+            let sessionToken = verifyData?.token || verifyData?.session?.token;
 
-                if (user) {
-                    await authContext.login(sessionToken, user);
+            if (!sessionToken) {
+                try {
+                    const loginRes = await apiClient.post('/auth/login', { email, password }, {
+                        validateStatus: () => true,
+                    });
+                    sessionToken = loginRes.data?.session?.token
+                        || loginRes.data?.token
+                        || loginRes.data?.data?.session?.token;
+                } catch (loginErr: any) {
+                    console.error('Login after verify failed:', loginErr);
+                }
+            }
 
-                    // Check if user is onboarded
-                    let isOnboarded = false;
-                    if (user.preferences?.theme) {
-                        setTheme(user.preferences.theme);
+            if (!sessionToken) {
+                Alert.alert('Error', 'Email verified but could not sign in. Please go back and sign in manually.');
+                setLoading(false);
+                return;
+            }
+
+            apiClient.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
+
+            const profileRes = await api.user.getProfile();
+            const user = profileRes.data?.data;
+
+            if (user) {
+                await authContext.login(sessionToken, user);
+
+                let isOnboarded = false;
+                if (user.preferences?.theme) {
+                    setTheme(user.preferences.theme);
+                }
+                if (user.conditions) {
+                    const parsed = typeof user.conditions === 'string'
+                        ? JSON.parse(user.conditions)
+                        : user.conditions;
+                    if (parsed && parsed.length > 0) {
+                        isOnboarded = true;
                     }
-                    if (user.conditions) {
-                        const parsed = typeof user.conditions === 'string'
-                            ? JSON.parse(user.conditions)
-                            : user.conditions;
-                        if (parsed && parsed.length > 0) {
-                            isOnboarded = true;
-                        }
-                    }
+                }
 
-                    if (isOnboarded) {
-                        navigation.reset({ index: 0, routes: [{ name: 'Dashboard' as never }] });
-                    } else {
-                        navigation.reset({ index: 0, routes: [{ name: 'OnboardingConditions' as never }] });
-                    }
+                if (isOnboarded) {
+                    navigation.reset({ index: 0, routes: [{ name: 'Dashboard' as never }] });
                 } else {
-                    // No user data, go to onboarding
                     navigation.reset({ index: 0, routes: [{ name: 'OnboardingConditions' as never }] });
                 }
             } else {
-                throw new Error('No session token received');
+                await authContext.login(sessionToken, { email } as any);
+                navigation.reset({ index: 0, routes: [{ name: 'OnboardingConditions' as never }] });
             }
         } catch (err: any) {
             console.error('OTP verify error:', err);
-            Alert.alert('Error', err.response?.data?.message || 'Invalid or expired code. Please try again.');
+            const message = err.response?.data?.message || err.message || 'Invalid or expired code. Please try again.';
+            Alert.alert('Error', message);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleBack = async () => {
+        try {
+            await apiClient.post('/auth/sign-out', {}, { validateStatus: () => true });
+        } catch (e) {
+            // Ignore - may not have a valid session
+        }
+        await AsyncStorage.removeItem('auth_token');
+        await AsyncStorage.removeItem('user');
+        delete apiClient.defaults.headers.common['Authorization'];
+        navigation.goBack();
     };
 
     const handleResend = async () => {
@@ -174,7 +208,7 @@ export default function VerifyEmailScreen() {
                 </View>
 
                 <TouchableOpacity
-                    onPress={() => navigation.goBack()}
+                    onPress={handleBack}
                     style={styles.backButton}
                 >
                     <Text style={styles.backText}>← Back</Text>

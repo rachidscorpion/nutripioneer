@@ -20,7 +20,7 @@ type SearchMode = 'Generic' | 'Brand';
 
 const BarcodeScanner = ({ onResult, onCancel }: { onResult: (result: string) => void, onCancel: () => void }) => {
     const [permission, requestPermission] = useCameraPermissions();
-    const [scanned, setScanned] = useState(false);
+    const scannedRef = useRef(false);
 
     if (!permission) return (
         <View style={styles.scannerCenter}>
@@ -46,8 +46,9 @@ const BarcodeScanner = ({ onResult, onCancel }: { onResult: (result: string) => 
                 <CameraView
                     style={StyleSheet.absoluteFillObject}
                     facing="back"
-                    onBarcodeScanned={scanned ? undefined : ({ data }) => {
-                        setScanned(true);
+                    onBarcodeScanned={({ data }) => {
+                        if (scannedRef.current) return;
+                        scannedRef.current = true;
                         onResult(data);
                     }}
                 />
@@ -72,6 +73,7 @@ export default function FoodCheckModal({ isOpen, onClose, planId, isPro = false 
     const [isScanning, setIsScanning] = useState(false);
     const [activeTab, setActiveTab] = useState<SearchMode>('Generic');
     const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [imageError, setImageError] = useState(false);
 
     useEffect(() => {
         if (!isOpen) {
@@ -81,8 +83,11 @@ export default function FoodCheckModal({ isOpen, onClose, planId, isPro = false 
             setSuggestions([]);
             setShowRecipe(false);
             setIsLoading(false);
+            setImageError(false);
         }
     }, [isOpen]);
+
+    // imageError is now reset explicitly in search/scan handlers
 
     const handleSearch = async (forcedQuery?: string) => {
         const searchQuery = forcedQuery || query;
@@ -95,8 +100,11 @@ export default function FoodCheckModal({ isOpen, onClose, planId, isPro = false 
 
         try {
             const res = await api.food.analyze(searchQuery, activeTab);
-            const responseData = res.data || res;
-            const finalResult = responseData.data || responseData;
+            const responseData = res.data;
+            // Handle different possible response structures correctly
+            const finalResult = responseData?.data || responseData;
+            
+            setImageError(false); // Reset here instead of useEffect
             setResult(finalResult);
         } catch (e) {
             console.error(e);
@@ -274,8 +282,14 @@ export default function FoodCheckModal({ isOpen, onClose, planId, isPro = false 
                                     setIsScanning(false);
                                     setIsLoading(true);
                                     api.food.analyzeBarcode(data).then(res => {
-                                        const responseData = res.data || res;
-                                        setResult(responseData.data || responseData);
+                                        const responseData = res.data;
+                                        const finalResult = responseData?.data || responseData;
+                                        
+                                        setImageError(false);
+                                        setResult(finalResult);
+                                        // Sync query and clear other states
+                                        if (finalResult?.name) setQuery(finalResult.name);
+                                        setSuggestions([]);
                                     }).catch(e => {
                                         console.error(e);
                                         Alert.alert('Error', 'Failed to analyze barcode');
@@ -303,8 +317,13 @@ export default function FoodCheckModal({ isOpen, onClose, planId, isPro = false 
                         {result && !isLoading && !isScanning && (
                             <View style={styles.resultContainer}>
                                 <View style={styles.imageContainer}>
-                                    {result.image ? (
-                                        <Image source={{ uri: result.image }} style={styles.resultImage} />
+                                    {result.image && !imageError ? (
+                                        <Image 
+                                            key={result.image} 
+                                            source={{ uri: result.image }} 
+                                            style={styles.resultImage} 
+                                            onError={() => setImageError(true)} 
+                                        />
                                     ) : (
                                         <View style={styles.largePlaceholder}>
                                             <Ionicons name={activeTab === 'Brand' ? "restaurant-outline" : "basket-outline"} size={48} color="#64748b" />

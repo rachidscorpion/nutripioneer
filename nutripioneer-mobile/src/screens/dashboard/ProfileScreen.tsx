@@ -13,7 +13,7 @@ import SourceCitationBanner from '../../components/ui/SourceCitationBanner';
 const TABS = [
     { id: 'biometrics', label: 'Body', icon: 'user' },
     { id: 'conditions', label: 'Conditions', icon: 'droplet' },
-    { id: 'medical', label: 'Health', icon: 'heart' },
+    { id: 'medical', label: 'Medications', icon: 'plus-square' },
     { id: 'dietary', label: 'Food', icon: 'coffee' },
     { id: 'nutrition', label: 'Nutrition', icon: 'activity' },
     { id: 'settings', label: 'Settings', icon: 'settings' },
@@ -440,7 +440,7 @@ export default function ProfileScreen() {
 
                     {activeTab === 'medical' && (
                         <View style={styles.section}>
-                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Medical Profile</Text>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Medication Profile</Text>
 
                             <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
                                 <View style={styles.switchRow}>

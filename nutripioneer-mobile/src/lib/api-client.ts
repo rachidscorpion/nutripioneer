@@ -48,19 +48,24 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            // Clear token from storage
-            await AsyncStorage.removeItem('auth_token');
-            await AsyncStorage.removeItem('user');
+            const requestUrl = error.config?.url || '';
+            const isAuthRoute = requestUrl.includes('/auth/');
 
-            // Clear Authorization header
-            delete apiClient.defaults.headers.common['Authorization'];
+            if (!isAuthRoute) {
+                // Clear token from storage
+                await AsyncStorage.removeItem('auth_token');
+                await AsyncStorage.removeItem('user');
 
-            // Trigger auth logout if callback is registered
-            if (authLogoutCallback) {
-                try {
-                    await authLogoutCallback();
-                } catch (logoutError) {
-                    console.error('Error during auth logout:', logoutError);
+                // Clear Authorization header
+                delete apiClient.defaults.headers.common['Authorization'];
+
+                // Trigger auth logout if callback is registered
+                if (authLogoutCallback) {
+                    try {
+                        await authLogoutCallback();
+                    } catch (logoutError) {
+                        console.error('Error during auth logout:', logoutError);
+                    }
                 }
             }
         }

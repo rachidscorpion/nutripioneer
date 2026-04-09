@@ -1,6 +1,5 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
 // Lazy initialization to ensure env vars are loaded
 function getGenAI() {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -8,6 +7,14 @@ function getGenAI() {
         throw new Error('GEMINI_API_KEY is not set in environment variables');
     }
     return new GoogleGenerativeAI(apiKey);
+}
+
+function parseGeminiJSON(content: string) {
+    const match = content.match(/```(?:json)?([\s\S]*?)```/i);
+    if (match && match[1]) {
+        return JSON.parse(match[1].trim());
+    }
+    return JSON.parse(content.trim());
 }
 
 export interface ConditionProfile {
@@ -171,7 +178,7 @@ IMPORTANT RULES:
         throw new Error("Gemini returned empty content for condition profile");
     }
 
-    const parsed = JSON.parse(content) as ConditionProfile;
+    const parsed = parseGeminiJSON(content) as ConditionProfile;
 
     if (!parsed.label || !parsed.description || !parsed.icon || !parsed.color) {
         throw new Error("Invalid condition profile: missing required fields");
@@ -231,7 +238,7 @@ export async function calculateMedicalLimits(profile: HealthProfile): Promise<Co
         throw new Error("Gemini returned empty content");
     }
 
-    return JSON.parse(content);
+    return parseGeminiJSON(content);
 }
 
 export async function analyzeMenuImage(imageBase64: string, profile: HealthProfile): Promise<MenuAnalysisResult> {
@@ -307,7 +314,7 @@ OUTPUT FORMAT (JSON ONLY):
     }
 
     try {
-        const parsed = JSON.parse(content);
+        const parsed = parseGeminiJSON(content);
 
         if (!parsed.items || !Array.isArray(parsed.items)) {
             throw new Error("Invalid response format: missing items array");
@@ -470,7 +477,7 @@ OUTPUT FORMAT (JSON ONLY):
     }
 
     try {
-        const parsed = JSON.parse(content);
+        const parsed = parseGeminiJSON(content);
 
         if (!['SAFE', 'CAUTION', 'AVOID'].includes(parsed.status)) {
             parsed.status = 'CAUTION';
